@@ -13,5 +13,6 @@
 )]
 
 mod json;
+mod streaming_json;
 mod support;
 mod types;
