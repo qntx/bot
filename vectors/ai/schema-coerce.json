@@ -1,0 +1,636 @@
+[
+  {
+    "name": "string-from-number",
+    "schema": {
+      "type": "string"
+    },
+    "input": 42,
+    "expected": "42"
+  },
+  {
+    "name": "string-from-bool",
+    "schema": {
+      "type": "string"
+    },
+    "input": true,
+    "expected": "true"
+  },
+  {
+    "name": "string-from-null",
+    "schema": {
+      "type": "string"
+    },
+    "input": null,
+    "expected": "null"
+  },
+  {
+    "name": "string-passthrough",
+    "schema": {
+      "type": "string"
+    },
+    "input": "x",
+    "expected": "x"
+  },
+  {
+    "name": "number-from-string",
+    "schema": {
+      "type": "number"
+    },
+    "input": "42",
+    "expected": 42
+  },
+  {
+    "name": "number-from-float-string",
+    "schema": {
+      "type": "number"
+    },
+    "input": "3.5",
+    "expected": 3.5
+  },
+  {
+    "name": "number-from-bool",
+    "schema": {
+      "type": "number"
+    },
+    "input": true,
+    "expected": 1
+  },
+  {
+    "name": "number-from-null",
+    "schema": {
+      "type": "number"
+    },
+    "input": null,
+    "expected": 0
+  },
+  {
+    "name": "number-from-empty-string",
+    "schema": {
+      "type": "number"
+    },
+    "input": "",
+    "expected": 0
+  },
+  {
+    "name": "number-invalid-string",
+    "schema": {
+      "type": "number"
+    },
+    "input": "abc",
+    "expected": "abc"
+  },
+  {
+    "name": "integer-truncate",
+    "schema": {
+      "type": "integer"
+    },
+    "input": "3.9",
+    "expected": 3
+  },
+  {
+    "name": "integer-neg-truncate",
+    "schema": {
+      "type": "integer"
+    },
+    "input": "-3.9",
+    "expected": -3
+  },
+  {
+    "name": "integer-passthrough",
+    "schema": {
+      "type": "integer"
+    },
+    "input": 3,
+    "expected": 3
+  },
+  {
+    "name": "boolean-true-string",
+    "schema": {
+      "type": "boolean"
+    },
+    "input": "true",
+    "expected": true
+  },
+  {
+    "name": "boolean-TRUE-string",
+    "schema": {
+      "type": "boolean"
+    },
+    "input": "TRUE",
+    "expected": true
+  },
+  {
+    "name": "boolean-1-string",
+    "schema": {
+      "type": "boolean"
+    },
+    "input": "1",
+    "expected": true
+  },
+  {
+    "name": "boolean-0-number",
+    "schema": {
+      "type": "boolean"
+    },
+    "input": 0,
+    "expected": false
+  },
+  {
+    "name": "boolean-from-null",
+    "schema": {
+      "type": "boolean"
+    },
+    "input": null,
+    "expected": false
+  },
+  {
+    "name": "null-from-empty-string",
+    "schema": {
+      "type": "null"
+    },
+    "input": "",
+    "expected": null
+  },
+  {
+    "name": "null-from-undefined-string",
+    "schema": {
+      "type": "null"
+    },
+    "input": "undefined",
+    "expected": null
+  },
+  {
+    "name": "null-from-zero",
+    "schema": {
+      "type": "null"
+    },
+    "input": 0,
+    "expected": null
+  },
+  {
+    "name": "null-from-false",
+    "schema": {
+      "type": "null"
+    },
+    "input": false,
+    "expected": null
+  },
+  {
+    "name": "null-passthrough",
+    "schema": {
+      "type": "null"
+    },
+    "input": null,
+    "expected": null
+  },
+  {
+    "name": "scalar-to-array",
+    "schema": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      }
+    },
+    "input": "7",
+    "expected": [
+      7
+    ]
+  },
+  {
+    "name": "number-to-array",
+    "schema": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      }
+    },
+    "input": 7,
+    "expected": [
+      7
+    ]
+  },
+  {
+    "name": "array-passthrough",
+    "schema": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      }
+    },
+    "input": [
+      1,
+      "2"
+    ],
+    "expected": [
+      1,
+      2
+    ]
+  },
+  {
+    "name": "optional-null-drop",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "a": {
+          "type": "string"
+        }
+      }
+    },
+    "input": {
+      "a": null
+    },
+    "expected": {}
+  },
+  {
+    "name": "required-null-kept",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "a": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "a"
+      ]
+    },
+    "input": {
+      "a": null
+    },
+    "expected": {
+      "a": "null"
+    }
+  },
+  {
+    "name": "nullable-null-kept",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "a": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "input": {
+      "a": null
+    },
+    "expected": {
+      "a": null
+    }
+  },
+  {
+    "name": "nested-null-drop",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "o": {
+          "type": "object",
+          "properties": {
+            "n": {
+              "type": "number"
+            }
+          }
+        }
+      }
+    },
+    "input": {
+      "o": {
+        "n": null
+      }
+    },
+    "expected": {
+      "o": {}
+    }
+  },
+  {
+    "name": "nested-object",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "o": {
+          "type": "object",
+          "properties": {
+            "n": {
+              "type": "number"
+            }
+          }
+        }
+      }
+    },
+    "input": {
+      "o": {
+        "n": "5"
+      }
+    },
+    "expected": {
+      "o": {
+        "n": 5
+      }
+    }
+  },
+  {
+    "name": "nested-array",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "l": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "input": {
+      "l": [
+        "1",
+        2
+      ]
+    },
+    "expected": {
+      "l": [
+        1,
+        2
+      ]
+    }
+  },
+  {
+    "name": "tuple",
+    "schema": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        }
+      ]
+    },
+    "input": [
+      "a",
+      "2"
+    ],
+    "expected": [
+      "a",
+      2
+    ]
+  },
+  {
+    "name": "union-first-match",
+    "schema": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        }
+      ]
+    },
+    "input": "42",
+    "expected": "42"
+  },
+  {
+    "name": "union-second-match",
+    "schema": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "input": "42",
+    "expected": "42"
+  },
+  {
+    "name": "union-preserve",
+    "schema": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "input": "abc",
+    "expected": "abc"
+  },
+  {
+    "name": "oneof",
+    "schema": {
+      "oneOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "input": "42",
+    "expected": "42"
+  },
+  {
+    "name": "allof",
+    "schema": {
+      "allOf": [
+        {
+          "type": "number"
+        },
+        {
+          "minimum": 1
+        }
+      ]
+    },
+    "input": "5",
+    "expected": 5
+  },
+  {
+    "name": "ref-local",
+    "schema": {
+      "$defs": {
+        "n": {
+          "type": "number"
+        }
+      },
+      "properties": {
+        "x": {
+          "$ref": "#/$defs/n"
+        }
+      },
+      "type": "object"
+    },
+    "input": {
+      "x": "5"
+    },
+    "expected": {
+      "x": 5
+    }
+  },
+  {
+    "name": "ref-dangling",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "x": {
+          "$ref": "#/missing"
+        },
+        "y": {
+          "type": "number"
+        }
+      }
+    },
+    "input": {
+      "x": 1,
+      "y": "5"
+    },
+    "expected": {
+      "x": 1,
+      "y": 5
+    }
+  },
+  {
+    "name": "ref-recursive",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "next": {
+          "$ref": "#"
+        },
+        "v": {
+          "type": "number"
+        }
+      }
+    },
+    "input": {
+      "v": "1",
+      "next": {
+        "v": "2"
+      }
+    },
+    "expected": {
+      "v": 1,
+      "next": {
+        "v": 2
+      }
+    }
+  },
+  {
+    "name": "const-string",
+    "schema": {
+      "const": "ok"
+    },
+    "input": "ok",
+    "expected": "ok"
+  },
+  {
+    "name": "const-number",
+    "schema": {
+      "const": 1
+    },
+    "input": "1",
+    "expected": 1
+  },
+  {
+    "name": "const-mismatch",
+    "schema": {
+      "const": 1
+    },
+    "input": "2",
+    "expected": "2"
+  },
+  {
+    "name": "enum-member",
+    "schema": {
+      "enum": [
+        1,
+        "two",
+        null
+      ]
+    },
+    "input": "two",
+    "expected": "two"
+  },
+  {
+    "name": "enum-coerce-to",
+    "schema": {
+      "enum": [
+        1,
+        "two"
+      ]
+    },
+    "input": "1",
+    "expected": 1
+  },
+  {
+    "name": "additional-coerced",
+    "schema": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "number"
+      }
+    },
+    "input": {
+      "a": "1"
+    },
+    "expected": {
+      "a": 1
+    }
+  },
+  {
+    "name": "pattern-properties",
+    "schema": {
+      "type": "object",
+      "patternProperties": {
+        "^n_": {
+          "type": "number"
+        }
+      }
+    },
+    "input": {
+      "n_a": "1"
+    },
+    "expected": {
+      "n_a": 1
+    }
+  },
+  {
+    "name": "json-string-array",
+    "schema": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "input": "[\"a\",\"b\"]",
+    "expected": [
+      "[\"a\",\"b\"]"
+    ]
+  },
+  {
+    "name": "number-string-number",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "timeout": {
+          "type": "number"
+        }
+      }
+    },
+    "input": {
+      "timeout": "30"
+    },
+    "expected": {
+      "timeout": 30
+    }
+  }
+]

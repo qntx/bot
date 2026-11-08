@@ -12,6 +12,8 @@
     clippy::cast_possible_truncation,
     clippy::cast_precision_loss,
     clippy::unnecessary_cast,
+    clippy::option_if_let_else,
+    clippy::excessive_nesting,
     reason = "vector replays index fixed-shape case tables"
 )]
 #![allow(
@@ -21,15 +23,9 @@
 
 mod ai_utils;
 mod json;
+mod schema;
 mod stream;
 mod streaming_json;
 mod support;
-#[expect(
-    clippy::indexing_slicing,
-    clippy::cast_possible_truncation,
-    clippy::option_if_let_else,
-    clippy::excessive_nesting,
-    reason = "vector case args are indexed/cast freely in tests"
-)]
 mod transcript;
 mod types;

@@ -1,0 +1,784 @@
+[
+  {
+    "name": "read-ok",
+    "tool": "read",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Path to the file to read"
+        },
+        "offset": {
+          "type": "number",
+          "description": "Line offset to start reading"
+        },
+        "limit": {
+          "type": "number",
+          "description": "Number of lines to read"
+        }
+      },
+      "required": [
+        "path"
+      ]
+    },
+    "arguments": {
+      "path": "x.ts"
+    },
+    "expected": {
+      "kind": "ok",
+      "arguments": {
+        "path": "x.ts"
+      }
+    }
+  },
+  {
+    "name": "read-coerced-limit",
+    "tool": "read",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Path to the file to read"
+        },
+        "offset": {
+          "type": "number",
+          "description": "Line offset to start reading"
+        },
+        "limit": {
+          "type": "number",
+          "description": "Number of lines to read"
+        }
+      },
+      "required": [
+        "path"
+      ]
+    },
+    "arguments": {
+      "path": "x.ts",
+      "limit": "50"
+    },
+    "expected": {
+      "kind": "ok",
+      "arguments": {
+        "path": "x.ts",
+        "limit": 50
+      }
+    }
+  },
+  {
+    "name": "read-missing-path",
+    "tool": "read",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Path to the file to read"
+        },
+        "offset": {
+          "type": "number",
+          "description": "Line offset to start reading"
+        },
+        "limit": {
+          "type": "number",
+          "description": "Number of lines to read"
+        }
+      },
+      "required": [
+        "path"
+      ]
+    },
+    "arguments": {
+      "offset": 3
+    },
+    "expected": {
+      "kind": "error",
+      "errors": [
+        {
+          "path": "/path",
+          "keyword": "required",
+          "message": "missing"
+        }
+      ]
+    }
+  },
+  {
+    "name": "read-limit-object",
+    "tool": "read",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Path to the file to read"
+        },
+        "offset": {
+          "type": "number",
+          "description": "Line offset to start reading"
+        },
+        "limit": {
+          "type": "number",
+          "description": "Number of lines to read"
+        }
+      },
+      "required": [
+        "path"
+      ]
+    },
+    "arguments": {
+      "path": "x",
+      "limit": {
+        "deep": 1
+      }
+    },
+    "expected": {
+      "kind": "error",
+      "errors": [
+        {
+          "path": "/limit",
+          "keyword": "type",
+          "message": "expected number, got object"
+        }
+      ]
+    }
+  },
+  {
+    "name": "bash-ok",
+    "tool": "bash",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "type": "string"
+        },
+        "timeout": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "command"
+      ]
+    },
+    "arguments": {
+      "command": "ls"
+    },
+    "expected": {
+      "kind": "ok",
+      "arguments": {
+        "command": "ls"
+      }
+    }
+  },
+  {
+    "name": "bash-timeout-string",
+    "tool": "bash",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "type": "string"
+        },
+        "timeout": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "command"
+      ]
+    },
+    "arguments": {
+      "command": "ls",
+      "timeout": "30"
+    },
+    "expected": {
+      "kind": "ok",
+      "arguments": {
+        "command": "ls",
+        "timeout": 30
+      }
+    }
+  },
+  {
+    "name": "edit-ok",
+    "tool": "edit",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "edits": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "oldText": {
+                "type": "string"
+              },
+              "newText": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "oldText",
+              "newText"
+            ]
+          }
+        }
+      },
+      "required": [
+        "path",
+        "edits"
+      ]
+    },
+    "arguments": {
+      "path": "f",
+      "edits": [
+        {
+          "oldText": "a",
+          "newText": "b"
+        }
+      ]
+    },
+    "expected": {
+      "kind": "ok",
+      "arguments": {
+        "path": "f",
+        "edits": [
+          {
+            "oldText": "a",
+            "newText": "b"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "name": "edit-edits-jsonstring",
+    "tool": "edit",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "edits": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "oldText": {
+                "type": "string"
+              },
+              "newText": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "oldText",
+              "newText"
+            ]
+          }
+        }
+      },
+      "required": [
+        "path",
+        "edits"
+      ]
+    },
+    "arguments": {
+      "path": "f",
+      "edits": "[{\"oldText\":\"a\",\"newText\":\"b\"}]"
+    },
+    "expected": {
+      "kind": "error",
+      "errors": [
+        {
+          "path": "/edits/0",
+          "keyword": "type",
+          "message": "expected object, got string"
+        }
+      ]
+    }
+  },
+  {
+    "name": "edit-edits-scalar",
+    "tool": "edit",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "edits": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "oldText": {
+                "type": "string"
+              },
+              "newText": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "oldText",
+              "newText"
+            ]
+          }
+        }
+      },
+      "required": [
+        "path",
+        "edits"
+      ]
+    },
+    "arguments": {
+      "path": "f",
+      "edits": "x"
+    },
+    "expected": {
+      "kind": "error",
+      "errors": [
+        {
+          "path": "/edits/0",
+          "keyword": "type",
+          "message": "expected object, got string"
+        }
+      ]
+    }
+  },
+  {
+    "name": "edit-missing-newtext",
+    "tool": "edit",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "edits": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "oldText": {
+                "type": "string"
+              },
+              "newText": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "oldText",
+              "newText"
+            ]
+          }
+        }
+      },
+      "required": [
+        "path",
+        "edits"
+      ]
+    },
+    "arguments": {
+      "path": "f",
+      "edits": [
+        {
+          "oldText": "a"
+        }
+      ]
+    },
+    "expected": {
+      "kind": "error",
+      "errors": [
+        {
+          "path": "/edits/0/newText",
+          "keyword": "required",
+          "message": "missing"
+        }
+      ]
+    }
+  },
+  {
+    "name": "write-ok",
+    "tool": "write",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "path",
+        "content"
+      ]
+    },
+    "arguments": {
+      "path": "f",
+      "content": "c"
+    },
+    "expected": {
+      "kind": "ok",
+      "arguments": {
+        "path": "f",
+        "content": "c"
+      }
+    }
+  },
+  {
+    "name": "write-missing-content",
+    "tool": "write",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "path",
+        "content"
+      ]
+    },
+    "arguments": {
+      "path": "f"
+    },
+    "expected": {
+      "kind": "error",
+      "errors": [
+        {
+          "path": "/content",
+          "keyword": "required",
+          "message": "missing"
+        }
+      ]
+    }
+  },
+  {
+    "name": "grep-coerced",
+    "tool": "grep",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "pattern": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "glob": {
+          "type": "string"
+        },
+        "ignoreCase": {
+          "type": "boolean"
+        },
+        "literal": {
+          "type": "boolean"
+        },
+        "context": {
+          "type": "number"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "pattern"
+      ]
+    },
+    "arguments": {
+      "pattern": "x",
+      "ignoreCase": "true",
+      "limit": "10"
+    },
+    "expected": {
+      "kind": "ok",
+      "arguments": {
+        "pattern": "x",
+        "ignoreCase": true,
+        "limit": 10
+      }
+    }
+  },
+  {
+    "name": "find-ok",
+    "tool": "find",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "pattern": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "pattern"
+      ]
+    },
+    "arguments": {
+      "pattern": "*.ts"
+    },
+    "expected": {
+      "kind": "ok",
+      "arguments": {
+        "pattern": "*.ts"
+      }
+    }
+  },
+  {
+    "name": "ls-ok",
+    "tool": "ls",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": []
+    },
+    "arguments": {},
+    "expected": {
+      "kind": "ok",
+      "arguments": {}
+    }
+  },
+  {
+    "name": "dangling-ref",
+    "tool": "tool",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "x": {
+          "$ref": "#/nope"
+        },
+        "y": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "y"
+      ]
+    },
+    "arguments": {
+      "x": 1,
+      "y": 2
+    },
+    "expected": {
+      "kind": "error",
+      "errors": [
+        {
+          "path": "/x",
+          "keyword": "$ref",
+          "message": "unresolved reference #/nope"
+        }
+      ]
+    }
+  },
+  {
+    "name": "union-error-dotted",
+    "tool": "tool",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "edits": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "oldText": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "oldText"
+            ]
+          }
+        }
+      }
+    },
+    "arguments": {
+      "edits": [
+        {}
+      ]
+    },
+    "expected": {
+      "kind": "error",
+      "errors": [
+        {
+          "path": "/edits/0/oldText",
+          "keyword": "required",
+          "message": "missing"
+        }
+      ]
+    }
+  },
+  {
+    "name": "enum-error",
+    "tool": "tool",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "mode": {
+          "enum": [
+            "a",
+            "b"
+          ]
+        }
+      },
+      "required": [
+        "mode"
+      ]
+    },
+    "arguments": {
+      "mode": "c"
+    },
+    "expected": {
+      "kind": "error",
+      "errors": [
+        {
+          "path": "/mode",
+          "keyword": "enum",
+          "message": "expected one of [\"a\",\"b\"]"
+        }
+      ]
+    }
+  },
+  {
+    "name": "additional-false",
+    "tool": "tool",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "number"
+        }
+      },
+      "additionalProperties": false
+    },
+    "arguments": {
+      "x": 1,
+      "z": 2
+    },
+    "expected": {
+      "kind": "error",
+      "errors": [
+        {
+          "path": "/z",
+          "keyword": "additionalProperties",
+          "message": "unknown field"
+        }
+      ]
+    }
+  },
+  {
+    "name": "format-date",
+    "tool": "tool",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "d": {
+          "type": "string",
+          "format": "date"
+        }
+      }
+    },
+    "arguments": {
+      "d": "not-a-date"
+    },
+    "expected": {
+      "kind": "error",
+      "errors": [
+        {
+          "path": "/d",
+          "keyword": "format",
+          "message": "expected format date"
+        }
+      ]
+    }
+  },
+  {
+    "name": "ref-local-invalid",
+    "tool": "tool",
+    "schema": {
+      "$defs": {
+        "n": {
+          "type": "number"
+        }
+      },
+      "type": "object",
+      "properties": {
+        "x": {
+          "$ref": "#/$defs/n"
+        }
+      }
+    },
+    "arguments": {
+      "x": {}
+    },
+    "expected": {
+      "kind": "error",
+      "errors": [
+        {
+          "path": "/x",
+          "keyword": "type",
+          "message": "expected number, got object"
+        }
+      ]
+    }
+  },
+  {
+    "name": "required-missing-multi",
+    "tool": "tool",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "a": {
+          "type": "string"
+        },
+        "b": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "a",
+        "b"
+      ]
+    },
+    "arguments": {},
+    "expected": {
+      "kind": "error",
+      "errors": [
+        {
+          "path": "/a",
+          "keyword": "required",
+          "message": "missing"
+        },
+        {
+          "path": "/b",
+          "keyword": "required",
+          "message": "missing"
+        }
+      ]
+    }
+  }
+]
