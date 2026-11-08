@@ -16,4 +16,12 @@ mod json;
 mod stream;
 mod streaming_json;
 mod support;
+#[expect(
+    clippy::indexing_slicing,
+    clippy::cast_possible_truncation,
+    clippy::option_if_let_else,
+    clippy::excessive_nesting,
+    reason = "vector case args are indexed/cast freely in tests"
+)]
+mod transcript;
 mod types;

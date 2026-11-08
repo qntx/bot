@@ -1,0 +1,152 @@
+{
+  "generator": {
+    "script": "scripts/parity/generate-transcript.ts",
+    "node": "v26.13.0",
+    "upstream": "@earendil-works/pi-ai@1.5.0"
+  },
+  "cases": [
+    {
+      "name": "sanitize-clean",
+      "kind": "sanitizeSurrogates",
+      "args": "Hello 🙈 World",
+      "result": "Hello 🙈 World"
+    },
+    {
+      "name": "sanitize-lone-high",
+      "kind": "sanitizeSurrogates",
+      "args": "a\ud800b",
+      "result": "ab"
+    },
+    {
+      "name": "sanitize-lone-low",
+      "kind": "sanitizeSurrogates",
+      "args": "a\udc00b",
+      "result": "ab"
+    },
+    {
+      "name": "owned-slice",
+      "kind": "ownedSlice",
+      "args": [
+        "hello 🙈 world",
+        4,
+        9
+      ],
+      "result": "o 🙈 "
+    },
+    {
+      "name": "owned-slice-split-pair",
+      "kind": "ownedSlice",
+      "args": [
+        "a🙈b",
+        1,
+        3
+      ],
+      "result": "🙈"
+    },
+    {
+      "name": "owned-slice-end",
+      "kind": "ownedSlice",
+      "args": [
+        "abcdef",
+        2
+      ],
+      "result": "cdef"
+    },
+    {
+      "name": "trim-whitespace",
+      "kind": "jsTrim",
+      "args": "  ﻿x  y  ",
+      "result": "x  y"
+    },
+    {
+      "name": "content-text-7",
+      "kind": "contentText",
+      "args": [
+        [
+          {
+            "type": "thinking",
+            "thinking": "t"
+          },
+          {
+            "type": "text",
+            "text": "first"
+          },
+          {
+            "type": "toolCall",
+            "id": "1",
+            "name": "r",
+            "arguments": {}
+          },
+          {
+            "type": "text",
+            "text": "second"
+          }
+        ],
+        "\n"
+      ],
+      "result": "first\nsecond"
+    },
+    {
+      "name": "content-text-8",
+      "kind": "contentText",
+      "args": [
+        [
+          {
+            "type": "text",
+            "text": "a"
+          },
+          {
+            "type": "image",
+            "data": "AAAA",
+            "mimeType": "image/png"
+          },
+          {
+            "type": "text",
+            "text": "b"
+          }
+        ],
+        ""
+      ],
+      "result": "ab"
+    },
+    {
+      "name": "content-text-9",
+      "kind": "contentText",
+      "args": [
+        "plain string",
+        "\n"
+      ],
+      "result": "plain string"
+    },
+    {
+      "name": "system-message-text",
+      "kind": "getSystemMessageText",
+      "args": {
+        "role": "system",
+        "content": "prompt",
+        "timestamp": 1,
+        "sections": {
+          "a": "A",
+          "b": null,
+          "c": "C"
+        }
+      },
+      "result": "prompt\n\nA\n\nC"
+    },
+    {
+      "name": "render-update",
+      "kind": "renderSystemMessageUpdate",
+      "args": {
+        "role": "system",
+        "content": "prompt",
+        "timestamp": 1,
+        "sections": {
+          "a": "A",
+          "b": null,
+          "c": "C"
+        }
+      },
+      "result": "prompt\n\nUpdated system prompt section \"a\":\n\nA\n\nRemoved system prompt section \"b\".\n\nUpdated system prompt section \"c\":\n\nC"
+    }
+  ]
+}

@@ -1,0 +1,1792 @@
+{
+  "generator": {
+    "script": "scripts/parity/generate-transcript.ts",
+    "node": "v26.13.0",
+    "upstream": "@earendil-works/pi-ai@1.5.0"
+  },
+  "cases": [
+    {
+      "name": "normalize-empty",
+      "kind": "normalizeContext",
+      "args": {
+        "messages": []
+      },
+      "result": {
+        "messages": []
+      }
+    },
+    {
+      "name": "normalize-prompt-tools",
+      "kind": "normalizeContext",
+      "args": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 1
+          }
+        ],
+        "systemPrompt": "sys",
+        "tools": [
+          {
+            "name": "a",
+            "description": "a tool",
+            "parameters": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        ]
+      },
+      "result": {
+        "messages": [
+          {
+            "role": "system",
+            "content": "sys",
+            "toolsAdded": [
+              {
+                "name": "a",
+                "description": "a tool",
+                "parameters": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            ],
+            "timestamp": 0
+          },
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "create-initial-none",
+      "kind": "createInitialSystemMessage",
+      "args": [
+        null,
+        null
+      ]
+    },
+    {
+      "name": "create-initial-prompt",
+      "kind": "createInitialSystemMessage",
+      "args": [
+        "p",
+        [
+          {
+            "name": "a",
+            "description": "a tool",
+            "parameters": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        ]
+      ],
+      "result": {
+        "role": "system",
+        "content": "p",
+        "toolsAdded": [
+          {
+            "name": "a",
+            "description": "a tool",
+            "parameters": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        ],
+        "timestamp": 0
+      }
+    },
+    {
+      "name": "current-tools",
+      "kind": "getCurrentTools",
+      "args": [
+        {
+          "role": "system",
+          "content": "base",
+          "timestamp": 0,
+          "toolsAdded": [
+            {
+              "name": "a",
+              "description": "a tool",
+              "parameters": {
+                "type": "object",
+                "properties": {}
+              }
+            },
+            {
+              "name": "b",
+              "description": "b tool",
+              "parameters": {
+                "type": "object",
+                "properties": {}
+              }
+            },
+            {
+              "name": "drop",
+              "description": "drop tool",
+              "parameters": {
+                "type": "object",
+                "properties": {}
+              }
+            }
+          ]
+        },
+        {
+          "role": "user",
+          "content": "u1",
+          "timestamp": 1
+        },
+        {
+          "role": "system",
+          "content": "",
+          "timestamp": 2,
+          "toolsRemoved": [
+            {
+              "name": "drop"
+            }
+          ]
+        },
+        {
+          "role": "system",
+          "content": "extra",
+          "timestamp": 3,
+          "sections": {
+            "env": "prod",
+            "note": "n"
+          },
+          "toolsAdded": [
+            {
+              "name": "late",
+              "description": "late tool",
+              "parameters": {
+                "type": "object",
+                "properties": {}
+              }
+            }
+          ]
+        },
+        {
+          "role": "system",
+          "content": "",
+          "timestamp": 4,
+          "sections": {
+            "env": null,
+            "extra": "x"
+          }
+        }
+      ],
+      "result": [
+        {
+          "name": "a",
+          "description": "a tool",
+          "parameters": {
+            "type": "object",
+            "properties": {}
+          }
+        },
+        {
+          "name": "b",
+          "description": "b tool",
+          "parameters": {
+            "type": "object",
+            "properties": {}
+          }
+        },
+        {
+          "name": "late",
+          "description": "late tool",
+          "parameters": {
+            "type": "object",
+            "properties": {}
+          }
+        }
+      ]
+    },
+    {
+      "name": "current-system-message",
+      "kind": "getCurrentSystemMessage",
+      "args": [
+        {
+          "role": "system",
+          "content": "base",
+          "timestamp": 0,
+          "toolsAdded": [
+            {
+              "name": "a",
+              "description": "a tool",
+              "parameters": {
+                "type": "object",
+                "properties": {}
+              }
+            },
+            {
+              "name": "b",
+              "description": "b tool",
+              "parameters": {
+                "type": "object",
+                "properties": {}
+              }
+            },
+            {
+              "name": "drop",
+              "description": "drop tool",
+              "parameters": {
+                "type": "object",
+                "properties": {}
+              }
+            }
+          ]
+        },
+        {
+          "role": "user",
+          "content": "u1",
+          "timestamp": 1
+        },
+        {
+          "role": "system",
+          "content": "",
+          "timestamp": 2,
+          "toolsRemoved": [
+            {
+              "name": "drop"
+            }
+          ]
+        },
+        {
+          "role": "system",
+          "content": "extra",
+          "timestamp": 3,
+          "sections": {
+            "env": "prod",
+            "note": "n"
+          },
+          "toolsAdded": [
+            {
+              "name": "late",
+              "description": "late tool",
+              "parameters": {
+                "type": "object",
+                "properties": {}
+              }
+            }
+          ]
+        },
+        {
+          "role": "system",
+          "content": "",
+          "timestamp": 4,
+          "sections": {
+            "env": null,
+            "extra": "x"
+          }
+        }
+      ],
+      "result": {
+        "role": "system",
+        "content": "base\n\nextra",
+        "sections": {
+          "note": "n",
+          "extra": "x"
+        },
+        "toolsAdded": [
+          {
+            "name": "a",
+            "description": "a tool",
+            "parameters": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          {
+            "name": "b",
+            "description": "b tool",
+            "parameters": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          {
+            "name": "late",
+            "description": "late tool",
+            "parameters": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        ],
+        "timestamp": 0
+      }
+    },
+    {
+      "name": "current-system-prompt",
+      "kind": "getCurrentSystemPrompt",
+      "args": [
+        {
+          "role": "system",
+          "content": "base",
+          "timestamp": 0,
+          "toolsAdded": [
+            {
+              "name": "a",
+              "description": "a tool",
+              "parameters": {
+                "type": "object",
+                "properties": {}
+              }
+            },
+            {
+              "name": "b",
+              "description": "b tool",
+              "parameters": {
+                "type": "object",
+                "properties": {}
+              }
+            },
+            {
+              "name": "drop",
+              "description": "drop tool",
+              "parameters": {
+                "type": "object",
+                "properties": {}
+              }
+            }
+          ]
+        },
+        {
+          "role": "user",
+          "content": "u1",
+          "timestamp": 1
+        },
+        {
+          "role": "system",
+          "content": "",
+          "timestamp": 2,
+          "toolsRemoved": [
+            {
+              "name": "drop"
+            }
+          ]
+        },
+        {
+          "role": "system",
+          "content": "extra",
+          "timestamp": 3,
+          "sections": {
+            "env": "prod",
+            "note": "n"
+          },
+          "toolsAdded": [
+            {
+              "name": "late",
+              "description": "late tool",
+              "parameters": {
+                "type": "object",
+                "properties": {}
+              }
+            }
+          ]
+        },
+        {
+          "role": "system",
+          "content": "",
+          "timestamp": 4,
+          "sections": {
+            "env": null,
+            "extra": "x"
+          }
+        }
+      ],
+      "result": "base\n\nextra\n\nn\n\nx"
+    },
+    {
+      "name": "initial-system-message",
+      "kind": "getInitialSystemMessage",
+      "args": [
+        {
+          "role": "system",
+          "content": "base",
+          "timestamp": 0,
+          "toolsAdded": [
+            {
+              "name": "a",
+              "description": "a tool",
+              "parameters": {
+                "type": "object",
+                "properties": {}
+              }
+            },
+            {
+              "name": "b",
+              "description": "b tool",
+              "parameters": {
+                "type": "object",
+                "properties": {}
+              }
+            },
+            {
+              "name": "drop",
+              "description": "drop tool",
+              "parameters": {
+                "type": "object",
+                "properties": {}
+              }
+            }
+          ]
+        },
+        {
+          "role": "user",
+          "content": "u1",
+          "timestamp": 1
+        },
+        {
+          "role": "system",
+          "content": "",
+          "timestamp": 2,
+          "toolsRemoved": [
+            {
+              "name": "drop"
+            }
+          ]
+        },
+        {
+          "role": "system",
+          "content": "extra",
+          "timestamp": 3,
+          "sections": {
+            "env": "prod",
+            "note": "n"
+          },
+          "toolsAdded": [
+            {
+              "name": "late",
+              "description": "late tool",
+              "parameters": {
+                "type": "object",
+                "properties": {}
+              }
+            }
+          ]
+        },
+        {
+          "role": "system",
+          "content": "",
+          "timestamp": 4,
+          "sections": {
+            "env": null,
+            "extra": "x"
+          }
+        }
+      ],
+      "result": {
+        "role": "system",
+        "content": "base",
+        "timestamp": 0,
+        "toolsAdded": [
+          {
+            "name": "a",
+            "description": "a tool",
+            "parameters": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          {
+            "name": "b",
+            "description": "b tool",
+            "parameters": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          {
+            "name": "drop",
+            "description": "drop tool",
+            "parameters": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "initial-none",
+      "kind": "getInitialSystemMessage",
+      "args": [
+        {
+          "role": "user",
+          "content": "u",
+          "timestamp": 1
+        }
+      ]
+    },
+    {
+      "name": "without-initial",
+      "kind": "withoutInitialSystemMessage",
+      "args": [
+        {
+          "role": "system",
+          "content": "base",
+          "timestamp": 0,
+          "toolsAdded": [
+            {
+              "name": "a",
+              "description": "a tool",
+              "parameters": {
+                "type": "object",
+                "properties": {}
+              }
+            },
+            {
+              "name": "b",
+              "description": "b tool",
+              "parameters": {
+                "type": "object",
+                "properties": {}
+              }
+            },
+            {
+              "name": "drop",
+              "description": "drop tool",
+              "parameters": {
+                "type": "object",
+                "properties": {}
+              }
+            }
+          ]
+        },
+        {
+          "role": "user",
+          "content": "u1",
+          "timestamp": 1
+        },
+        {
+          "role": "system",
+          "content": "",
+          "timestamp": 2,
+          "toolsRemoved": [
+            {
+              "name": "drop"
+            }
+          ]
+        },
+        {
+          "role": "system",
+          "content": "extra",
+          "timestamp": 3,
+          "sections": {
+            "env": "prod",
+            "note": "n"
+          },
+          "toolsAdded": [
+            {
+              "name": "late",
+              "description": "late tool",
+              "parameters": {
+                "type": "object",
+                "properties": {}
+              }
+            }
+          ]
+        },
+        {
+          "role": "system",
+          "content": "",
+          "timestamp": 4,
+          "sections": {
+            "env": null,
+            "extra": "x"
+          }
+        }
+      ],
+      "result": [
+        {
+          "role": "user",
+          "content": "u1",
+          "timestamp": 1
+        },
+        {
+          "role": "system",
+          "content": "",
+          "timestamp": 2,
+          "toolsRemoved": [
+            {
+              "name": "drop"
+            }
+          ]
+        },
+        {
+          "role": "system",
+          "content": "extra",
+          "timestamp": 3,
+          "sections": {
+            "env": "prod",
+            "note": "n"
+          },
+          "toolsAdded": [
+            {
+              "name": "late",
+              "description": "late tool",
+              "parameters": {
+                "type": "object",
+                "properties": {}
+              }
+            }
+          ]
+        },
+        {
+          "role": "system",
+          "content": "",
+          "timestamp": 4,
+          "sections": {
+            "env": null,
+            "extra": "x"
+          }
+        }
+      ]
+    },
+    {
+      "name": "collapse",
+      "kind": "collapseSystemMessages",
+      "args": [
+        {
+          "role": "system",
+          "content": "base",
+          "timestamp": 0,
+          "toolsAdded": [
+            {
+              "name": "a",
+              "description": "a tool",
+              "parameters": {
+                "type": "object",
+                "properties": {}
+              }
+            },
+            {
+              "name": "b",
+              "description": "b tool",
+              "parameters": {
+                "type": "object",
+                "properties": {}
+              }
+            },
+            {
+              "name": "drop",
+              "description": "drop tool",
+              "parameters": {
+                "type": "object",
+                "properties": {}
+              }
+            }
+          ]
+        },
+        {
+          "role": "user",
+          "content": "u1",
+          "timestamp": 1
+        },
+        {
+          "role": "system",
+          "content": "",
+          "timestamp": 2,
+          "toolsRemoved": [
+            {
+              "name": "drop"
+            }
+          ]
+        },
+        {
+          "role": "system",
+          "content": "extra",
+          "timestamp": 3,
+          "sections": {
+            "env": "prod",
+            "note": "n"
+          },
+          "toolsAdded": [
+            {
+              "name": "late",
+              "description": "late tool",
+              "parameters": {
+                "type": "object",
+                "properties": {}
+              }
+            }
+          ]
+        },
+        {
+          "role": "system",
+          "content": "",
+          "timestamp": 4,
+          "sections": {
+            "env": null,
+            "extra": "x"
+          }
+        }
+      ],
+      "result": {
+        "messages": [
+          {
+            "role": "system",
+            "content": "base\n\nextra",
+            "sections": {
+              "note": "n",
+              "extra": "x"
+            },
+            "toolsAdded": [
+              {
+                "name": "a",
+                "description": "a tool",
+                "parameters": {
+                  "type": "object",
+                  "properties": {}
+                }
+              },
+              {
+                "name": "b",
+                "description": "b tool",
+                "parameters": {
+                  "type": "object",
+                  "properties": {}
+                }
+              },
+              {
+                "name": "late",
+                "description": "late tool",
+                "parameters": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            ],
+            "timestamp": 0
+          },
+          {
+            "role": "user",
+            "content": "u1",
+            "timestamp": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "resolve-mid-true",
+      "kind": "resolveTranscript",
+      "args": [
+        [
+          {
+            "role": "system",
+            "content": "base",
+            "timestamp": 0,
+            "toolsAdded": [
+              {
+                "name": "a",
+                "description": "a tool",
+                "parameters": {
+                  "type": "object",
+                  "properties": {}
+                }
+              },
+              {
+                "name": "b",
+                "description": "b tool",
+                "parameters": {
+                  "type": "object",
+                  "properties": {}
+                }
+              },
+              {
+                "name": "drop",
+                "description": "drop tool",
+                "parameters": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            ]
+          },
+          {
+            "role": "user",
+            "content": "u1",
+            "timestamp": 1
+          },
+          {
+            "role": "system",
+            "content": "",
+            "timestamp": 2,
+            "toolsRemoved": [
+              {
+                "name": "drop"
+              }
+            ]
+          },
+          {
+            "role": "system",
+            "content": "extra",
+            "timestamp": 3,
+            "sections": {
+              "env": "prod",
+              "note": "n"
+            },
+            "toolsAdded": [
+              {
+                "name": "late",
+                "description": "late tool",
+                "parameters": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            ]
+          },
+          {
+            "role": "system",
+            "content": "",
+            "timestamp": 4,
+            "sections": {
+              "env": null,
+              "extra": "x"
+            }
+          }
+        ],
+        true
+      ],
+      "result": {
+        "messages": [
+          {
+            "role": "system",
+            "content": "base",
+            "timestamp": 0,
+            "toolsAdded": [
+              {
+                "name": "a",
+                "description": "a tool",
+                "parameters": {
+                  "type": "object",
+                  "properties": {}
+                }
+              },
+              {
+                "name": "b",
+                "description": "b tool",
+                "parameters": {
+                  "type": "object",
+                  "properties": {}
+                }
+              },
+              {
+                "name": "drop",
+                "description": "drop tool",
+                "parameters": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            ]
+          },
+          {
+            "role": "user",
+            "content": "u1",
+            "timestamp": 1
+          },
+          {
+            "role": "system",
+            "content": "",
+            "timestamp": 2,
+            "toolsRemoved": [
+              {
+                "name": "drop"
+              }
+            ]
+          },
+          {
+            "role": "system",
+            "content": "extra",
+            "timestamp": 3,
+            "sections": {
+              "env": "prod",
+              "note": "n"
+            },
+            "toolsAdded": [
+              {
+                "name": "late",
+                "description": "late tool",
+                "parameters": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            ]
+          },
+          {
+            "role": "system",
+            "content": "",
+            "timestamp": 4,
+            "sections": {
+              "env": null,
+              "extra": "x"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "resolve-mid-false",
+      "kind": "resolveTranscript",
+      "args": [
+        [
+          {
+            "role": "system",
+            "content": "base",
+            "timestamp": 0,
+            "toolsAdded": [
+              {
+                "name": "a",
+                "description": "a tool",
+                "parameters": {
+                  "type": "object",
+                  "properties": {}
+                }
+              },
+              {
+                "name": "b",
+                "description": "b tool",
+                "parameters": {
+                  "type": "object",
+                  "properties": {}
+                }
+              },
+              {
+                "name": "drop",
+                "description": "drop tool",
+                "parameters": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            ]
+          },
+          {
+            "role": "user",
+            "content": "u1",
+            "timestamp": 1
+          },
+          {
+            "role": "system",
+            "content": "",
+            "timestamp": 2,
+            "toolsRemoved": [
+              {
+                "name": "drop"
+              }
+            ]
+          },
+          {
+            "role": "system",
+            "content": "extra",
+            "timestamp": 3,
+            "sections": {
+              "env": "prod",
+              "note": "n"
+            },
+            "toolsAdded": [
+              {
+                "name": "late",
+                "description": "late tool",
+                "parameters": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            ]
+          },
+          {
+            "role": "system",
+            "content": "",
+            "timestamp": 4,
+            "sections": {
+              "env": null,
+              "extra": "x"
+            }
+          }
+        ],
+        false
+      ],
+      "result": {
+        "messages": [
+          {
+            "role": "system",
+            "content": "base\n\nextra",
+            "sections": {
+              "note": "n",
+              "extra": "x"
+            },
+            "toolsAdded": [
+              {
+                "name": "a",
+                "description": "a tool",
+                "parameters": {
+                  "type": "object",
+                  "properties": {}
+                }
+              },
+              {
+                "name": "b",
+                "description": "b tool",
+                "parameters": {
+                  "type": "object",
+                  "properties": {}
+                }
+              },
+              {
+                "name": "late",
+                "description": "late tool",
+                "parameters": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            ],
+            "timestamp": 0
+          },
+          {
+            "role": "user",
+            "content": "u1",
+            "timestamp": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "tool-declaration",
+      "kind": "toToolDeclaration",
+      "args": {
+        "name": "x",
+        "description": "x tool",
+        "parameters": {
+          "type": "object",
+          "properties": {}
+        }
+      },
+      "result": {
+        "name": "x",
+        "description": "x tool",
+        "parameters": {
+          "type": "object",
+          "properties": {}
+        }
+      }
+    },
+    {
+      "name": "declarations-equal",
+      "kind": "declarationsEqual",
+      "args": [
+        {
+          "name": "x",
+          "description": "x tool",
+          "parameters": {
+            "type": "object",
+            "properties": {}
+          }
+        },
+        {
+          "name": "x",
+          "description": "x tool",
+          "parameters": {
+            "type": "object",
+            "properties": {}
+          }
+        }
+      ],
+      "result": true
+    },
+    {
+      "name": "declarations-unequal",
+      "kind": "declarationsEqual",
+      "args": [
+        {
+          "name": "x",
+          "description": "x tool",
+          "parameters": {
+            "type": "object",
+            "properties": {}
+          }
+        },
+        {
+          "name": "x",
+          "description": "y",
+          "parameters": {
+            "type": "object",
+            "properties": {}
+          }
+        }
+      ],
+      "result": false
+    },
+    {
+      "name": "tool-state-changes",
+      "kind": "getToolStateChanges",
+      "args": [
+        [
+          {
+            "name": "a",
+            "description": "a tool",
+            "parameters": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          {
+            "name": "b",
+            "description": "b tool",
+            "parameters": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          {
+            "name": "c",
+            "description": "c tool",
+            "parameters": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        ],
+        [
+          {
+            "name": "b",
+            "description": "b tool",
+            "parameters": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          {
+            "name": "c",
+            "description": "c2",
+            "parameters": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          {
+            "name": "d",
+            "description": "d tool",
+            "parameters": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        ]
+      ],
+      "result": {
+        "toolsAdded": [
+          {
+            "name": "c",
+            "description": "c2",
+            "parameters": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          {
+            "name": "d",
+            "description": "d tool",
+            "parameters": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        ],
+        "toolsRemoved": [
+          {
+            "name": "a"
+          },
+          {
+            "name": "c"
+          }
+        ]
+      }
+    },
+    {
+      "name": "declared-tools",
+      "kind": "getDeclaredTools",
+      "args": [
+        {
+          "role": "system",
+          "content": "base",
+          "timestamp": 0,
+          "toolsAdded": [
+            {
+              "name": "a",
+              "description": "a tool",
+              "parameters": {
+                "type": "object",
+                "properties": {}
+              }
+            },
+            {
+              "name": "b",
+              "description": "b tool",
+              "parameters": {
+                "type": "object",
+                "properties": {}
+              }
+            },
+            {
+              "name": "drop",
+              "description": "drop tool",
+              "parameters": {
+                "type": "object",
+                "properties": {}
+              }
+            }
+          ]
+        },
+        {
+          "role": "user",
+          "content": "u1",
+          "timestamp": 1
+        },
+        {
+          "role": "system",
+          "content": "",
+          "timestamp": 2,
+          "toolsRemoved": [
+            {
+              "name": "drop"
+            }
+          ]
+        },
+        {
+          "role": "system",
+          "content": "extra",
+          "timestamp": 3,
+          "sections": {
+            "env": "prod",
+            "note": "n"
+          },
+          "toolsAdded": [
+            {
+              "name": "late",
+              "description": "late tool",
+              "parameters": {
+                "type": "object",
+                "properties": {}
+              }
+            }
+          ]
+        },
+        {
+          "role": "system",
+          "content": "",
+          "timestamp": 4,
+          "sections": {
+            "env": null,
+            "extra": "x"
+          }
+        }
+      ],
+      "result": [
+        {
+          "name": "a",
+          "description": "a tool",
+          "parameters": {
+            "type": "object",
+            "properties": {}
+          }
+        },
+        {
+          "name": "b",
+          "description": "b tool",
+          "parameters": {
+            "type": "object",
+            "properties": {}
+          }
+        },
+        {
+          "name": "drop",
+          "description": "drop tool",
+          "parameters": {
+            "type": "object",
+            "properties": {}
+          }
+        },
+        {
+          "name": "late",
+          "description": "late tool",
+          "parameters": {
+            "type": "object",
+            "properties": {}
+          }
+        }
+      ]
+    },
+    {
+      "name": "non-additive-yes",
+      "kind": "hasNonAdditiveToolChanges",
+      "args": [
+        {
+          "role": "system",
+          "content": "base",
+          "timestamp": 0,
+          "toolsAdded": [
+            {
+              "name": "a",
+              "description": "a tool",
+              "parameters": {
+                "type": "object",
+                "properties": {}
+              }
+            },
+            {
+              "name": "b",
+              "description": "b tool",
+              "parameters": {
+                "type": "object",
+                "properties": {}
+              }
+            },
+            {
+              "name": "drop",
+              "description": "drop tool",
+              "parameters": {
+                "type": "object",
+                "properties": {}
+              }
+            }
+          ]
+        },
+        {
+          "role": "user",
+          "content": "u1",
+          "timestamp": 1
+        },
+        {
+          "role": "system",
+          "content": "",
+          "timestamp": 2,
+          "toolsRemoved": [
+            {
+              "name": "drop"
+            }
+          ]
+        },
+        {
+          "role": "system",
+          "content": "extra",
+          "timestamp": 3,
+          "sections": {
+            "env": "prod",
+            "note": "n"
+          },
+          "toolsAdded": [
+            {
+              "name": "late",
+              "description": "late tool",
+              "parameters": {
+                "type": "object",
+                "properties": {}
+              }
+            }
+          ]
+        },
+        {
+          "role": "system",
+          "content": "",
+          "timestamp": 4,
+          "sections": {
+            "env": null,
+            "extra": "x"
+          }
+        }
+      ],
+      "result": true
+    },
+    {
+      "name": "non-additive-no",
+      "kind": "hasNonAdditiveToolChanges",
+      "args": [
+        {
+          "role": "system",
+          "content": "",
+          "timestamp": 0,
+          "toolsAdded": [
+            {
+              "name": "a",
+              "description": "a tool",
+              "parameters": {
+                "type": "object",
+                "properties": {}
+              }
+            }
+          ]
+        }
+      ],
+      "result": false
+    },
+    {
+      "name": "resolve-tools-none",
+      "kind": "resolveTranscriptTools",
+      "args": [
+        [
+          {
+            "role": "system",
+            "content": "base",
+            "timestamp": 0,
+            "toolsAdded": [
+              {
+                "name": "a",
+                "description": "a tool",
+                "parameters": {
+                  "type": "object",
+                  "properties": {}
+                }
+              },
+              {
+                "name": "b",
+                "description": "b tool",
+                "parameters": {
+                  "type": "object",
+                  "properties": {}
+                }
+              },
+              {
+                "name": "drop",
+                "description": "drop tool",
+                "parameters": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            ]
+          },
+          {
+            "role": "user",
+            "content": "u1",
+            "timestamp": 1
+          },
+          {
+            "role": "system",
+            "content": "",
+            "timestamp": 2,
+            "toolsRemoved": [
+              {
+                "name": "drop"
+              }
+            ]
+          },
+          {
+            "role": "system",
+            "content": "extra",
+            "timestamp": 3,
+            "sections": {
+              "env": "prod",
+              "note": "n"
+            },
+            "toolsAdded": [
+              {
+                "name": "late",
+                "description": "late tool",
+                "parameters": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            ]
+          },
+          {
+            "role": "system",
+            "content": "",
+            "timestamp": 4,
+            "sections": {
+              "env": null,
+              "extra": "x"
+            }
+          }
+        ],
+        "none"
+      ],
+      "result": {
+        "requestTools": [
+          {
+            "name": "a",
+            "description": "a tool",
+            "parameters": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          {
+            "name": "b",
+            "description": "b tool",
+            "parameters": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          {
+            "name": "late",
+            "description": "late tool",
+            "parameters": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        ],
+        "foldedSystemMessages": 4
+      }
+    },
+    {
+      "name": "resolve-tools-additions",
+      "kind": "resolveTranscriptTools",
+      "args": [
+        [
+          {
+            "role": "system",
+            "content": "base",
+            "timestamp": 0,
+            "toolsAdded": [
+              {
+                "name": "a",
+                "description": "a tool",
+                "parameters": {
+                  "type": "object",
+                  "properties": {}
+                }
+              },
+              {
+                "name": "b",
+                "description": "b tool",
+                "parameters": {
+                  "type": "object",
+                  "properties": {}
+                }
+              },
+              {
+                "name": "drop",
+                "description": "drop tool",
+                "parameters": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            ]
+          },
+          {
+            "role": "user",
+            "content": "u1",
+            "timestamp": 1
+          },
+          {
+            "role": "system",
+            "content": "",
+            "timestamp": 2,
+            "toolsRemoved": [
+              {
+                "name": "drop"
+              }
+            ]
+          },
+          {
+            "role": "system",
+            "content": "extra",
+            "timestamp": 3,
+            "sections": {
+              "env": "prod",
+              "note": "n"
+            },
+            "toolsAdded": [
+              {
+                "name": "late",
+                "description": "late tool",
+                "parameters": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            ]
+          },
+          {
+            "role": "system",
+            "content": "",
+            "timestamp": 4,
+            "sections": {
+              "env": null,
+              "extra": "x"
+            }
+          }
+        ],
+        "additions"
+      ],
+      "result": {
+        "requestTools": [
+          {
+            "name": "a",
+            "description": "a tool",
+            "parameters": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          {
+            "name": "b",
+            "description": "b tool",
+            "parameters": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        ],
+        "foldedSystemMessages": 2
+      }
+    },
+    {
+      "name": "resolve-tools-changes",
+      "kind": "resolveTranscriptTools",
+      "args": [
+        [
+          {
+            "role": "system",
+            "content": "base",
+            "timestamp": 0,
+            "toolsAdded": [
+              {
+                "name": "a",
+                "description": "a tool",
+                "parameters": {
+                  "type": "object",
+                  "properties": {}
+                }
+              },
+              {
+                "name": "b",
+                "description": "b tool",
+                "parameters": {
+                  "type": "object",
+                  "properties": {}
+                }
+              },
+              {
+                "name": "drop",
+                "description": "drop tool",
+                "parameters": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            ]
+          },
+          {
+            "role": "user",
+            "content": "u1",
+            "timestamp": 1
+          },
+          {
+            "role": "system",
+            "content": "",
+            "timestamp": 2,
+            "toolsRemoved": [
+              {
+                "name": "drop"
+              }
+            ]
+          },
+          {
+            "role": "system",
+            "content": "extra",
+            "timestamp": 3,
+            "sections": {
+              "env": "prod",
+              "note": "n"
+            },
+            "toolsAdded": [
+              {
+                "name": "late",
+                "description": "late tool",
+                "parameters": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            ]
+          },
+          {
+            "role": "system",
+            "content": "",
+            "timestamp": 4,
+            "sections": {
+              "env": null,
+              "extra": "x"
+            }
+          }
+        ],
+        "changes"
+      ],
+      "result": {
+        "requestTools": [],
+        "foldedSystemMessages": 0
+      }
+    },
+    {
+      "name": "resolve-tools-additions-redeclare",
+      "kind": "resolveTranscriptTools",
+      "args": [
+        [
+          {
+            "role": "system",
+            "content": "",
+            "timestamp": 0,
+            "toolsAdded": [
+              {
+                "name": "r",
+                "description": "v1",
+                "parameters": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            ]
+          },
+          {
+            "role": "system",
+            "content": "",
+            "timestamp": 0,
+            "toolsAdded": [
+              {
+                "name": "r",
+                "description": "v2",
+                "parameters": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            ]
+          }
+        ],
+        "additions"
+      ],
+      "result": {
+        "requestTools": [
+          {
+            "name": "r",
+            "description": "v2",
+            "parameters": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        ],
+        "foldedSystemMessages": 2
+      }
+    }
+  ]
+}

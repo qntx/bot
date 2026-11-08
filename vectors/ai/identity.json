@@ -1,0 +1,352 @@
+{
+  "generator": {
+    "script": "scripts/parity/generate-transcript.ts",
+    "node": "v26.13.0",
+    "upstream": "@earendil-works/pi-ai@1.5.0"
+  },
+  "cases": [
+    {
+      "name": "ua-short",
+      "kind": "formatUserAgent",
+      "args": [
+        {
+          "userAgent": "short"
+        }
+      ],
+      "result": "pi"
+    },
+    {
+      "name": "ua-custom",
+      "kind": "formatUserAgent",
+      "args": [
+        {
+          "userAgent": {
+            "custom": "acme/1.0"
+          }
+        }
+      ],
+      "result": "acme/1.0"
+    },
+    {
+      "name": "ua-detailed-prefix",
+      "kind": "formatUserAgentPrefix",
+      "args": [
+        {
+          "version": "9.9.9"
+        }
+      ],
+      "result": "pi/9.9.9 ("
+    },
+    {
+      "name": "version-default",
+      "kind": "getClientVersion",
+      "args": [
+        null
+      ],
+      "result": "1.5.0"
+    },
+    {
+      "name": "version-override",
+      "kind": "getClientVersion",
+      "args": [
+        {
+          "version": "2.0"
+        }
+      ],
+      "result": "2.0"
+    },
+    {
+      "name": "merge-none",
+      "kind": "mergeClientIdentity",
+      "args": [
+        null,
+        null
+      ]
+    },
+    {
+      "name": "merge-fields",
+      "kind": "mergeClientIdentity",
+      "args": [
+        {
+          "attribution": {
+            "name": "pi",
+            "url": "https://pi.dev",
+            "categories": [
+              "cli-agent"
+            ]
+          },
+          "userAgent": "short"
+        },
+        {
+          "version": "1.0.0"
+        }
+      ],
+      "result": {
+        "userAgent": "short",
+        "attribution": {
+          "name": "pi",
+          "url": "https://pi.dev",
+          "categories": [
+            "cli-agent"
+          ]
+        },
+        "version": "1.0.0"
+      }
+    },
+    {
+      "name": "merge-null-attribution",
+      "kind": "mergeClientIdentity",
+      "args": [
+        {
+          "attribution": {
+            "name": "pi",
+            "url": "https://pi.dev",
+            "categories": [
+              "cli-agent"
+            ]
+          }
+        },
+        {
+          "attribution": null
+        }
+      ],
+      "result": {
+        "attribution": null
+      }
+    },
+    {
+      "name": "attr-none",
+      "kind": "getAttributionHeaders",
+      "args": [
+        {
+          "provider": "openrouter",
+          "baseUrl": "https://openrouter.ai/api/v1"
+        },
+        null
+      ],
+      "result": {}
+    },
+    {
+      "name": "attr-openrouter",
+      "kind": "getAttributionHeaders",
+      "args": [
+        {
+          "provider": "openrouter",
+          "baseUrl": "https://openrouter.ai/api/v1"
+        },
+        {
+          "attribution": {
+            "name": "pi",
+            "url": "https://pi.dev",
+            "categories": [
+              "cli-agent"
+            ]
+          }
+        }
+      ],
+      "result": {
+        "HTTP-Referer": "https://pi.dev",
+        "X-OpenRouter-Title": "pi",
+        "X-OpenRouter-Categories": "cli-agent"
+      }
+    },
+    {
+      "name": "attr-openrouter-custom",
+      "kind": "getAttributionHeaders",
+      "args": [
+        {
+          "provider": "custom",
+          "baseUrl": "not-a-url-openrouter.ai"
+        },
+        {
+          "attribution": {
+            "name": "pi",
+            "url": "https://pi.dev",
+            "categories": [
+              "cli-agent"
+            ]
+          }
+        }
+      ],
+      "result": {
+        "HTTP-Referer": "https://pi.dev",
+        "X-OpenRouter-Title": "pi",
+        "X-OpenRouter-Categories": "cli-agent"
+      }
+    },
+    {
+      "name": "attr-openrouter-no-categories",
+      "kind": "getAttributionHeaders",
+      "args": [
+        {
+          "provider": "openrouter",
+          "baseUrl": "https://openrouter.ai/api/v1"
+        },
+        {
+          "attribution": {
+            "name": "acme",
+            "url": "https://acme.example",
+            "categories": []
+          }
+        }
+      ],
+      "result": {
+        "HTTP-Referer": "https://acme.example",
+        "X-OpenRouter-Title": "acme"
+      }
+    },
+    {
+      "name": "attr-nvidia",
+      "kind": "getAttributionHeaders",
+      "args": [
+        {
+          "provider": "nvidia",
+          "baseUrl": "https://example.test/v1"
+        },
+        {
+          "attribution": {
+            "name": "pi",
+            "url": "https://pi.dev",
+            "categories": [
+              "cli-agent"
+            ]
+          }
+        }
+      ],
+      "result": {
+        "X-BILLING-INVOKE-ORIGIN": "Pi"
+      }
+    },
+    {
+      "name": "attr-nvidia-host",
+      "kind": "getAttributionHeaders",
+      "args": [
+        {
+          "provider": "custom-nim",
+          "baseUrl": "https://integrate.api.nvidia.com/v1"
+        },
+        {
+          "attribution": {
+            "name": "acme",
+            "url": "https://acme.example"
+          }
+        }
+      ],
+      "result": {
+        "X-BILLING-INVOKE-ORIGIN": "Acme"
+      }
+    },
+    {
+      "name": "attr-opencode",
+      "kind": "getAttributionHeaders",
+      "args": [
+        {
+          "provider": "opencode",
+          "baseUrl": "https://opencode.ai/zen/v1"
+        },
+        {
+          "attribution": {
+            "name": "pi",
+            "url": "https://pi.dev",
+            "categories": [
+              "cli-agent"
+            ]
+          }
+        }
+      ],
+      "result": {
+        "x-opencode-client": "pi"
+      }
+    },
+    {
+      "name": "attr-opencode-host",
+      "kind": "getAttributionHeaders",
+      "args": [
+        {
+          "provider": "custom",
+          "baseUrl": "https://opencode.ai/zen/v1"
+        },
+        {
+          "attribution": {
+            "name": "acme",
+            "url": "https://acme.example"
+          }
+        }
+      ],
+      "result": {
+        "x-opencode-client": "acme"
+      }
+    },
+    {
+      "name": "attr-gateway-none",
+      "kind": "getAttributionHeaders",
+      "args": [
+        {
+          "provider": "vercel-ai-gateway",
+          "baseUrl": "https://ai-gateway.vercel.sh/v1"
+        },
+        {
+          "attribution": {
+            "name": "pi",
+            "url": "https://pi.dev",
+            "categories": [
+              "cli-agent"
+            ]
+          }
+        }
+      ],
+      "result": {}
+    },
+    {
+      "name": "identity-headers",
+      "kind": "getIdentityHeaders",
+      "args": [
+        {
+          "provider": "openrouter",
+          "baseUrl": "https://openrouter.ai/api/v1"
+        },
+        {
+          "attribution": {
+            "name": "pi",
+            "url": "https://pi.dev",
+            "categories": [
+              "cli-agent"
+            ]
+          },
+          "userAgent": "short"
+        }
+      ],
+      "result": {
+        "User-Agent": "pi",
+        "HTTP-Referer": "https://pi.dev",
+        "X-OpenRouter-Title": "pi",
+        "X-OpenRouter-Categories": "cli-agent"
+      }
+    },
+    {
+      "name": "opencode-session",
+      "kind": "getOpenCodeSessionHeaders",
+      "args": [
+        {
+          "provider": "custom",
+          "baseUrl": "https://opencode.ai/zen/v1"
+        },
+        "session-1"
+      ],
+      "result": {
+        "x-opencode-session": "session-1"
+      }
+    },
+    {
+      "name": "opencode-session-none",
+      "kind": "getOpenCodeSessionHeaders",
+      "args": [
+        {
+          "provider": "openrouter",
+          "baseUrl": "https://openrouter.ai/api/v1"
+        },
+        "session-1"
+      ]
+    }
+  ]
+}

@@ -14,3 +14,4 @@ are the classes declared in `parity.json`.
   each file.
 - `vectors/**` is ignored by oxfmt; files are edited only by their
   generator.
+Generators may import functions the package does not export from the installed artifact's `dist/` via `scripts/parity/pi-internal.js` (vectors must be computed by upstream 1.5.0 code, not the `3rdparty/pi` checkout).

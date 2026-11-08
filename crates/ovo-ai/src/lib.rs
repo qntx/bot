@@ -5,6 +5,10 @@
 //! model catalogs) goes through, so the emitted bytes match `JSON.stringify`
 //! exactly.
 
+pub mod identity;
 pub mod json;
 pub mod stream;
+pub mod text;
+pub mod transcript;
+pub mod transform;
 pub mod types;
