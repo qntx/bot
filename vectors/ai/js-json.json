@@ -90,6 +90,21 @@
       "expected": "1.23e-18"
     },
     {
+      "name": "float-ulp-below-1e-4",
+      "input": "9.999999999999999e-05",
+      "expected": "0.00009999999999999999"
+    },
+    {
+      "name": "float-ulp-below-1e-4-dec",
+      "input": "0.00009999999999999999",
+      "expected": "0.00009999999999999999"
+    },
+    {
+      "name": "float-pi-digits",
+      "input": "3.141592653589793238462643383279",
+      "expected": "3.141592653589793"
+    },
+    {
       "name": "float-min-subnormal",
       "input": "5e-324",
       "expected": "5e-324"
