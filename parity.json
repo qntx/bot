@@ -28,6 +28,20 @@
       "vectors": ["vectors/ai/streaming-json.json"],
       "rust": ["crates/ovo-ai/tests/it/streaming_json.rs"],
       "classes": ["engine-error-text", "lone-surrogates"]
+    },
+    {
+      "id": "AI-STREAM-PROTOCOL",
+      "upstream": ["packages/ai/src/utils/event-stream.ts"],
+      "vectors": ["vectors/ai/stream.json"],
+      "rust": ["crates/ovo-ai/tests/it/stream.rs"],
+      "classes": ["key-order"]
+    },
+    {
+      "id": "AI-STREAM-DURATION",
+      "upstream": ["packages/ai/src/utils/event-stream.ts"],
+      "vectors": [],
+      "rust": ["crates/ovo-ai/src/stream/accumulator.rs"],
+      "classes": []
     }
   ],
   "classes": {

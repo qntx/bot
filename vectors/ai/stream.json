@@ -1,0 +1,1783 @@
+{
+  "generator": {
+    "script": "scripts/parity/generate-stream.ts",
+    "node": "v26.13.0",
+    "upstream": "@earendil-works/pi-ai@1.5.0"
+  },
+  "cases": [
+    {
+      "name": "text",
+      "ops": [
+        {
+          "op": "start"
+        },
+        {
+          "op": "text_start"
+        },
+        {
+          "op": "text_delta",
+          "delta": "he"
+        },
+        {
+          "op": "text_delta",
+          "delta": "llo"
+        },
+        {
+          "op": "text_end",
+          "block": {
+            "text": "hello"
+          }
+        },
+        {
+          "op": "done",
+          "reason": "stop"
+        }
+      ],
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "text_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "text_delta",
+          "contentIndex": 0,
+          "delta": "he"
+        },
+        {
+          "type": "text_delta",
+          "contentIndex": 0,
+          "delta": "llo"
+        },
+        {
+          "type": "text_end",
+          "contentIndex": 0,
+          "content": "hello"
+        },
+        {
+          "type": "done",
+          "reason": "stop",
+          "message": {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "text",
+                "text": "hello"
+              }
+            ],
+            "api": "anthropic-messages",
+            "provider": "anthropic",
+            "model": "m",
+            "usage": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "totalTokens": 0,
+              "cost": {
+                "input": 0,
+                "output": 0,
+                "cacheRead": 0,
+                "cacheWrite": 0,
+                "total": 0
+              }
+            },
+            "stopReason": "stop",
+            "timestamp": 0,
+            "durationMs": 0
+          }
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "hello"
+          }
+        ],
+        "api": "anthropic-messages",
+        "provider": "anthropic",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "stop",
+        "timestamp": 0
+      }
+    },
+    {
+      "name": "thinking-signature",
+      "ops": [
+        {
+          "op": "start"
+        },
+        {
+          "op": "thinking_start"
+        },
+        {
+          "op": "thinking_delta",
+          "delta": "let me"
+        },
+        {
+          "op": "thinking_delta",
+          "delta": " think"
+        },
+        {
+          "op": "thinking_end",
+          "block": {
+            "thinking": "let me think",
+            "thinkingSignature": "sig-1"
+          }
+        },
+        {
+          "op": "done",
+          "reason": "stop"
+        }
+      ],
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "thinking_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "thinking_delta",
+          "contentIndex": 0,
+          "delta": "let me"
+        },
+        {
+          "type": "thinking_delta",
+          "contentIndex": 0,
+          "delta": " think"
+        },
+        {
+          "type": "thinking_end",
+          "contentIndex": 0,
+          "content": "let me think"
+        },
+        {
+          "type": "done",
+          "reason": "stop",
+          "message": {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "thinking",
+                "thinking": "let me think",
+                "thinkingSignature": "sig-1"
+              }
+            ],
+            "api": "anthropic-messages",
+            "provider": "anthropic",
+            "model": "m",
+            "usage": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "totalTokens": 0,
+              "cost": {
+                "input": 0,
+                "output": 0,
+                "cacheRead": 0,
+                "cacheWrite": 0,
+                "total": 0
+              }
+            },
+            "stopReason": "stop",
+            "timestamp": 0,
+            "durationMs": 0
+          }
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "thinking",
+            "thinking": "let me think",
+            "thinkingSignature": "sig-1"
+          }
+        ],
+        "api": "anthropic-messages",
+        "provider": "anthropic",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "stop",
+        "timestamp": 0
+      }
+    },
+    {
+      "name": "toolcall-split-replace",
+      "ops": [
+        {
+          "op": "start"
+        },
+        {
+          "op": "toolcall_start",
+          "call": {
+            "type": "toolCall",
+            "id": "call-1",
+            "name": "write",
+            "arguments": {}
+          }
+        },
+        {
+          "op": "toolcall_delta",
+          "delta": "{\"path\":\"a"
+        },
+        {
+          "op": "toolcall_replace",
+          "text": "{\"path\":\"ab\",\"content\":\"x\\n\"}"
+        },
+        {
+          "op": "toolcall_end"
+        },
+        {
+          "op": "done",
+          "reason": "toolUse"
+        }
+      ],
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "toolcall_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "toolcall_delta",
+          "contentIndex": 0,
+          "delta": "{\"path\":\"a"
+        },
+        {
+          "type": "toolcall_delta",
+          "contentIndex": 0,
+          "delta": "b\",\"content\":\"x\\n\"}"
+        },
+        {
+          "type": "toolcall_end",
+          "contentIndex": 0,
+          "toolCall": {
+            "type": "toolCall",
+            "id": "call-1",
+            "name": "write",
+            "arguments": {
+              "path": "ab",
+              "content": "x\n"
+            }
+          }
+        },
+        {
+          "type": "done",
+          "reason": "toolUse",
+          "message": {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "toolCall",
+                "id": "call-1",
+                "name": "write",
+                "arguments": {
+                  "path": "ab",
+                  "content": "x\n"
+                }
+              }
+            ],
+            "api": "anthropic-messages",
+            "provider": "anthropic",
+            "model": "m",
+            "usage": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "totalTokens": 0,
+              "cost": {
+                "input": 0,
+                "output": 0,
+                "cacheRead": 0,
+                "cacheWrite": 0,
+                "total": 0
+              }
+            },
+            "stopReason": "toolUse",
+            "timestamp": 0,
+            "durationMs": 0
+          }
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "toolCall",
+            "id": "call-1",
+            "name": "write",
+            "arguments": {
+              "path": "ab",
+              "content": "x\n"
+            }
+          }
+        ],
+        "api": "anthropic-messages",
+        "provider": "anthropic",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "toolUse",
+        "timestamp": 0
+      }
+    },
+    {
+      "name": "metadata-then-done-length",
+      "ops": [
+        {
+          "op": "start"
+        },
+        {
+          "op": "metadata",
+          "field": "usage",
+          "value": {
+            "input": 10,
+            "output": 3,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 13,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          }
+        },
+        {
+          "op": "metadata",
+          "field": "responseId",
+          "value": "resp-1"
+        },
+        {
+          "op": "metadata",
+          "field": "responseModel",
+          "value": "m-actual"
+        },
+        {
+          "op": "text_start"
+        },
+        {
+          "op": "text_end",
+          "block": {
+            "text": "hi"
+          }
+        },
+        {
+          "op": "done",
+          "reason": "length"
+        }
+      ],
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "text_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "text_end",
+          "contentIndex": 0,
+          "content": "hi"
+        },
+        {
+          "type": "done",
+          "reason": "length",
+          "message": {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "text",
+                "text": "hi"
+              }
+            ],
+            "api": "anthropic-messages",
+            "provider": "anthropic",
+            "model": "m",
+            "usage": {
+              "input": 10,
+              "output": 3,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "totalTokens": 13,
+              "cost": {
+                "input": 0,
+                "output": 0,
+                "cacheRead": 0,
+                "cacheWrite": 0,
+                "total": 0
+              }
+            },
+            "stopReason": "length",
+            "timestamp": 0,
+            "responseId": "resp-1",
+            "responseModel": "m-actual",
+            "durationMs": 0
+          }
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "hi"
+          }
+        ],
+        "api": "anthropic-messages",
+        "provider": "anthropic",
+        "model": "m",
+        "usage": {
+          "input": 10,
+          "output": 3,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 13,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "length",
+        "timestamp": 0,
+        "responseId": "resp-1",
+        "responseModel": "m-actual"
+      }
+    },
+    {
+      "name": "done-deferred",
+      "ops": [
+        {
+          "op": "start"
+        },
+        {
+          "op": "metadata",
+          "field": "deferred",
+          "value": {
+            "provider": "anthropic",
+            "modelId": "m",
+            "api": "anthropic-messages",
+            "id": "h-1"
+          }
+        },
+        {
+          "op": "done",
+          "reason": "deferred"
+        }
+      ],
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "done",
+          "reason": "deferred",
+          "message": {
+            "role": "assistant",
+            "content": [],
+            "api": "anthropic-messages",
+            "provider": "anthropic",
+            "model": "m",
+            "usage": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "totalTokens": 0,
+              "cost": {
+                "input": 0,
+                "output": 0,
+                "cacheRead": 0,
+                "cacheWrite": 0,
+                "total": 0
+              }
+            },
+            "stopReason": "deferred",
+            "timestamp": 0,
+            "deferred": {
+              "provider": "anthropic",
+              "modelId": "m",
+              "api": "anthropic-messages",
+              "id": "h-1"
+            },
+            "durationMs": 0
+          }
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [],
+        "api": "anthropic-messages",
+        "provider": "anthropic",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "deferred",
+        "timestamp": 0,
+        "deferred": {
+          "provider": "anthropic",
+          "modelId": "m",
+          "api": "anthropic-messages",
+          "id": "h-1"
+        }
+      }
+    },
+    {
+      "name": "error-before-start",
+      "ops": [
+        {
+          "op": "error",
+          "reason": "error",
+          "errorMessage": "provider unavailable"
+        }
+      ],
+      "events": [
+        {
+          "type": "error",
+          "reason": "error",
+          "error": {
+            "role": "assistant",
+            "content": [],
+            "api": "anthropic-messages",
+            "provider": "anthropic",
+            "model": "m",
+            "usage": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "totalTokens": 0,
+              "cost": {
+                "input": 0,
+                "output": 0,
+                "cacheRead": 0,
+                "cacheWrite": 0,
+                "total": 0
+              }
+            },
+            "stopReason": "error",
+            "timestamp": 0,
+            "errorMessage": "provider unavailable",
+            "durationMs": 0
+          }
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [],
+        "api": "anthropic-messages",
+        "provider": "anthropic",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "timestamp": 0,
+        "errorMessage": "provider unavailable"
+      }
+    },
+    {
+      "name": "error-after-start",
+      "ops": [
+        {
+          "op": "start"
+        },
+        {
+          "op": "error",
+          "reason": "error",
+          "errorMessage": "stream reset"
+        }
+      ],
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "error",
+          "reason": "error",
+          "error": {
+            "role": "assistant",
+            "content": [],
+            "api": "anthropic-messages",
+            "provider": "anthropic",
+            "model": "m",
+            "usage": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "totalTokens": 0,
+              "cost": {
+                "input": 0,
+                "output": 0,
+                "cacheRead": 0,
+                "cacheWrite": 0,
+                "total": 0
+              }
+            },
+            "stopReason": "error",
+            "timestamp": 0,
+            "errorMessage": "stream reset",
+            "durationMs": 0
+          }
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [],
+        "api": "anthropic-messages",
+        "provider": "anthropic",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "timestamp": 0,
+        "errorMessage": "stream reset"
+      }
+    },
+    {
+      "name": "aborted",
+      "ops": [
+        {
+          "op": "start"
+        },
+        {
+          "op": "error",
+          "reason": "aborted",
+          "errorMessage": ""
+        }
+      ],
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "error",
+          "reason": "aborted",
+          "error": {
+            "role": "assistant",
+            "content": [],
+            "api": "anthropic-messages",
+            "provider": "anthropic",
+            "model": "m",
+            "usage": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "totalTokens": 0,
+              "cost": {
+                "input": 0,
+                "output": 0,
+                "cacheRead": 0,
+                "cacheWrite": 0,
+                "total": 0
+              }
+            },
+            "stopReason": "aborted",
+            "timestamp": 0,
+            "errorMessage": "",
+            "durationMs": 0
+          }
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [],
+        "api": "anthropic-messages",
+        "provider": "anthropic",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "aborted",
+        "timestamp": 0,
+        "errorMessage": ""
+      }
+    },
+    {
+      "name": "redacted-thinking",
+      "ops": [
+        {
+          "op": "start"
+        },
+        {
+          "op": "thinking_start"
+        },
+        {
+          "op": "thinking_end",
+          "block": {
+            "thinking": "",
+            "redacted": true,
+            "thinkingSignature": "rsig"
+          }
+        },
+        {
+          "op": "done",
+          "reason": "stop"
+        }
+      ],
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "thinking_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "thinking_end",
+          "contentIndex": 0,
+          "content": ""
+        },
+        {
+          "type": "done",
+          "reason": "stop",
+          "message": {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "thinking",
+                "thinking": "",
+                "redacted": true,
+                "thinkingSignature": "rsig"
+              }
+            ],
+            "api": "anthropic-messages",
+            "provider": "anthropic",
+            "model": "m",
+            "usage": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "totalTokens": 0,
+              "cost": {
+                "input": 0,
+                "output": 0,
+                "cacheRead": 0,
+                "cacheWrite": 0,
+                "total": 0
+              }
+            },
+            "stopReason": "stop",
+            "timestamp": 0,
+            "durationMs": 0
+          }
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "thinking",
+            "thinking": "",
+            "redacted": true,
+            "thinkingSignature": "rsig"
+          }
+        ],
+        "api": "anthropic-messages",
+        "provider": "anthropic",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "stop",
+        "timestamp": 0
+      }
+    },
+    {
+      "name": "text-signature",
+      "ops": [
+        {
+          "op": "start"
+        },
+        {
+          "op": "text_start"
+        },
+        {
+          "op": "text_delta",
+          "delta": "hi"
+        },
+        {
+          "op": "text_end",
+          "block": {
+            "text": "hi",
+            "textSignature": "tsig"
+          }
+        },
+        {
+          "op": "done",
+          "reason": "stop"
+        }
+      ],
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "text_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "text_delta",
+          "contentIndex": 0,
+          "delta": "hi"
+        },
+        {
+          "type": "text_end",
+          "contentIndex": 0,
+          "content": "hi"
+        },
+        {
+          "type": "done",
+          "reason": "stop",
+          "message": {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "text",
+                "text": "hi",
+                "textSignature": "tsig"
+              }
+            ],
+            "api": "anthropic-messages",
+            "provider": "anthropic",
+            "model": "m",
+            "usage": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "totalTokens": 0,
+              "cost": {
+                "input": 0,
+                "output": 0,
+                "cacheRead": 0,
+                "cacheWrite": 0,
+                "total": 0
+              }
+            },
+            "stopReason": "stop",
+            "timestamp": 0,
+            "durationMs": 0
+          }
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "hi",
+            "textSignature": "tsig"
+          }
+        ],
+        "api": "anthropic-messages",
+        "provider": "anthropic",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "stop",
+        "timestamp": 0
+      }
+    },
+    {
+      "name": "two-toolcalls",
+      "ops": [
+        {
+          "op": "start"
+        },
+        {
+          "op": "toolcall_start",
+          "call": {
+            "type": "toolCall",
+            "id": "c1",
+            "name": "read",
+            "arguments": {}
+          }
+        },
+        {
+          "op": "toolcall_start",
+          "call": {
+            "type": "toolCall",
+            "id": "c2",
+            "name": "write",
+            "arguments": {}
+          }
+        },
+        {
+          "op": "toolcall_delta",
+          "index": 0,
+          "delta": "{\"file\":\"a.txt\"}"
+        },
+        {
+          "op": "toolcall_delta",
+          "index": 1,
+          "delta": "{\"file\":\"b.txt\""
+        },
+        {
+          "op": "toolcall_delta",
+          "index": 1,
+          "delta": ",\"n\":1}"
+        },
+        {
+          "op": "toolcall_end",
+          "index": 0
+        },
+        {
+          "op": "toolcall_end",
+          "index": 1
+        },
+        {
+          "op": "done",
+          "reason": "toolUse"
+        }
+      ],
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "toolcall_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "toolcall_start",
+          "contentIndex": 1
+        },
+        {
+          "type": "toolcall_delta",
+          "contentIndex": 0,
+          "delta": "{\"file\":\"a.txt\"}"
+        },
+        {
+          "type": "toolcall_delta",
+          "contentIndex": 1,
+          "delta": "{\"file\":\"b.txt\""
+        },
+        {
+          "type": "toolcall_delta",
+          "contentIndex": 1,
+          "delta": ",\"n\":1}"
+        },
+        {
+          "type": "toolcall_end",
+          "contentIndex": 0,
+          "toolCall": {
+            "type": "toolCall",
+            "id": "c1",
+            "name": "read",
+            "arguments": {
+              "file": "a.txt"
+            }
+          }
+        },
+        {
+          "type": "toolcall_end",
+          "contentIndex": 1,
+          "toolCall": {
+            "type": "toolCall",
+            "id": "c2",
+            "name": "write",
+            "arguments": {
+              "file": "b.txt",
+              "n": 1
+            }
+          }
+        },
+        {
+          "type": "done",
+          "reason": "toolUse",
+          "message": {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "toolCall",
+                "id": "c1",
+                "name": "read",
+                "arguments": {
+                  "file": "a.txt"
+                }
+              },
+              {
+                "type": "toolCall",
+                "id": "c2",
+                "name": "write",
+                "arguments": {
+                  "file": "b.txt",
+                  "n": 1
+                }
+              }
+            ],
+            "api": "anthropic-messages",
+            "provider": "anthropic",
+            "model": "m",
+            "usage": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "totalTokens": 0,
+              "cost": {
+                "input": 0,
+                "output": 0,
+                "cacheRead": 0,
+                "cacheWrite": 0,
+                "total": 0
+              }
+            },
+            "stopReason": "toolUse",
+            "timestamp": 0,
+            "durationMs": 0
+          }
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "toolCall",
+            "id": "c1",
+            "name": "read",
+            "arguments": {
+              "file": "a.txt"
+            }
+          },
+          {
+            "type": "toolCall",
+            "id": "c2",
+            "name": "write",
+            "arguments": {
+              "file": "b.txt",
+              "n": 1
+            }
+          }
+        ],
+        "api": "anthropic-messages",
+        "provider": "anthropic",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "toolUse",
+        "timestamp": 0
+      }
+    },
+    {
+      "name": "toolcall-replace-restart",
+      "ops": [
+        {
+          "op": "start"
+        },
+        {
+          "op": "toolcall_start",
+          "call": {
+            "type": "toolCall",
+            "id": "call-9",
+            "name": "t",
+            "arguments": {}
+          }
+        },
+        {
+          "op": "toolcall_delta",
+          "delta": "{\"a\":1,"
+        },
+        {
+          "op": "toolcall_replace",
+          "text": "{\"b\":2}"
+        },
+        {
+          "op": "toolcall_end"
+        },
+        {
+          "op": "done",
+          "reason": "toolUse"
+        }
+      ],
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "toolcall_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "toolcall_delta",
+          "contentIndex": 0,
+          "delta": "{\"a\":1,"
+        },
+        {
+          "type": "toolcall_end",
+          "contentIndex": 0,
+          "toolCall": {
+            "type": "toolCall",
+            "id": "call-9",
+            "name": "t",
+            "arguments": {
+              "b": 2
+            }
+          }
+        },
+        {
+          "type": "done",
+          "reason": "toolUse",
+          "message": {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "toolCall",
+                "id": "call-9",
+                "name": "t",
+                "arguments": {
+                  "b": 2
+                }
+              }
+            ],
+            "api": "anthropic-messages",
+            "provider": "anthropic",
+            "model": "m",
+            "usage": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "totalTokens": 0,
+              "cost": {
+                "input": 0,
+                "output": 0,
+                "cacheRead": 0,
+                "cacheWrite": 0,
+                "total": 0
+              }
+            },
+            "stopReason": "toolUse",
+            "timestamp": 0,
+            "durationMs": 0
+          }
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "toolCall",
+            "id": "call-9",
+            "name": "t",
+            "arguments": {
+              "b": 2
+            }
+          }
+        ],
+        "api": "anthropic-messages",
+        "provider": "anthropic",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "toolUse",
+        "timestamp": 0
+      }
+    },
+    {
+      "name": "mixed-blocks",
+      "ops": [
+        {
+          "op": "start"
+        },
+        {
+          "op": "text_start"
+        },
+        {
+          "op": "text_delta",
+          "delta": "let me"
+        },
+        {
+          "op": "text_end",
+          "block": {
+            "text": "let me"
+          }
+        },
+        {
+          "op": "thinking_start"
+        },
+        {
+          "op": "thinking_delta",
+          "delta": "think"
+        },
+        {
+          "op": "thinking_end",
+          "block": {
+            "thinking": "think",
+            "thinkingSignature": "s"
+          }
+        },
+        {
+          "op": "toolcall_start",
+          "call": {
+            "type": "toolCall",
+            "id": "c3",
+            "name": "m",
+            "arguments": {}
+          }
+        },
+        {
+          "op": "toolcall_delta",
+          "delta": "{\"k\":true}"
+        },
+        {
+          "op": "toolcall_end"
+        },
+        {
+          "op": "done",
+          "reason": "toolUse"
+        }
+      ],
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "text_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "text_delta",
+          "contentIndex": 0,
+          "delta": "let me"
+        },
+        {
+          "type": "text_end",
+          "contentIndex": 0,
+          "content": "let me"
+        },
+        {
+          "type": "thinking_start",
+          "contentIndex": 1
+        },
+        {
+          "type": "thinking_delta",
+          "contentIndex": 1,
+          "delta": "think"
+        },
+        {
+          "type": "thinking_end",
+          "contentIndex": 1,
+          "content": "think"
+        },
+        {
+          "type": "toolcall_start",
+          "contentIndex": 2
+        },
+        {
+          "type": "toolcall_delta",
+          "contentIndex": 2,
+          "delta": "{\"k\":true}"
+        },
+        {
+          "type": "toolcall_end",
+          "contentIndex": 2,
+          "toolCall": {
+            "type": "toolCall",
+            "id": "c3",
+            "name": "m",
+            "arguments": {
+              "k": true
+            }
+          }
+        },
+        {
+          "type": "done",
+          "reason": "toolUse",
+          "message": {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "text",
+                "text": "let me"
+              },
+              {
+                "type": "thinking",
+                "thinking": "think",
+                "thinkingSignature": "s"
+              },
+              {
+                "type": "toolCall",
+                "id": "c3",
+                "name": "m",
+                "arguments": {
+                  "k": true
+                }
+              }
+            ],
+            "api": "anthropic-messages",
+            "provider": "anthropic",
+            "model": "m",
+            "usage": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "totalTokens": 0,
+              "cost": {
+                "input": 0,
+                "output": 0,
+                "cacheRead": 0,
+                "cacheWrite": 0,
+                "total": 0
+              }
+            },
+            "stopReason": "toolUse",
+            "timestamp": 0,
+            "durationMs": 0
+          }
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "let me"
+          },
+          {
+            "type": "thinking",
+            "thinking": "think",
+            "thinkingSignature": "s"
+          },
+          {
+            "type": "toolCall",
+            "id": "c3",
+            "name": "m",
+            "arguments": {
+              "k": true
+            }
+          }
+        ],
+        "api": "anthropic-messages",
+        "provider": "anthropic",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "toolUse",
+        "timestamp": 0
+      }
+    },
+    {
+      "name": "error-after-partial",
+      "ops": [
+        {
+          "op": "start"
+        },
+        {
+          "op": "text_start"
+        },
+        {
+          "op": "text_delta",
+          "delta": "partial out"
+        },
+        {
+          "op": "error",
+          "reason": "error",
+          "errorMessage": "stream reset"
+        }
+      ],
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "text_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "text_delta",
+          "contentIndex": 0,
+          "delta": "partial out"
+        },
+        {
+          "type": "error",
+          "reason": "error",
+          "error": {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "text",
+                "text": "partial out"
+              }
+            ],
+            "api": "anthropic-messages",
+            "provider": "anthropic",
+            "model": "m",
+            "usage": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "totalTokens": 0,
+              "cost": {
+                "input": 0,
+                "output": 0,
+                "cacheRead": 0,
+                "cacheWrite": 0,
+                "total": 0
+              }
+            },
+            "stopReason": "error",
+            "timestamp": 0,
+            "errorMessage": "stream reset",
+            "durationMs": 0
+          }
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "partial out"
+          }
+        ],
+        "api": "anthropic-messages",
+        "provider": "anthropic",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "timestamp": 0,
+        "errorMessage": "stream reset"
+      }
+    },
+    {
+      "name": "multiple-blocks",
+      "ops": [
+        {
+          "op": "start"
+        },
+        {
+          "op": "text_start"
+        },
+        {
+          "op": "toolcall_start",
+          "call": {
+            "type": "toolCall",
+            "id": "c2",
+            "name": "read",
+            "arguments": {}
+          }
+        },
+        {
+          "op": "text_delta",
+          "delta": "ok"
+        },
+        {
+          "op": "text_end",
+          "block": {
+            "text": "ok"
+          }
+        },
+        {
+          "op": "toolcall_delta",
+          "index": 1,
+          "delta": "{\"file\":\"f.txt\"}"
+        },
+        {
+          "op": "toolcall_end",
+          "index": 1
+        },
+        {
+          "op": "done",
+          "reason": "toolUse"
+        }
+      ],
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "text_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "toolcall_start",
+          "contentIndex": 1
+        },
+        {
+          "type": "text_delta",
+          "contentIndex": 0,
+          "delta": "ok"
+        },
+        {
+          "type": "text_end",
+          "contentIndex": 0,
+          "content": "ok"
+        },
+        {
+          "type": "toolcall_delta",
+          "contentIndex": 1,
+          "delta": "{\"file\":\"f.txt\"}"
+        },
+        {
+          "type": "toolcall_end",
+          "contentIndex": 1,
+          "toolCall": {
+            "type": "toolCall",
+            "id": "c2",
+            "name": "read",
+            "arguments": {
+              "file": "f.txt"
+            }
+          }
+        },
+        {
+          "type": "done",
+          "reason": "toolUse",
+          "message": {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "text",
+                "text": "ok"
+              },
+              {
+                "type": "toolCall",
+                "id": "c2",
+                "name": "read",
+                "arguments": {
+                  "file": "f.txt"
+                }
+              }
+            ],
+            "api": "anthropic-messages",
+            "provider": "anthropic",
+            "model": "m",
+            "usage": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "totalTokens": 0,
+              "cost": {
+                "input": 0,
+                "output": 0,
+                "cacheRead": 0,
+                "cacheWrite": 0,
+                "total": 0
+              }
+            },
+            "stopReason": "toolUse",
+            "timestamp": 0,
+            "durationMs": 0
+          }
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "ok"
+          },
+          {
+            "type": "toolCall",
+            "id": "c2",
+            "name": "read",
+            "arguments": {
+              "file": "f.txt"
+            }
+          }
+        ],
+        "api": "anthropic-messages",
+        "provider": "anthropic",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "toolUse",
+        "timestamp": 0
+      }
+    }
+  ]
+}
