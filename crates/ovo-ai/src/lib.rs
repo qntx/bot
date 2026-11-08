@@ -6,4 +6,5 @@
 //! exactly.
 
 pub mod json;
+pub mod stream;
 pub mod types;
