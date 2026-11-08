@@ -18,11 +18,22 @@
       "vectors": ["vectors/ai/types.json"],
       "rust": ["crates/ovo-ai/tests/it/types.rs"],
       "classes": ["key-order"]
+    },
+    {
+      "id": "AI-JSON-PARTIAL",
+      "upstream": [
+        "packages/ai/src/utils/streaming-json.ts",
+        "packages/ai/src/utils/json-parse.ts"
+      ],
+      "vectors": ["vectors/ai/streaming-json.json"],
+      "rust": ["crates/ovo-ai/tests/it/streaming_json.rs"],
+      "classes": ["engine-error-text", "lone-surrogates"]
     }
   ],
   "classes": {
     "lone-surrogates": "Lone surrogate escapes in parsed JSON become U+FFFD; upstream keeps them until sanitizeSurrogates.",
     "input-limits": "Numbers outside the f64 range and nesting deeper than 128 levels are rejected; JSON.parse accepts them.",
-    "key-order": "Session, RPC and config data are compared by value; object key order may differ where upstream order depends on assignment order."
+    "key-order": "Session, RPC and config data are compared by value; object key order may differ where upstream order depends on assignment order.",
+    "engine-error-text": "V8 JSON.parse error details are masked; the surrounding template is compared verbatim."
   }
 }

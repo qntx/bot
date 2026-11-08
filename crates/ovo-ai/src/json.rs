@@ -15,6 +15,8 @@
 //! strips them through `sanitizeSurrogates` before sending.
 
 mod formatter;
+pub mod repair;
+pub mod streaming;
 mod surrogates;
 
 use std::io;
