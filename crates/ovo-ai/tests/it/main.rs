@@ -6,5 +6,12 @@
     unused_crate_dependencies,
     reason = "test binaries only use part of the dependency set"
 )]
+#![allow(clippy::panic, reason = "integration tests fail by panicking")]
+#![allow(
+    clippy::tests_outside_test_module,
+    reason = "integration test files are test modules"
+)]
 
 mod json;
+mod support;
+mod types;

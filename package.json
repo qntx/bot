@@ -22,9 +22,10 @@
     "bundle": "bun run --cwd apps/desktop tauri build",
     "release": "bumpp",
     "prepare": "vp config",
-    "vectors": "node scripts/parity/generate-js-json.ts"
+    "vectors": "node scripts/parity/generate-js-json.ts && node scripts/parity/generate-types.ts"
   },
   "devDependencies": {
+    "@earendil-works/pi-ai": "1.5.0",
     "@qntx/oxfmt": "1.1.1",
     "@qntx/oxlint": "1.1.1",
     "@qntx/tsconfig": "1.0.1",

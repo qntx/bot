@@ -78,3 +78,15 @@ local-only design material and must never be committed.
 ## License
 
 Contributions are dual-licensed under MIT OR Apache-2.0.
+
+## Upstream reference checkout
+
+The design docs and parity tooling pin upstream pi at v1.5.0. For local
+auditing and the `check.ts --upstream` mode, keep a read-only checkout under
+`3rdparty/` (gitignored):
+
+```bash
+git clone --branch v1.5.0 https://github.com/earendil-works/pi 3rdparty/pi
+```
+
+It is a reference only: never build, install, or commit it.
