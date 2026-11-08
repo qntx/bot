@@ -40,6 +40,8 @@ const config: UserConfig = defineConfig({
       // tauri-specta bindings and generated Tauri schemas are byte-frozen.
       "**/*.gen.ts",
       "apps/desktop/src-tauri/gen/**",
+      // Byte-frozen parity vectors; edited only by their generators.
+      "vectors/**",
     ],
   },
   lint: merge(react, {

@@ -1,4 +1,4 @@
-exclude = ["node_modules/**", "target/**", "dist/**", "docs/**", "apps/desktop/src-tauri/gen/**"]
+exclude = ["node_modules/**", "target/**", "dist/**", "docs/**", "3rdparty/**", "apps/desktop/src-tauri/gen/**"]
 
 [formatting]
 align_entries        = true

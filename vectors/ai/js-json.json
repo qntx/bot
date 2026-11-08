@@ -1,0 +1,389 @@
+{
+  "generator": {
+    "script": "scripts/parity/generate-js-json.ts",
+    "node": "v26.13.0"
+  },
+  "cases": [
+    {
+      "name": "int-zero",
+      "input": "0",
+      "expected": "0"
+    },
+    {
+      "name": "int-neg-zero",
+      "input": "-0",
+      "expected": "0"
+    },
+    {
+      "name": "int-one",
+      "input": "1",
+      "expected": "1"
+    },
+    {
+      "name": "int-max-safe",
+      "input": "9007199254740991",
+      "expected": "9007199254740991"
+    },
+    {
+      "name": "int-over-safe",
+      "input": "9007199254740992",
+      "expected": "9007199254740992"
+    },
+    {
+      "name": "int-over-safe-plus-one",
+      "input": "9007199254740993",
+      "expected": "9007199254740992"
+    },
+    {
+      "name": "int-big",
+      "input": "12345678901234567890",
+      "expected": "12345678901234567000"
+    },
+    {
+      "name": "int-big-neg",
+      "input": "-12345678901234567890",
+      "expected": "-12345678901234567000"
+    },
+    {
+      "name": "int-u64-max",
+      "input": "18446744073709551615",
+      "expected": "18446744073709552000"
+    },
+    {
+      "name": "int-i64-min",
+      "input": "-9223372036854775808",
+      "expected": "-9223372036854776000"
+    },
+    {
+      "name": "float-one",
+      "input": "1.0",
+      "expected": "1"
+    },
+    {
+      "name": "float-neg-zero",
+      "input": "-0.0",
+      "expected": "0"
+    },
+    {
+      "name": "float-tenth",
+      "input": "0.1",
+      "expected": "0.1"
+    },
+    {
+      "name": "float-long",
+      "input": "0.30000000000000004",
+      "expected": "0.30000000000000004"
+    },
+    {
+      "name": "float-1e21",
+      "input": "1e21",
+      "expected": "1e+21"
+    },
+    {
+      "name": "float-1e-7",
+      "input": "1e-7",
+      "expected": "1e-7"
+    },
+    {
+      "name": "float-small-exp",
+      "input": "123e-20",
+      "expected": "1.23e-18"
+    },
+    {
+      "name": "float-min-subnormal",
+      "input": "5e-324",
+      "expected": "5e-324"
+    },
+    {
+      "name": "float-max",
+      "input": "1.7976931348623157e308",
+      "expected": "1.7976931348623157e+308"
+    },
+    {
+      "name": "float-exp-plus",
+      "input": "1e+21",
+      "expected": "1e+21"
+    },
+    {
+      "name": "float-trailing-zeros",
+      "input": "1.50000",
+      "expected": "1.5"
+    },
+    {
+      "name": "keys-index-basic",
+      "input": "{\"b\":1,\"2\":3,\"1\":4}",
+      "expected": "{\"1\":4,\"2\":3,\"b\":1}"
+    },
+    {
+      "name": "keys-index-zero",
+      "input": "{\"a\":1,\"0\":2}",
+      "expected": "{\"0\":2,\"a\":1}"
+    },
+    {
+      "name": "keys-index-ten",
+      "input": "{\"10\":1,\"2\":2,\"a\":3}",
+      "expected": "{\"2\":2,\"10\":1,\"a\":3}"
+    },
+    {
+      "name": "keys-index-max",
+      "input": "{\"x\":1,\"4294967294\":2}",
+      "expected": "{\"4294967294\":2,\"x\":1}"
+    },
+    {
+      "name": "keys-index-over",
+      "input": "{\"x\":1,\"4294967295\":2}",
+      "expected": "{\"x\":1,\"4294967295\":2}"
+    },
+    {
+      "name": "keys-index-over-plus",
+      "input": "{\"x\":1,\"4294967296\":2}",
+      "expected": "{\"x\":1,\"4294967296\":2}"
+    },
+    {
+      "name": "keys-leading-zero",
+      "input": "{\"01\":1,\"1\":2}",
+      "expected": "{\"1\":2,\"01\":1}"
+    },
+    {
+      "name": "keys-negative",
+      "input": "{\"-1\":1,\"1\":2}",
+      "expected": "{\"1\":2,\"-1\":1}"
+    },
+    {
+      "name": "keys-decimal",
+      "input": "{\"1.5\":1,\"1\":2}",
+      "expected": "{\"1\":2,\"1.5\":1}"
+    },
+    {
+      "name": "keys-empty",
+      "input": "{\"\":1,\"0\":2}",
+      "expected": "{\"0\":2,\"\":1}"
+    },
+    {
+      "name": "keys-index-then-string",
+      "input": "{\"5\":1,\"b\":2,\"2\":3,\"a\":4,\"1\":5}",
+      "expected": "{\"1\":5,\"2\":3,\"5\":1,\"b\":2,\"a\":4}"
+    },
+    {
+      "name": "keys-nested-object",
+      "input": "{\"a\":{\"b\":1,\"1\":2},\"2\":{\"z\":0,\"0\":9}}",
+      "expected": "{\"2\":{\"0\":9,\"z\":0},\"a\":{\"1\":2,\"b\":1}}"
+    },
+    {
+      "name": "keys-in-array",
+      "input": "[{\"b\":1,\"0\":5},{\"9\":1,\"a\":2}]",
+      "expected": "[{\"0\":5,\"b\":1},{\"9\":1,\"a\":2}]"
+    },
+    {
+      "name": "keys-deep-nest",
+      "input": "{\"0\":{\"1\":{\"10\":{\"2\":\"x\"},\"a\":1},\"b\":2},\"c\":3}",
+      "expected": "{\"0\":{\"1\":{\"10\":{\"2\":\"x\"},\"a\":1},\"b\":2},\"c\":3}"
+    },
+    {
+      "name": "keys-index-value-object",
+      "input": "{\"10\":{\"z\":1},\"2\":{\"a\":2},\"b\":3}",
+      "expected": "{\"2\":{\"a\":2},\"10\":{\"z\":1},\"b\":3}"
+    },
+    {
+      "name": "keys-duplicate",
+      "input": "{\"a\":1,\"b\":2,\"a\":3}",
+      "expected": "{\"a\":3,\"b\":2}"
+    },
+    {
+      "name": "keys-duplicate-index",
+      "input": "{\"2\":1,\"b\":2,\"2\":3}",
+      "expected": "{\"2\":3,\"b\":2}"
+    },
+    {
+      "name": "str-escapes",
+      "input": "\"\\b\\t\\n\\f\\r\\\"\\\\\\/\"",
+      "expected": "\"\\b\\t\\n\\f\\r\\\"\\\\/\""
+    },
+    {
+      "name": "str-control-escape",
+      "input": "\"\\u0000\\u001f\"",
+      "expected": "\"\\u0000\\u001f\""
+    },
+    {
+      "name": "str-control-all",
+      "input": "\"\\u0000\\u0001\\u0002\\u0003\\u0004\\u0005\\u0006\\u0007\\u0008\\u0009\\u000a\\u000b\\u000c\\u000d\\u000e\\u000f\\u0010\\u0011\\u0012\\u0013\\u0014\\u0015\\u0016\\u0017\\u0018\\u0019\\u001a\\u001b\\u001c\\u001d\\u001e\\u001f\"",
+      "expected": "\"\\u0000\\u0001\\u0002\\u0003\\u0004\\u0005\\u0006\\u0007\\b\\t\\n\\u000b\\f\\r\\u000e\\u000f\\u0010\\u0011\\u0012\\u0013\\u0014\\u0015\\u0016\\u0017\\u0018\\u0019\\u001a\\u001b\\u001c\\u001d\\u001e\\u001f\""
+    },
+    {
+      "name": "str-del",
+      "input": "\"\\u007f\"",
+      "expected": "\"\""
+    },
+    {
+      "name": "str-line-separators",
+      "input": "\"  \"",
+      "expected": "\"  \""
+    },
+    {
+      "name": "str-slash-escape",
+      "input": "\"a\\/b\"",
+      "expected": "\"a/b\""
+    },
+    {
+      "name": "str-non-ascii",
+      "input": "\"héllo wörld\"",
+      "expected": "\"héllo wörld\""
+    },
+    {
+      "name": "str-astral-raw",
+      "input": "\"𝄞😀\"",
+      "expected": "\"𝄞😀\""
+    },
+    {
+      "name": "str-astral-escaped",
+      "input": "\"\\ud834\\udd1e\"",
+      "expected": "\"𝄞\""
+    },
+    {
+      "name": "str-non-ascii-escaped",
+      "input": "\"\\u00e9\\u4e2d\"",
+      "expected": "\"é中\""
+    },
+    {
+      "name": "str-mixed",
+      "input": "[\"\\u0041A\\u0000\",{\"k\\u0022y\":\"v\\u005cv\"}]",
+      "expected": "[\"AA\\u0000\",{\"k\\\"y\":\"v\\\\v\"}]"
+    },
+    {
+      "name": "surrogate-lone-high",
+      "input": "\"\\ud800x\"",
+      "expected": "\"\\ud800x\"",
+      "classes": [
+        "lone-surrogates"
+      ]
+    },
+    {
+      "name": "surrogate-lone-low",
+      "input": "\"\\udc00\"",
+      "expected": "\"\\udc00\"",
+      "classes": [
+        "lone-surrogates"
+      ]
+    },
+    {
+      "name": "surrogate-high-then-text",
+      "input": "\"\\ud800\\n\"",
+      "expected": "\"\\ud800\\n\"",
+      "classes": [
+        "lone-surrogates"
+      ]
+    },
+    {
+      "name": "surrogate-two-highs",
+      "input": "\"\\ud800\\ud800\"",
+      "expected": "\"\\ud800\\ud800\"",
+      "classes": [
+        "lone-surrogates"
+      ]
+    },
+    {
+      "name": "surrogate-lone-then-pair",
+      "input": "\"\\ud800\\ud800\\udc00\"",
+      "expected": "\"\\ud800𐀀\"",
+      "classes": [
+        "lone-surrogates"
+      ]
+    },
+    {
+      "name": "surrogate-high-max",
+      "input": "\"\\udbff\"",
+      "expected": "\"\\udbff\"",
+      "classes": [
+        "lone-surrogates"
+      ]
+    },
+    {
+      "name": "surrogate-low-min",
+      "input": "\"\\udc00\\udc01\"",
+      "expected": "\"\\udc00\\udc01\"",
+      "classes": [
+        "lone-surrogates"
+      ]
+    },
+    {
+      "name": "surrogate-in-object",
+      "input": "{\"key\":\"a\\udfff\",\"n\":1}",
+      "expected": "{\"key\":\"a\\udfff\",\"n\":1}",
+      "classes": [
+        "lone-surrogates"
+      ]
+    },
+    {
+      "name": "surrogate-after-backslash",
+      "input": "\"\\\\ud800\"",
+      "expected": "\"\\\\ud800\""
+    },
+    {
+      "name": "struct-empty-object",
+      "input": "{}",
+      "expected": "{}"
+    },
+    {
+      "name": "struct-empty-array",
+      "input": "[]",
+      "expected": "[]"
+    },
+    {
+      "name": "struct-nested-empty",
+      "input": "{\"a\":[],\"b\":{}}",
+      "expected": "{\"a\":[],\"b\":{}}"
+    },
+    {
+      "name": "struct-whitespace",
+      "input": "  {\n\t\"a\" : [ 1 , 2 ]\r\n}  ",
+      "expected": "{\"a\":[1,2]}"
+    },
+    {
+      "name": "struct-literals",
+      "input": "[true,false,null]",
+      "expected": "[true,false,null]"
+    },
+    {
+      "name": "struct-string-doc",
+      "input": "\"hello\"",
+      "expected": "\"hello\""
+    },
+    {
+      "name": "struct-mixed",
+      "input": "{\"a\":[1,2.5,\"x\",{\"0\":\"i\",\"z\":\"s\"}],\"b\":null}",
+      "expected": "{\"a\":[1,2.5,\"x\",{\"0\":\"i\",\"z\":\"s\"}],\"b\":null}"
+    },
+    {
+      "name": "limit-inf-positive",
+      "input": "1e400",
+      "expected": "null",
+      "classes": [
+        "input-limits"
+      ]
+    },
+    {
+      "name": "limit-inf-negative",
+      "input": "-1e400",
+      "expected": "null",
+      "classes": [
+        "input-limits"
+      ]
+    },
+    {
+      "name": "limit-depth-129",
+      "input": "[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]",
+      "expected": "[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]",
+      "classes": [
+        "input-limits"
+      ]
+    },
+    {
+      "name": "limit-depth-200",
+      "input": "[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]",
+      "expected": "[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]",
+      "classes": [
+        "input-limits"
+      ]
+    }
+  ]
+}

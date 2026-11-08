@@ -1,0 +1,20 @@
+{
+  "upstream": {
+    "package": "@earendil-works/pi-coding-agent",
+    "version": "1.5.0",
+    "commit": "f9a26365568127461c47a07a37dcb42c140a3ac5"
+  },
+  "capabilities": [
+    {
+      "id": "AI-JSON-JS",
+      "upstream": ["packages/coding-agent/src/core/session-manager.ts"],
+      "vectors": ["vectors/ai/js-json.json"],
+      "rust": ["crates/ovo-ai/tests/it/json.rs"],
+      "classes": ["lone-surrogates", "input-limits"]
+    }
+  ],
+  "classes": {
+    "lone-surrogates": "Lone surrogate escapes in parsed JSON become U+FFFD; upstream keeps them until sanitizeSurrogates.",
+    "input-limits": "Numbers outside the f64 range and nesting deeper than 128 levels are rejected; JSON.parse accepts them."
+  }
+}
