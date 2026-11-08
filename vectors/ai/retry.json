@@ -1,0 +1,1315 @@
+{
+  "generator": {
+    "script": "scripts/parity/generate-ai-utils.ts",
+    "node": "v26.13.0",
+    "upstream": "@earendil-works/pi-ai@1.5.0"
+  },
+  "cases": [
+    {
+      "name": "retryable-openai-explicit",
+      "kind": "isRetryableAssistantError",
+      "args": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "ollama",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "timestamp": 1,
+        "errorMessage": "An error occurred while processing your request. You can retry your request, or contact us through our help center at help.openai.com if the error persists. Please include the request ID req_******** in your message."
+      },
+      "result": true
+    },
+    {
+      "name": "retryable-bedrock-explicit",
+      "kind": "isRetryableAssistantError",
+      "args": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "ollama",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "timestamp": 1,
+        "errorMessage": "{\"message\":\"The system encountered an unexpected error during processing. Try your request again.\"}"
+      },
+      "result": true
+    },
+    {
+      "name": "retryable-nvidia-nim",
+      "kind": "isRetryableAssistantError",
+      "args": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "ollama",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "timestamp": 1,
+        "errorMessage": "ResourceExhausted: Worker local total request limit reached (288/48)"
+      },
+      "result": true
+    },
+    {
+      "name": "retryable-bun-socket",
+      "kind": "isRetryableAssistantError",
+      "args": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "ollama",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "timestamp": 1,
+        "errorMessage": "The socket connection was closed unexpectedly. For more information, pass `verbose: true` in the second argument to fetch()"
+      },
+      "result": true
+    },
+    {
+      "name": "retryable-upstream-buffer",
+      "kind": "isRetryableAssistantError",
+      "args": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "ollama",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "timestamp": 1,
+        "errorMessage": "Error: exceeded request buffer limit while retrying upstream"
+      },
+      "result": true
+    },
+    {
+      "name": "retryable-dns-wrapped",
+      "kind": "isRetryableAssistantError",
+      "args": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "ollama",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "timestamp": 1,
+        "errorMessage": "The pending stream has been canceled (caused by: getaddrinfo ENOTFOUND bedrock-runtime.us-east-1.amazonaws.com)"
+      },
+      "result": true
+    },
+    {
+      "name": "retryable-dns-connect",
+      "kind": "isRetryableAssistantError",
+      "args": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "ollama",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "timestamp": 1,
+        "errorMessage": "connect ENOTFOUND api.example.com"
+      },
+      "result": true
+    },
+    {
+      "name": "retryable-dns-eai",
+      "kind": "isRetryableAssistantError",
+      "args": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "ollama",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "timestamp": 1,
+        "errorMessage": "EAI_AGAIN api.example.com"
+      },
+      "result": true
+    },
+    {
+      "name": "retryable-dns-lookup",
+      "kind": "isRetryableAssistantError",
+      "args": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "ollama",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "timestamp": 1,
+        "errorMessage": "getaddrinfo failed for api.example.com"
+      },
+      "result": true
+    },
+    {
+      "name": "retryable-pending-cancel",
+      "kind": "isRetryableAssistantError",
+      "args": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "ollama",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "timestamp": 1,
+        "errorMessage": "The pending stream has been canceled"
+      },
+      "result": true
+    },
+    {
+      "name": "retryable-pending-cancel-cause",
+      "kind": "isRetryableAssistantError",
+      "args": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "ollama",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "timestamp": 1,
+        "errorMessage": "The pending stream has been canceled (caused by: socket closed)"
+      },
+      "result": true
+    },
+    {
+      "name": "retryable-svc-unavail-10965",
+      "kind": "isRetryableAssistantError",
+      "args": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "ollama",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "timestamp": 1,
+        "errorMessage": "The service is temporarily unavailable. Please retry later."
+      },
+      "result": true
+    },
+    {
+      "name": "retryable-svc-unavail-bedrock",
+      "kind": "isRetryableAssistantError",
+      "args": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "ollama",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "timestamp": 1,
+        "errorMessage": "Service unavailable: The service is temporarily unavailable."
+      },
+      "result": true
+    },
+    {
+      "name": "retryable-node-fetch-reason",
+      "kind": "isRetryableAssistantError",
+      "args": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "ollama",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "timestamp": 1,
+        "errorMessage": "request to https://oauth2.googleapis.com/token failed, reason:"
+      },
+      "result": true
+    },
+    {
+      "name": "retryable-node-fetch-conn",
+      "kind": "isRetryableAssistantError",
+      "args": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "ollama",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "timestamp": 1,
+        "errorMessage": "request to https://oauth2.googleapis.com/token failed, reason: connect ECONNREFUSED 127.0.0.1:9"
+      },
+      "result": true
+    },
+    {
+      "name": "retryable-forward-upstream",
+      "kind": "isRetryableAssistantError",
+      "args": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "ollama",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "timestamp": 1,
+        "errorMessage": "unknown: Unable to forward upstream stream"
+      },
+      "result": true
+    },
+    {
+      "name": "retryable-upstream-req-fail",
+      "kind": "isRetryableAssistantError",
+      "args": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "ollama",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "timestamp": 1,
+        "errorMessage": "upstream_error: Upstream request failed"
+      },
+      "result": true
+    },
+    {
+      "name": "retryable-upstream-read",
+      "kind": "isRetryableAssistantError",
+      "args": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "ollama",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "timestamp": 1,
+        "errorMessage": "upstream_stream_read_error: Upstream response stream was interrupted"
+      },
+      "result": true
+    },
+    {
+      "name": "retryable-http2-stream",
+      "kind": "isRetryableAssistantError",
+      "args": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "ollama",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "timestamp": 1,
+        "errorMessage": "Upstream HTTP/2 stream failed"
+      },
+      "result": true
+    },
+    {
+      "name": "retryable-early-eof",
+      "kind": "isRetryableAssistantError",
+      "args": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "ollama",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "timestamp": 1,
+        "errorMessage": "OpenAI Responses stream ended before a terminal response event"
+      },
+      "result": true
+    },
+    {
+      "name": "retryable-azure-peak",
+      "kind": "isRetryableAssistantError",
+      "args": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "ollama",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "timestamp": 1,
+        "errorMessage": "The system is currently experiencing high demand and cannot process your request. Your request exceeds the maximum usage size allowed during peak load. For improved capacity reliability, consider switching to Provisioned Throughput."
+      },
+      "result": true
+    },
+    {
+      "name": "retryable-sub-sharing-usage",
+      "kind": "isRetryableAssistantError",
+      "args": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "ollama",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "timestamp": 1,
+        "errorMessage": "subscription_sharing_usage_unavailable: Usage cannot be checked."
+      },
+      "result": true
+    },
+    {
+      "name": "retryable-sub-sharing-user",
+      "kind": "isRetryableAssistantError",
+      "args": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "ollama",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "timestamp": 1,
+        "errorMessage": "subscription_sharing_user_unavailable: User cannot be loaded."
+      },
+      "result": true
+    },
+    {
+      "name": "retryable-overloaded",
+      "kind": "isRetryableAssistantError",
+      "args": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "ollama",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "timestamp": 1,
+        "errorMessage": "overloaded_error"
+      },
+      "result": true
+    },
+    {
+      "name": "retryable-520-bodyless",
+      "kind": "isRetryableAssistantError",
+      "args": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "ollama",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "timestamp": 1,
+        "errorMessage": "520 status code (no body)"
+      },
+      "result": true
+    },
+    {
+      "name": "retryable-524-bodyless",
+      "kind": "isRetryableAssistantError",
+      "args": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "ollama",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "timestamp": 1,
+        "errorMessage": "524 status code (no body)"
+      },
+      "result": true
+    },
+    {
+      "name": "retryable-429-bare",
+      "kind": "isRetryableAssistantError",
+      "args": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "ollama",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "timestamp": 1,
+        "errorMessage": "HTTP 429 too many requests"
+      },
+      "result": true
+    },
+    {
+      "name": "not-retryable-quota-429",
+      "kind": "isRetryableAssistantError",
+      "args": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "ollama",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "timestamp": 1,
+        "errorMessage": "429 quota exceeded"
+      },
+      "result": false
+    },
+    {
+      "name": "not-retryable-chatgpt-limit",
+      "kind": "isRetryableAssistantError",
+      "args": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "ollama",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "timestamp": 1,
+        "errorMessage": "OpenAI API error (429): {\"code\":\"subscription_sharing_usage_limit_exceeded\",\"message\":\"Usage limit reached.\"}"
+      },
+      "result": false
+    },
+    {
+      "name": "not-retryable-chatgpt-workspace",
+      "kind": "isRetryableAssistantError",
+      "args": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "ollama",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "timestamp": 1,
+        "errorMessage": "OpenAI API error (429): {\"code\":\"subscription_sharing_workplace_individual_usage_limit_exceeded\",\"message\":\"Usage limit reached.\"}"
+      },
+      "result": false
+    },
+    {
+      "name": "not-retryable-zai-1308",
+      "kind": "isRetryableAssistantError",
+      "args": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "ollama",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "timestamp": 1,
+        "errorMessage": "OpenAI API error (429): {\"code\":\"1308\",\"message\":\"Usage limit reached.\"}"
+      },
+      "result": false
+    },
+    {
+      "name": "not-retryable-go-usage-limit",
+      "kind": "isRetryableAssistantError",
+      "args": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "ollama",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "timestamp": 1,
+        "errorMessage": "{\"type\":\"error\",\"error\":{\"type\":\"GoUsageLimitError\",\"message\":\"x\"}}"
+      },
+      "result": false
+    },
+    {
+      "name": "not-retryable-free-usage-limit",
+      "kind": "isRetryableAssistantError",
+      "args": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "ollama",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "timestamp": 1,
+        "errorMessage": "{\"type\":\"error\",\"error\":{\"type\":\"FreeUsageLimitError\",\"message\":\"x\"}}"
+      },
+      "result": false
+    },
+    {
+      "name": "not-retryable-monthly-limit",
+      "kind": "isRetryableAssistantError",
+      "args": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "ollama",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "timestamp": 1,
+        "errorMessage": "Monthly usage limit reached. Please enable available balance"
+      },
+      "result": false
+    },
+    {
+      "name": "not-retryable-insufficient-quota",
+      "kind": "isRetryableAssistantError",
+      "args": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "ollama",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "timestamp": 1,
+        "errorMessage": "insufficient_quota"
+      },
+      "result": false
+    },
+    {
+      "name": "not-retryable-out-of-budget",
+      "kind": "isRetryableAssistantError",
+      "args": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "ollama",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "timestamp": 1,
+        "errorMessage": "out of budget"
+      },
+      "result": false
+    },
+    {
+      "name": "not-retryable-billing",
+      "kind": "isRetryableAssistantError",
+      "args": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "ollama",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "timestamp": 1,
+        "errorMessage": "billing required"
+      },
+      "result": false
+    },
+    {
+      "name": "not-retryable-401-id",
+      "kind": "isRetryableAssistantError",
+      "args": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "ollama",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "timestamp": 1,
+        "errorMessage": "401 {\"type\":\"error\",\"error\":{\"type\":\"authentication_error\",\"message\":\"invalid x-api-key\"},\"request_id\":\"req_011CU503xyz\"}"
+      },
+      "result": false
+    },
+    {
+      "name": "not-retryable-img-bytes",
+      "kind": "isRetryableAssistantError",
+      "args": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "ollama",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "timestamp": 1,
+        "errorMessage": "400 image exceeds 5 MB maximum: 5316784 bytes > 5242880 bytes"
+      },
+      "result": false
+    },
+    {
+      "name": "not-retryable-zai-1308-longer",
+      "kind": "isRetryableAssistantError",
+      "args": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "ollama",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "timestamp": 1,
+        "errorMessage": "{\"code\":\"13080\",\"message\":\"x\"}"
+      },
+      "result": false
+    },
+    {
+      "name": "not-error-stop",
+      "kind": "isRetryableAssistantError",
+      "args": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "test",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "stop",
+        "timestamp": 1
+      },
+      "result": false
+    },
+    {
+      "name": "error-no-message",
+      "kind": "isRetryableAssistantError",
+      "args": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "test",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "timestamp": 1
+      },
+      "result": false
+    },
+    {
+      "name": "delay-cap-default",
+      "kind": "retryDelayMs",
+      "args": [
+        {
+          "baseDelayMs": 2000
+        },
+        6
+      ],
+      "result": 60000
+    },
+    {
+      "name": "delay-cap-custom",
+      "kind": "retryDelayMs",
+      "args": [
+        {
+          "baseDelayMs": 2000,
+          "maxAgentDelayMs": 5000
+        },
+        5
+      ],
+      "result": 5000
+    },
+    {
+      "name": "delay-cap-zero",
+      "kind": "retryDelayMs",
+      "args": [
+        {
+          "baseDelayMs": 2000,
+          "maxAgentDelayMs": 0
+        },
+        5
+      ],
+      "result": 0
+    },
+    {
+      "name": "delay-attempt-1",
+      "kind": "retryDelayMs",
+      "args": [
+        {
+          "baseDelayMs": 2000
+        },
+        1
+      ],
+      "result": 2000
+    },
+    {
+      "name": "delay-attempt-2",
+      "kind": "retryDelayMs",
+      "args": [
+        {
+          "baseDelayMs": 2000
+        },
+        2
+      ],
+      "result": 4000
+    },
+    {
+      "name": "delay-attempt-3",
+      "kind": "retryDelayMs",
+      "args": [
+        {
+          "baseDelayMs": 2000
+        },
+        3
+      ],
+      "result": 8000
+    },
+    {
+      "name": "delay-attempt-0",
+      "kind": "retryDelayMs",
+      "args": [
+        {
+          "baseDelayMs": 2000
+        },
+        0
+      ],
+      "result": 2000
+    },
+    {
+      "name": "delay-huge-base",
+      "kind": "retryDelayMs",
+      "args": [
+        {
+          "baseDelayMs": 9007199254740000
+        },
+        60
+      ],
+      "result": 60000
+    }
+  ]
+}

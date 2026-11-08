@@ -1,0 +1,1279 @@
+{
+  "generator": {
+    "script": "scripts/parity/generate-ai-utils.ts",
+    "node": "v26.13.0",
+    "upstream": "@earendil-works/pi-ai@1.5.0"
+  },
+  "cases": [
+    {
+      "name": "overflow-copilot-413",
+      "kind": "isContextOverflow",
+      "args": [
+        {
+          "role": "assistant",
+          "content": [],
+          "api": "openai-completions",
+          "provider": "ollama",
+          "model": "m",
+          "usage": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "error",
+          "timestamp": 1,
+          "errorMessage": "github-copilot API error (413): {\"message\":\"failed to parse request\",\"code\":\"\"}"
+        },
+        1000000
+      ],
+      "result": true
+    },
+    {
+      "name": "overflow-copilot-413-nocw",
+      "kind": "isContextOverflow",
+      "args": [
+        {
+          "role": "assistant",
+          "content": [],
+          "api": "openai-completions",
+          "provider": "github-copilot",
+          "model": "m",
+          "usage": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "error",
+          "timestamp": 1,
+          "errorMessage": "github-copilot API error (413): {\"message\":\"failed to parse request\",\"code\":\"\"}"
+        },
+        null
+      ],
+      "result": true
+    },
+    {
+      "name": "overflow-provider-413",
+      "kind": "isContextOverflow",
+      "args": [
+        {
+          "role": "assistant",
+          "content": [],
+          "api": "openai-completions",
+          "provider": "ollama",
+          "model": "m",
+          "usage": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "error",
+          "timestamp": 1,
+          "errorMessage": "custom-provider API error (413): Payload Too Large"
+        },
+        null
+      ],
+      "result": true
+    },
+    {
+      "name": "overflow-bare-413",
+      "kind": "isContextOverflow",
+      "args": [
+        {
+          "role": "assistant",
+          "content": [],
+          "api": "openai-completions",
+          "provider": "ollama",
+          "model": "m",
+          "usage": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "error",
+          "timestamp": 1,
+          "errorMessage": "413 {\"error\":{\"message\":\"failed to parse request\",\"code\":\"\"}}"
+        },
+        null
+      ],
+      "result": true
+    },
+    {
+      "name": "overflow-413-eos",
+      "kind": "isContextOverflow",
+      "args": [
+        {
+          "role": "assistant",
+          "content": [],
+          "api": "openai-completions",
+          "provider": "ollama",
+          "model": "m",
+          "usage": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "error",
+          "timestamp": 1,
+          "errorMessage": "413"
+        },
+        null
+      ],
+      "result": true
+    },
+    {
+      "name": "overflow-400-not-413",
+      "kind": "isContextOverflow",
+      "args": [
+        {
+          "role": "assistant",
+          "content": [],
+          "api": "openai-completions",
+          "provider": "ollama",
+          "model": "m",
+          "usage": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "error",
+          "timestamp": 1,
+          "errorMessage": "github-copilot API error (400): {\"message\":\"failed to parse request\",\"code\":\"\"}"
+        },
+        null
+      ],
+      "result": false
+    },
+    {
+      "name": "overflow-429-too-many",
+      "kind": "isContextOverflow",
+      "args": [
+        {
+          "role": "assistant",
+          "content": [],
+          "api": "openai-completions",
+          "provider": "ollama",
+          "model": "m",
+          "usage": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "error",
+          "timestamp": 1,
+          "errorMessage": "custom-provider API error (429): Too many requests"
+        },
+        null
+      ],
+      "result": false
+    },
+    {
+      "name": "overflow-413-in-body",
+      "kind": "isContextOverflow",
+      "args": [
+        {
+          "role": "assistant",
+          "content": [],
+          "api": "openai-completions",
+          "provider": "ollama",
+          "model": "m",
+          "usage": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "error",
+          "timestamp": 1,
+          "errorMessage": "github-copilot API error (400): {\"message\":\"failed to parse request: invalid value 413\"}"
+        },
+        null
+      ],
+      "result": false
+    },
+    {
+      "name": "overflow-413-mid",
+      "kind": "isContextOverflow",
+      "args": [
+        {
+          "role": "assistant",
+          "content": [],
+          "api": "openai-completions",
+          "provider": "ollama",
+          "model": "m",
+          "usage": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "error",
+          "timestamp": 1,
+          "errorMessage": "custom-provider API error (400): upstream mentioned OpenAI API error (413): invalid input"
+        },
+        null
+      ],
+      "result": false
+    },
+    {
+      "name": "overflow-4130",
+      "kind": "isContextOverflow",
+      "args": [
+        {
+          "role": "assistant",
+          "content": [],
+          "api": "openai-completions",
+          "provider": "ollama",
+          "model": "m",
+          "usage": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "error",
+          "timestamp": 1,
+          "errorMessage": "custom-provider API error (4130): invalid input"
+        },
+        null
+      ],
+      "result": false
+    },
+    {
+      "name": "overflow-4130-bare",
+      "kind": "isContextOverflow",
+      "args": [
+        {
+          "role": "assistant",
+          "content": [],
+          "api": "openai-completions",
+          "provider": "ollama",
+          "model": "m",
+          "usage": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "error",
+          "timestamp": 1,
+          "errorMessage": "4130 failed to parse request"
+        },
+        null
+      ],
+      "result": false
+    },
+    {
+      "name": "overflow-413-stop-not-error",
+      "kind": "isContextOverflow",
+      "args": [
+        {
+          "role": "assistant",
+          "content": [],
+          "api": "openai-completions",
+          "provider": "openai",
+          "model": "m",
+          "usage": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "stop",
+          "timestamp": 1,
+          "errorMessage": "OpenAI API error (413): {\"message\":\"failed to parse request\"}"
+        },
+        null
+      ],
+      "result": false
+    },
+    {
+      "name": "overflow-413-aborted",
+      "kind": "isContextOverflow",
+      "args": [
+        {
+          "role": "assistant",
+          "content": [],
+          "api": "openai-completions",
+          "provider": "openai",
+          "model": "m",
+          "usage": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "aborted",
+          "timestamp": 1,
+          "errorMessage": "OpenAI API error (413): {\"message\":\"failed to parse request\"}"
+        },
+        null
+      ],
+      "result": false
+    },
+    {
+      "name": "overflow-ollama-long",
+      "kind": "isContextOverflow",
+      "args": [
+        {
+          "role": "assistant",
+          "content": [],
+          "api": "openai-completions",
+          "provider": "ollama",
+          "model": "m",
+          "usage": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "error",
+          "timestamp": 1,
+          "errorMessage": "400 `prompt too long; exceeded max context length by 100918 tokens`"
+        },
+        32768
+      ],
+      "result": true
+    },
+    {
+      "name": "overflow-zai-1261",
+      "kind": "isContextOverflow",
+      "args": [
+        {
+          "role": "assistant",
+          "content": [],
+          "api": "openai-completions",
+          "provider": "zai",
+          "model": "m",
+          "usage": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "error",
+          "timestamp": 1,
+          "errorMessage": "400 {\"code\":\"1261\",\"message\":\"Prompt too long\"}"
+        },
+        1048576
+      ],
+      "result": true
+    },
+    {
+      "name": "overflow-zai-cn",
+      "kind": "isContextOverflow",
+      "args": [
+        {
+          "role": "assistant",
+          "content": [],
+          "api": "openai-completions",
+          "provider": "zai",
+          "model": "m",
+          "usage": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "error",
+          "timestamp": 1,
+          "errorMessage": "400 {\"code\":\"1261\",\"message\":\"Prompt exceeds max length\"}"
+        },
+        1048576
+      ],
+      "result": true
+    },
+    {
+      "name": "overflow-together",
+      "kind": "isContextOverflow",
+      "args": [
+        {
+          "role": "assistant",
+          "content": [],
+          "api": "openai-completions",
+          "provider": "ollama",
+          "model": "m",
+          "usage": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "error",
+          "timestamp": 1,
+          "errorMessage": "400 The input (516368 tokens) is longer than the model's context length (262144 tokens)."
+        },
+        262144
+      ],
+      "result": true
+    },
+    {
+      "name": "overflow-litellm",
+      "kind": "isContextOverflow",
+      "args": [
+        {
+          "role": "assistant",
+          "content": [],
+          "api": "openai-completions",
+          "provider": "ollama",
+          "model": "m",
+          "usage": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "error",
+          "timestamp": 1,
+          "errorMessage": "Error: 503 litellm.ServiceUnavailableError: litellm.MidStreamFallbackError: litellm.APIConnectionError: APIConnectionError: OpenAIException - Requested token count exceeds the model's maximum context length of 131072 tokens."
+        },
+        131072
+      ],
+      "result": true
+    },
+    {
+      "name": "overflow-litellm-precall",
+      "kind": "isContextOverflow",
+      "args": [
+        {
+          "role": "assistant",
+          "content": [],
+          "api": "openai-completions",
+          "provider": "ollama",
+          "model": "m",
+          "usage": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "error",
+          "timestamp": 1,
+          "errorMessage": "400: {\"message\":\"litellm.ContextWindowExceededError: litellm.BadRequestError: litellm._pre_call_checks: Context Window exceeded for given call. No models have context window large enough for this call.\\nModel=Qwen3.8-Flash-Next, Max Input Tokens=262144, Got=265262\\nmodel=Qwen3.8-Flash-Next. context_window_fallbacks=None. fallbacks=[].\"}"
+        },
+        262144
+      ],
+      "result": true
+    },
+    {
+      "name": "overflow-paren-context",
+      "kind": "isContextOverflow",
+      "args": [
+        {
+          "role": "assistant",
+          "content": [],
+          "api": "openai-completions",
+          "provider": "ollama",
+          "model": "m",
+          "usage": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "error",
+          "timestamp": 1,
+          "errorMessage": "Error: 400 Input length (265330) exceeds model's maximum context length (262144)."
+        },
+        262144
+      ],
+      "result": true
+    },
+    {
+      "name": "overflow-poolside",
+      "kind": "isContextOverflow",
+      "args": [
+        {
+          "role": "assistant",
+          "content": [],
+          "api": "openai-completions",
+          "provider": "ollama",
+          "model": "m",
+          "usage": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "error",
+          "timestamp": 1,
+          "errorMessage": "Provider returned error: Input length 131393 exceeds the maximum allowed input length of 131040 tokens."
+        },
+        131072
+      ],
+      "result": true
+    },
+    {
+      "name": "overflow-ds4",
+      "kind": "isContextOverflow",
+      "args": [
+        {
+          "role": "assistant",
+          "content": [],
+          "api": "openai-completions",
+          "provider": "ollama",
+          "model": "m",
+          "usage": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "error",
+          "timestamp": 1,
+          "errorMessage": "400 Prompt has 256468 tokens, but the configured context size is 256000 tokens"
+        },
+        256000
+      ],
+      "result": true
+    },
+    {
+      "name": "overflow-ds4-comma",
+      "kind": "isContextOverflow",
+      "args": [
+        {
+          "role": "assistant",
+          "content": [],
+          "api": "openai-completions",
+          "provider": "ollama",
+          "model": "m",
+          "usage": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "error",
+          "timestamp": 1,
+          "errorMessage": "Prompt has 5,958,968 tokens, but the configured context size is 256,000 tokens"
+        },
+        256000
+      ],
+      "result": true
+    },
+    {
+      "name": "overflow-ollama-not",
+      "kind": "isContextOverflow",
+      "args": [
+        {
+          "role": "assistant",
+          "content": [],
+          "api": "openai-completions",
+          "provider": "ollama",
+          "model": "m",
+          "usage": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "error",
+          "timestamp": 1,
+          "errorMessage": "500 `model runner crashed unexpectedly`"
+        },
+        32768
+      ],
+      "result": false
+    },
+    {
+      "name": "overflow-cerebras-400",
+      "kind": "isContextOverflow",
+      "args": [
+        {
+          "role": "assistant",
+          "content": [],
+          "api": "openai-completions",
+          "provider": "cerebras",
+          "model": "m",
+          "usage": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "error",
+          "timestamp": 1,
+          "errorMessage": "400 status code (no body)"
+        },
+        131072
+      ],
+      "result": true
+    },
+    {
+      "name": "overflow-cerebras-other",
+      "kind": "isContextOverflow",
+      "args": [
+        {
+          "role": "assistant",
+          "content": [],
+          "api": "openai-completions",
+          "provider": "opencode-go",
+          "model": "m",
+          "usage": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "error",
+          "timestamp": 1,
+          "errorMessage": "400 status code (no body)"
+        },
+        1000000
+      ],
+      "result": false
+    },
+    {
+      "name": "overflow-bedrock-throttle",
+      "kind": "isContextOverflow",
+      "args": [
+        {
+          "role": "assistant",
+          "content": [],
+          "api": "openai-completions",
+          "provider": "ollama",
+          "model": "m",
+          "usage": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "error",
+          "timestamp": 1,
+          "errorMessage": "Throttling error: Too many tokens, please wait before trying again."
+        },
+        200000
+      ],
+      "result": false
+    },
+    {
+      "name": "overflow-bedrock-unavail",
+      "kind": "isContextOverflow",
+      "args": [
+        {
+          "role": "assistant",
+          "content": [],
+          "api": "openai-completions",
+          "provider": "ollama",
+          "model": "m",
+          "usage": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "error",
+          "timestamp": 1,
+          "errorMessage": "Service unavailable: The service is temporarily unavailable."
+        },
+        200000
+      ],
+      "result": false
+    },
+    {
+      "name": "overflow-rate-limit",
+      "kind": "isContextOverflow",
+      "args": [
+        {
+          "role": "assistant",
+          "content": [],
+          "api": "openai-completions",
+          "provider": "ollama",
+          "model": "m",
+          "usage": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "error",
+          "timestamp": 1,
+          "errorMessage": "Rate limit exceeded, please retry after 30 seconds."
+        },
+        200000
+      ],
+      "result": false
+    },
+    {
+      "name": "overflow-too-many-req",
+      "kind": "isContextOverflow",
+      "args": [
+        {
+          "role": "assistant",
+          "content": [],
+          "api": "openai-completions",
+          "provider": "ollama",
+          "model": "m",
+          "usage": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "error",
+          "timestamp": 1,
+          "errorMessage": "Too many requests. Please slow down."
+        },
+        200000
+      ],
+      "result": false
+    },
+    {
+      "name": "overflow-zai-silent",
+      "kind": "isContextOverflow",
+      "args": [
+        {
+          "role": "assistant",
+          "content": [],
+          "api": "openai-completions",
+          "provider": "zai",
+          "model": "m",
+          "usage": {
+            "input": 1048600,
+            "output": 0,
+            "cacheRead": 100,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "stop",
+          "timestamp": 1
+        },
+        1048576
+      ],
+      "result": true
+    },
+    {
+      "name": "overflow-zai-silent-under",
+      "kind": "isContextOverflow",
+      "args": [
+        {
+          "role": "assistant",
+          "content": [],
+          "api": "openai-completions",
+          "provider": "zai",
+          "model": "m",
+          "usage": {
+            "input": 100,
+            "output": 0,
+            "cacheRead": 10,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "stop",
+          "timestamp": 1
+        },
+        1048576
+      ],
+      "result": false
+    },
+    {
+      "name": "overflow-xiaomi-length",
+      "kind": "isContextOverflow",
+      "args": [
+        {
+          "role": "assistant",
+          "content": [],
+          "api": "openai-completions",
+          "provider": "xiaomi",
+          "model": "mimo",
+          "usage": {
+            "input": 58,
+            "output": 0,
+            "cacheRead": 1048512,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "length",
+          "timestamp": 1
+        },
+        1048576
+      ],
+      "result": true
+    },
+    {
+      "name": "overflow-length-normal",
+      "kind": "isContextOverflow",
+      "args": [
+        {
+          "role": "assistant",
+          "content": [],
+          "api": "openai-completions",
+          "provider": "test",
+          "model": "m",
+          "usage": {
+            "input": 1000,
+            "output": 4096,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "length",
+          "timestamp": 1
+        },
+        200000
+      ],
+      "result": false
+    },
+    {
+      "name": "overflow-length-zero-under",
+      "kind": "isContextOverflow",
+      "args": [
+        {
+          "role": "assistant",
+          "content": [],
+          "api": "openai-completions",
+          "provider": "test",
+          "model": "m",
+          "usage": {
+            "input": 100,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "length",
+          "timestamp": 1
+        },
+        200000
+      ],
+      "result": false
+    },
+    {
+      "name": "length-recoverable-below",
+      "kind": "isRecoverableLength",
+      "args": [
+        {
+          "role": "assistant",
+          "content": [],
+          "api": "openai-completions",
+          "provider": "test",
+          "model": "m",
+          "usage": {
+            "input": 3,
+            "output": 16,
+            "cacheRead": 253584,
+            "cacheWrite": 25554,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "length",
+          "timestamp": 1
+        },
+        128000
+      ],
+      "result": true
+    },
+    {
+      "name": "length-recoverable-at-limit",
+      "kind": "isRecoverableLength",
+      "args": [
+        {
+          "role": "assistant",
+          "content": [],
+          "api": "openai-completions",
+          "provider": "test",
+          "model": "m",
+          "usage": {
+            "input": 4062,
+            "output": 1024,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "length",
+          "timestamp": 1
+        },
+        1024
+      ],
+      "result": false
+    },
+    {
+      "name": "length-recoverable-zero",
+      "kind": "isRecoverableLength",
+      "args": [
+        {
+          "role": "assistant",
+          "content": [],
+          "api": "openai-completions",
+          "provider": "test",
+          "model": "m",
+          "usage": {
+            "input": 100,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "length",
+          "timestamp": 1
+        },
+        128000
+      ],
+      "result": true
+    },
+    {
+      "name": "length-recoverable-stop",
+      "kind": "isRecoverableLength",
+      "args": [
+        {
+          "role": "assistant",
+          "content": [],
+          "api": "openai-completions",
+          "provider": "test",
+          "model": "m",
+          "usage": {
+            "input": 10,
+            "output": 5,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "stop",
+          "timestamp": 1
+        },
+        100
+      ],
+      "result": false
+    },
+    {
+      "name": "length-recoverable-zero-desired",
+      "kind": "isRecoverableLength",
+      "args": [
+        {
+          "role": "assistant",
+          "content": [],
+          "api": "openai-completions",
+          "provider": "test",
+          "model": "m",
+          "usage": {
+            "input": 100,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "length",
+          "timestamp": 1
+        },
+        0
+      ],
+      "result": false
+    }
+  ]
+}

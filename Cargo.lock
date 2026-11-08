@@ -2172,6 +2172,7 @@ version = "0.10.0"
 dependencies = [
  "futures",
  "proptest",
+ "regex",
  "ryu-js",
  "serde",
  "serde_json",

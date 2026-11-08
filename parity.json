@@ -70,6 +70,41 @@
       "vectors": ["vectors/ai/identity.json"],
       "rust": ["crates/ovo-ai/tests/it/transcript.rs"],
       "classes": []
+    },
+    {
+      "id": "AI-ESTIMATE",
+      "upstream": ["packages/ai/src/utils/estimate.ts"],
+      "vectors": ["vectors/ai/estimate.json"],
+      "rust": ["crates/ovo-ai/tests/it/ai_utils.rs"],
+      "classes": []
+    },
+    {
+      "id": "AI-OVERFLOW",
+      "upstream": ["packages/ai/src/utils/overflow.ts"],
+      "vectors": ["vectors/ai/overflow.json"],
+      "rust": ["crates/ovo-ai/tests/it/ai_utils.rs"],
+      "classes": []
+    },
+    {
+      "id": "AI-RETRY-POLICY",
+      "upstream": ["packages/ai/src/utils/retry.ts"],
+      "vectors": ["vectors/ai/retry.json"],
+      "rust": ["crates/ovo-ai/tests/it/ai_utils.rs"],
+      "classes": []
+    },
+    {
+      "id": "AI-COST",
+      "upstream": ["packages/ai/src/models.ts"],
+      "vectors": ["vectors/ai/cost.json"],
+      "rust": ["crates/ovo-ai/tests/it/ai_utils.rs"],
+      "classes": []
+    },
+    {
+      "id": "AI-SIMPLE-OPTIONS",
+      "upstream": ["packages/ai/src/api/simple-options.ts"],
+      "vectors": ["vectors/ai/simple-options.json"],
+      "rust": ["crates/ovo-ai/tests/it/ai_utils.rs"],
+      "classes": []
     }
   ],
   "classes": {

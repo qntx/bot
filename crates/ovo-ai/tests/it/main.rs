@@ -8,10 +8,18 @@
 )]
 #![allow(clippy::panic, reason = "integration tests fail by panicking")]
 #![allow(
+    clippy::indexing_slicing,
+    clippy::cast_possible_truncation,
+    clippy::cast_precision_loss,
+    clippy::unnecessary_cast,
+    reason = "vector replays index fixed-shape case tables"
+)]
+#![allow(
     clippy::tests_outside_test_module,
     reason = "integration test files are test modules"
 )]
 
+mod ai_utils;
 mod json;
 mod stream;
 mod streaming_json;

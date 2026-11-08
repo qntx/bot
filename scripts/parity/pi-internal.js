@@ -9,3 +9,19 @@ export {
 } from "../../node_modules/@earendil-works/pi-ai/dist/api/transform-messages.js";
 export { sanitizeSurrogates } from "../../node_modules/@earendil-works/pi-ai/dist/utils/sanitize-unicode.js";
 export { ownedSlice } from "../../node_modules/@earendil-works/pi-ai/dist/utils/text.js";
+export {
+  calculateContextTokens,
+  estimateContextTokens,
+  estimateMessageTokens,
+  estimateTextAndImageContentTokens,
+  estimateTextTokens,
+} from "../../node_modules/@earendil-works/pi-ai/dist/utils/estimate.js";
+export {
+  adjustMaxTokensForThinking,
+  clampMaxTokensToContext,
+  clampReasoning,
+  clampThinkingBudgetToAnswerRoom,
+  resolveSamplingParams,
+  thinkingBudgetForLevel,
+  DEFAULT_THINKING_BUDGETS,
+} from "../../node_modules/@earendil-works/pi-ai/dist/api/simple-options.js";

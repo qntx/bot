@@ -1,0 +1,722 @@
+{
+  "generator": {
+    "script": "scripts/parity/generate-ai-utils.ts",
+    "node": "v26.13.0",
+    "upstream": "@earendil-works/pi-ai@1.5.0"
+  },
+  "cases": [
+    {
+      "name": "cost-base",
+      "kind": "calculateCost",
+      "args": [
+        {
+          "id": "m",
+          "name": "M",
+          "api": "openai-completions",
+          "provider": "test",
+          "baseUrl": "https://x.test/v1",
+          "reasoning": true,
+          "input": [
+            "text"
+          ],
+          "cost": {
+            "input": 1,
+            "output": 5,
+            "cacheRead": 0.2,
+            "cacheWrite": 1.25
+          },
+          "contextWindow": 10000,
+          "maxTokens": 8000
+        },
+        {
+          "input": 1000,
+          "output": 500,
+          "cacheRead": 100,
+          "cacheWrite": 50,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0.001,
+            "output": 0.0025,
+            "cacheRead": 0.00002,
+            "cacheWrite": 0.0000625,
+            "total": 0.0035825,
+            "totalFromProvider": false
+          }
+        }
+      ],
+      "result": {
+        "input": 0.001,
+        "output": 0.0025,
+        "cacheRead": 0.00002,
+        "cacheWrite": 0.0000625,
+        "total": 0.0035825,
+        "totalFromProvider": false
+      }
+    },
+    {
+      "name": "cost-tier-below",
+      "kind": "calculateCost",
+      "args": [
+        {
+          "id": "m",
+          "name": "M",
+          "api": "openai-completions",
+          "provider": "test",
+          "baseUrl": "https://x.test/v1",
+          "reasoning": true,
+          "input": [
+            "text"
+          ],
+          "cost": {
+            "input": 1,
+            "output": 5,
+            "cacheRead": 0.2,
+            "cacheWrite": 1.25,
+            "tiers": [
+              {
+                "inputTokensAbove": 1000,
+                "input": 2,
+                "output": 10,
+                "cacheRead": 0.5,
+                "cacheWrite": 2.5
+              }
+            ]
+          },
+          "contextWindow": 10000,
+          "maxTokens": 8000
+        },
+        {
+          "input": 500,
+          "output": 0,
+          "cacheRead": 200,
+          "cacheWrite": 300,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0.0005,
+            "output": 0,
+            "cacheRead": 0.00004,
+            "cacheWrite": 0.000375,
+            "total": 0.000915,
+            "totalFromProvider": false
+          }
+        }
+      ],
+      "result": {
+        "input": 0.0005,
+        "output": 0,
+        "cacheRead": 0.00004,
+        "cacheWrite": 0.000375,
+        "total": 0.000915,
+        "totalFromProvider": false
+      }
+    },
+    {
+      "name": "cost-tier-at-boundary",
+      "kind": "calculateCost",
+      "args": [
+        {
+          "id": "m",
+          "name": "M",
+          "api": "openai-completions",
+          "provider": "test",
+          "baseUrl": "https://x.test/v1",
+          "reasoning": true,
+          "input": [
+            "text"
+          ],
+          "cost": {
+            "input": 1,
+            "output": 5,
+            "cacheRead": 0.2,
+            "cacheWrite": 1.25,
+            "tiers": [
+              {
+                "inputTokensAbove": 1000,
+                "input": 2,
+                "output": 10,
+                "cacheRead": 0.5,
+                "cacheWrite": 2.5
+              }
+            ]
+          },
+          "contextWindow": 10000,
+          "maxTokens": 8000
+        },
+        {
+          "input": 600,
+          "output": 0,
+          "cacheRead": 400,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0.0006,
+            "output": 0,
+            "cacheRead": 0.00008,
+            "cacheWrite": 0,
+            "total": 0.0006799999999999999,
+            "totalFromProvider": false
+          }
+        }
+      ],
+      "result": {
+        "input": 0.0006,
+        "output": 0,
+        "cacheRead": 0.00008,
+        "cacheWrite": 0,
+        "total": 0.0006799999999999999,
+        "totalFromProvider": false
+      }
+    },
+    {
+      "name": "cost-tier-over",
+      "kind": "calculateCost",
+      "args": [
+        {
+          "id": "m",
+          "name": "M",
+          "api": "openai-completions",
+          "provider": "test",
+          "baseUrl": "https://x.test/v1",
+          "reasoning": true,
+          "input": [
+            "text"
+          ],
+          "cost": {
+            "input": 1,
+            "output": 5,
+            "cacheRead": 0.2,
+            "cacheWrite": 1.25,
+            "tiers": [
+              {
+                "inputTokensAbove": 1000,
+                "input": 2,
+                "output": 10,
+                "cacheRead": 0.5,
+                "cacheWrite": 2.5
+              }
+            ]
+          },
+          "contextWindow": 10000,
+          "maxTokens": 8000
+        },
+        {
+          "input": 1001,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0.002002,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0.002002,
+            "totalFromProvider": false
+          }
+        }
+      ],
+      "result": {
+        "input": 0.002002,
+        "output": 0,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "total": 0.002002,
+        "totalFromProvider": false
+      }
+    },
+    {
+      "name": "cost-tier-highest-wins",
+      "kind": "calculateCost",
+      "args": [
+        {
+          "id": "m",
+          "name": "M",
+          "api": "openai-completions",
+          "provider": "test",
+          "baseUrl": "https://x.test/v1",
+          "reasoning": true,
+          "input": [
+            "text"
+          ],
+          "cost": {
+            "input": 1,
+            "output": 5,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "tiers": [
+              {
+                "inputTokensAbove": 500,
+                "input": 2,
+                "output": 3,
+                "cacheRead": 1,
+                "cacheWrite": 1
+              },
+              {
+                "inputTokensAbove": 100,
+                "input": 9,
+                "output": 9,
+                "cacheRead": 9,
+                "cacheWrite": 9
+              }
+            ]
+          },
+          "contextWindow": 10000,
+          "maxTokens": 8000
+        },
+        {
+          "input": 600,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0.0012,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0.0012,
+            "totalFromProvider": false
+          }
+        }
+      ],
+      "result": {
+        "input": 0.0012,
+        "output": 0,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "total": 0.0012,
+        "totalFromProvider": false
+      }
+    },
+    {
+      "name": "cost-cache-1h",
+      "kind": "calculateCost",
+      "args": [
+        {
+          "id": "m",
+          "name": "M",
+          "api": "openai-completions",
+          "provider": "test",
+          "baseUrl": "https://x.test/v1",
+          "reasoning": true,
+          "input": [
+            "text"
+          ],
+          "cost": {
+            "input": 1,
+            "output": 5,
+            "cacheRead": 0.2,
+            "cacheWrite": 1.25
+          },
+          "contextWindow": 10000,
+          "maxTokens": 8000
+        },
+        {
+          "input": 100,
+          "output": 10,
+          "cacheRead": 0,
+          "cacheWrite": 80,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0.00009999999999999999,
+            "output": 0.00005,
+            "cacheRead": 0,
+            "cacheWrite": 0.0001225,
+            "total": 0.00027249999999999996,
+            "totalFromProvider": false
+          },
+          "cacheWrite1h": 30
+        }
+      ],
+      "result": {
+        "input": 0.00009999999999999999,
+        "output": 0.00005,
+        "cacheRead": 0,
+        "cacheWrite": 0.0001225,
+        "total": 0.00027249999999999996,
+        "totalFromProvider": false
+      }
+    },
+    {
+      "name": "cost-zero-rates",
+      "kind": "calculateCost",
+      "args": [
+        {
+          "id": "m",
+          "name": "M",
+          "api": "openai-completions",
+          "provider": "test",
+          "baseUrl": "https://x.test/v1",
+          "reasoning": true,
+          "input": [
+            "text"
+          ],
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0
+          },
+          "contextWindow": 10000,
+          "maxTokens": 8000
+        },
+        {
+          "input": 999,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0,
+            "totalFromProvider": false
+          }
+        }
+      ],
+      "result": {
+        "input": 0,
+        "output": 0,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "total": 0,
+        "totalFromProvider": false
+      }
+    },
+    {
+      "name": "supported-no-reasoning",
+      "kind": "getSupportedThinkingLevels",
+      "args": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "test",
+        "baseUrl": "https://x.test/v1",
+        "reasoning": false,
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 5,
+          "cacheRead": 0.2,
+          "cacheWrite": 1.25
+        },
+        "contextWindow": 10000,
+        "maxTokens": 8000
+      },
+      "result": [
+        "off"
+      ]
+    },
+    {
+      "name": "supported-all-levels",
+      "kind": "getSupportedThinkingLevels",
+      "args": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "test",
+        "baseUrl": "https://x.test/v1",
+        "reasoning": true,
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 5,
+          "cacheRead": 0.2,
+          "cacheWrite": 1.25
+        },
+        "contextWindow": 10000,
+        "maxTokens": 8000
+      },
+      "result": [
+        "off",
+        "minimal",
+        "low",
+        "medium",
+        "high"
+      ]
+    },
+    {
+      "name": "supported-xhigh-null",
+      "kind": "getSupportedThinkingLevels",
+      "args": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "test",
+        "baseUrl": "https://x.test/v1",
+        "reasoning": true,
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 5,
+          "cacheRead": 0.2,
+          "cacheWrite": 1.25
+        },
+        "contextWindow": 10000,
+        "maxTokens": 8000,
+        "thinkingLevelMap": {
+          "xhigh": null
+        }
+      },
+      "result": [
+        "off",
+        "minimal",
+        "low",
+        "medium",
+        "high"
+      ]
+    },
+    {
+      "name": "supported-xhigh-mapped",
+      "kind": "getSupportedThinkingLevels",
+      "args": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "test",
+        "baseUrl": "https://x.test/v1",
+        "reasoning": true,
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 5,
+          "cacheRead": 0.2,
+          "cacheWrite": 1.25
+        },
+        "contextWindow": 10000,
+        "maxTokens": 8000,
+        "thinkingLevelMap": {
+          "xhigh": "e",
+          "max": "m"
+        }
+      },
+      "result": [
+        "off",
+        "minimal",
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ]
+    },
+    {
+      "name": "supported-off-null",
+      "kind": "getSupportedThinkingLevels",
+      "args": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "test",
+        "baseUrl": "https://x.test/v1",
+        "reasoning": true,
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 5,
+          "cacheRead": 0.2,
+          "cacheWrite": 1.25
+        },
+        "contextWindow": 10000,
+        "maxTokens": 8000,
+        "thinkingLevelMap": {
+          "off": null
+        }
+      },
+      "result": [
+        "minimal",
+        "low",
+        "medium",
+        "high"
+      ]
+    },
+    {
+      "name": "clamp-clamp-supported",
+      "kind": "clampThinkingLevel",
+      "args": [
+        {
+          "id": "m",
+          "name": "M",
+          "api": "openai-completions",
+          "provider": "test",
+          "baseUrl": "https://x.test/v1",
+          "reasoning": true,
+          "input": [
+            "text"
+          ],
+          "cost": {
+            "input": 1,
+            "output": 5,
+            "cacheRead": 0.2,
+            "cacheWrite": 1.25
+          },
+          "contextWindow": 10000,
+          "maxTokens": 8000
+        },
+        "low"
+      ],
+      "result": "low"
+    },
+    {
+      "name": "clamp-clamp-unsupported-xhigh",
+      "kind": "clampThinkingLevel",
+      "args": [
+        {
+          "id": "m",
+          "name": "M",
+          "api": "openai-completions",
+          "provider": "test",
+          "baseUrl": "https://x.test/v1",
+          "reasoning": true,
+          "input": [
+            "text"
+          ],
+          "cost": {
+            "input": 1,
+            "output": 5,
+            "cacheRead": 0.2,
+            "cacheWrite": 1.25
+          },
+          "contextWindow": 10000,
+          "maxTokens": 8000,
+          "thinkingLevelMap": {
+            "xhigh": null
+          }
+        },
+        "xhigh"
+      ],
+      "result": "high"
+    },
+    {
+      "name": "clamp-clamp-max-only-high",
+      "kind": "clampThinkingLevel",
+      "args": [
+        {
+          "id": "m",
+          "name": "M",
+          "api": "openai-completions",
+          "provider": "test",
+          "baseUrl": "https://x.test/v1",
+          "reasoning": true,
+          "input": [
+            "text"
+          ],
+          "cost": {
+            "input": 1,
+            "output": 5,
+            "cacheRead": 0.2,
+            "cacheWrite": 1.25
+          },
+          "contextWindow": 10000,
+          "maxTokens": 8000,
+          "thinkingLevelMap": {
+            "xhigh": null,
+            "max": null
+          }
+        },
+        "max"
+      ],
+      "result": "high"
+    },
+    {
+      "name": "clamp-clamp-higher",
+      "kind": "clampThinkingLevel",
+      "args": [
+        {
+          "id": "m",
+          "name": "M",
+          "api": "openai-completions",
+          "provider": "test",
+          "baseUrl": "https://x.test/v1",
+          "reasoning": true,
+          "input": [
+            "text"
+          ],
+          "cost": {
+            "input": 1,
+            "output": 5,
+            "cacheRead": 0.2,
+            "cacheWrite": 1.25
+          },
+          "contextWindow": 10000,
+          "maxTokens": 8000,
+          "thinkingLevelMap": {
+            "minimal": null,
+            "low": null
+          }
+        },
+        "minimal"
+      ],
+      "result": "medium"
+    },
+    {
+      "name": "clamp-clamp-no-reasoning",
+      "kind": "clampThinkingLevel",
+      "args": [
+        {
+          "id": "m",
+          "name": "M",
+          "api": "openai-completions",
+          "provider": "test",
+          "baseUrl": "https://x.test/v1",
+          "reasoning": false,
+          "input": [
+            "text"
+          ],
+          "cost": {
+            "input": 1,
+            "output": 5,
+            "cacheRead": 0.2,
+            "cacheWrite": 1.25
+          },
+          "contextWindow": 10000,
+          "maxTokens": 8000
+        },
+        "high"
+      ],
+      "result": "off"
+    },
+    {
+      "name": "clamp-clamp-off-null",
+      "kind": "clampThinkingLevel",
+      "args": [
+        {
+          "id": "m",
+          "name": "M",
+          "api": "openai-completions",
+          "provider": "test",
+          "baseUrl": "https://x.test/v1",
+          "reasoning": true,
+          "input": [
+            "text"
+          ],
+          "cost": {
+            "input": 1,
+            "output": 5,
+            "cacheRead": 0.2,
+            "cacheWrite": 1.25
+          },
+          "contextWindow": 10000,
+          "maxTokens": 8000,
+          "thinkingLevelMap": {
+            "off": null
+          }
+        },
+        "off"
+      ],
+      "result": "minimal"
+    }
+  ]
+}
