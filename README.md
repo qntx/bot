@@ -1,8 +1,8 @@
-<!-- markdownlint-disable MD033 MD041 -->
+# bot
 
-# ovo
+Local desktop AI bot built on ovo, a Rust port of the pi agent harness, with a TypeScript SDK.
 
-Embeddable multi-agent runtime kernel for Rust (dynamic spawn and journaled Rhai workflows).
+Changes are tracked in [CHANGELOG.md](CHANGELOG.md); contributor invariants and the local gate live in [AGENTS.md](AGENTS.md) and [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 

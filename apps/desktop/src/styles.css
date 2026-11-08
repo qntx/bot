@@ -1,0 +1,19 @@
+:root {
+  color-scheme: light dark;
+  font:
+    16px/1.45 ui-sans-serif,
+    system-ui,
+    sans-serif;
+  color: CanvasText;
+  background: Canvas;
+}
+
+body {
+  margin: 0;
+}
+
+main {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
