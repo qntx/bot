@@ -105,6 +105,20 @@
       "vectors": ["vectors/ai/simple-options.json"],
       "rust": ["crates/ovo-ai/tests/it/ai_utils.rs"],
       "classes": []
+    },
+    {
+      "id": "AI-SCHEMA-COERCE",
+      "upstream": ["packages/schema/src/coerce.ts"],
+      "vectors": ["vectors/ai/schema-coerce.json"],
+      "rust": ["crates/ovo-ai/tests/it/schema.rs"],
+      "classes": []
+    },
+    {
+      "id": "AI-SCHEMA-VALIDATE",
+      "upstream": ["packages/ai/src/utils/validation.ts", "packages/schema/src/explain.ts"],
+      "vectors": ["vectors/ai/schema-validate.json"],
+      "rust": ["crates/ovo-ai/tests/it/schema.rs"],
+      "classes": ["schema-formats"]
     }
   ],
   "classes": {
@@ -112,6 +126,7 @@
     "input-limits": "Numbers outside the f64 range and nesting deeper than 128 levels are rejected; JSON.parse accepts them.",
     "key-order": "Session, RPC and config data are compared by value; object key order may differ where upstream order depends on assignment order.",
     "engine-error-text": "V8 JSON.parse error details are masked; the surrounding template is compared verbatim.",
-    "wall-clock": "Values taken from the wall clock (Date.now) are masked; presence and type are compared."
+    "wall-clock": "Values taken from the wall clock (Date.now) are masked; presence and type are compared.",
+    "schema-formats": "Format checks use the jsonschema crate's implementations; the decision may differ from TypeBox on edge cases, messages match."
   }
 }

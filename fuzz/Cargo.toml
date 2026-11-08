@@ -10,11 +10,19 @@ cargo-fuzz = true
 
 [dependencies]
 libfuzzer-sys = "0.4"
+serde_json    = "1"
+arbitrary     = { version = "1", features = ["derive"] }
 ovo-ai        = { path = "../crates/ovo-ai" }
 
 [[bin]]
 name = "streaming_json"
 path = "fuzz_targets/streaming_json.rs"
+test = false
+doc  = false
+
+[[bin]]
+name = "schema_coerce"
+path = "fuzz_targets/schema_coerce.rs"
 test = false
 doc  = false
 

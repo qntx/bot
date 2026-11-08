@@ -211,3 +211,83 @@ pub fn render_system_message_update(message: &SystemMessage) -> String {
     }
     parts.join("\n\n")
 }
+
+/// `jsNumberToString`: `String(number)` as JavaScript writes it — the
+/// same shortest-roundtrip form `JSON.stringify` emits, `NaN`,
+/// `Infinity`, `-Infinity` spelled out; `-0` is `"0"`.
+#[must_use]
+pub fn js_number_to_string(n: f64) -> String {
+    if n.is_nan() {
+        return "NaN".to_owned();
+    }
+    if n == f64::INFINITY {
+        return "Infinity".to_owned();
+    }
+    if n == f64::NEG_INFINITY {
+        return "-Infinity".to_owned();
+    }
+    if n == 0.0 {
+        return "0".to_owned();
+    }
+    crate::json::to_string(&serde_json::json!(n)).unwrap_or_default()
+}
+
+/// `jsNumberFromStr`: ECMAScript `Number(string)` — JS-whitespace trim,
+/// empty → 0, `0x`/`0o`/`0b` prefixes, `Infinity`/`+Infinity`/
+/// `-Infinity`, decimal literal grammar, anything else → `NaN`.
+#[must_use]
+pub fn js_number_from_str(text: &str) -> f64 {
+    let trimmed = js_trim(text);
+    if trimmed.is_empty() {
+        return 0.0;
+    }
+    match trimmed {
+        "Infinity" | "+Infinity" => return f64::INFINITY,
+        "-Infinity" => return f64::NEG_INFINITY,
+        _ => {}
+    }
+    let (sign, digits) = trimmed.strip_prefix('-').map_or_else(
+        || {
+            trimmed
+                .strip_prefix('+')
+                .map_or((1f64, trimmed), |rest| (1f64, rest))
+        },
+        |rest| (-1f64, rest),
+    );
+    if let Some(hex) = digits
+        .strip_prefix("0x")
+        .or_else(|| digits.strip_prefix("0X"))
+    {
+        if !hex.is_empty() && hex.chars().all(|c| c.is_ascii_hexdigit()) {
+            return sign * u64::from_str_radix(hex, 16).map_or(f64::INFINITY, |v| v as f64);
+        }
+        return f64::NAN;
+    }
+    if let Some(oct) = digits
+        .strip_prefix("0o")
+        .or_else(|| digits.strip_prefix("0O"))
+    {
+        if !oct.is_empty() && oct.chars().all(|c| c.is_digit(8)) {
+            return sign * u64::from_str_radix(oct, 8).map_or(f64::INFINITY, |v| v as f64);
+        }
+        return f64::NAN;
+    }
+    if let Some(bin) = digits
+        .strip_prefix("0b")
+        .or_else(|| digits.strip_prefix("0B"))
+    {
+        if !bin.is_empty() && bin.chars().all(|c| c == '0' || c == '1') {
+            return sign * u64::from_str_radix(bin, 2).map_or(f64::INFINITY, |v| v as f64);
+        }
+        return f64::NAN;
+    }
+    // Decimal grammar: digits[.digits][e[+-]digits], .digits, or digits.
+    let decimal = r"^-?\d*\.?\d*(?:[eE][+-]?\d+)?$";
+    if let Ok(re) = regex::Regex::new(decimal)
+        && re.is_match(trimmed)
+        && trimmed.chars().any(|c| c.is_ascii_digit())
+    {
+        return trimmed.parse::<f64>().unwrap_or(f64::NAN);
+    }
+    f64::NAN
+}

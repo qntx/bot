@@ -11,6 +11,7 @@ pub mod identity;
 pub mod json;
 pub mod overflow;
 pub mod retry;
+pub mod schema;
 pub mod simple_options;
 pub mod stream;
 pub mod text;
