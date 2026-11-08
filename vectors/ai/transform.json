@@ -1,0 +1,1184 @@
+{
+  "generator": {
+    "script": "scripts/parity/generate-transcript.ts",
+    "node": "v26.13.0",
+    "upstream": "@earendil-works/pi-ai@1.5.0"
+  },
+  "cases": [
+    {
+      "name": "cross-model-thinking-dropped",
+      "kind": "transformMessages",
+      "args": [
+        [
+          {
+            "role": "user",
+            "content": "q",
+            "timestamp": 1
+          },
+          {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "thinking",
+                "thinking": "reasoning",
+                "thinkingSignature": "sig"
+              },
+              {
+                "type": "text",
+                "text": "visible"
+              },
+              {
+                "type": "toolCall",
+                "id": "c1",
+                "name": "bash",
+                "arguments": {
+                  "cmd": "x"
+                }
+              }
+            ],
+            "api": "openai-completions",
+            "provider": "sference",
+            "model": "zai-org/GLM-5.3",
+            "usage": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "totalTokens": 0,
+              "cost": {
+                "input": 0,
+                "output": 0,
+                "cacheRead": 0,
+                "cacheWrite": 0,
+                "total": 0
+              }
+            },
+            "stopReason": "stop",
+            "timestamp": 1
+          },
+          {
+            "role": "toolResult",
+            "toolCallId": "c1",
+            "toolName": "bash",
+            "content": [
+              {
+                "type": "text",
+                "text": "r"
+              }
+            ],
+            "isError": false,
+            "timestamp": 1
+          }
+        ],
+        {
+          "id": "m",
+          "name": "M",
+          "api": "openai-completions",
+          "provider": "sference",
+          "baseUrl": "https://api.sference.com/v1",
+          "reasoning": true,
+          "input": [
+            "text"
+          ],
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0
+          },
+          "contextWindow": 100000,
+          "maxTokens": 1000
+        }
+      ],
+      "result": [
+        {
+          "role": "user",
+          "content": "q",
+          "timestamp": 1
+        },
+        {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "visible"
+            },
+            {
+              "type": "toolCall",
+              "id": "c1",
+              "name": "bash",
+              "arguments": {
+                "cmd": "x"
+              }
+            }
+          ],
+          "api": "openai-completions",
+          "provider": "sference",
+          "model": "zai-org/GLM-5.3",
+          "usage": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "stop",
+          "timestamp": 1
+        },
+        {
+          "role": "toolResult",
+          "toolCallId": "c1",
+          "toolName": "bash",
+          "content": [
+            {
+              "type": "text",
+              "text": "r"
+            }
+          ],
+          "isError": false,
+          "timestamp": 1
+        }
+      ]
+    },
+    {
+      "name": "same-model-thinking-kept",
+      "kind": "transformMessages",
+      "args": [
+        [
+          {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "thinking",
+                "thinking": "kept",
+                "thinkingSignature": "sig"
+              },
+              {
+                "type": "text",
+                "text": "a"
+              }
+            ],
+            "api": "openai-completions",
+            "provider": "sference",
+            "model": "m",
+            "usage": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "totalTokens": 0,
+              "cost": {
+                "input": 0,
+                "output": 0,
+                "cacheRead": 0,
+                "cacheWrite": 0,
+                "total": 0
+              }
+            },
+            "stopReason": "stop",
+            "timestamp": 1
+          }
+        ],
+        {
+          "id": "m",
+          "name": "M",
+          "api": "openai-completions",
+          "provider": "sference",
+          "baseUrl": "https://api.sference.com/v1",
+          "reasoning": true,
+          "input": [
+            "text"
+          ],
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0
+          },
+          "contextWindow": 100000,
+          "maxTokens": 1000
+        }
+      ],
+      "result": [
+        {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "thinking",
+              "thinking": "kept",
+              "thinkingSignature": "sig"
+            },
+            {
+              "type": "text",
+              "text": "a"
+            }
+          ],
+          "api": "openai-completions",
+          "provider": "sference",
+          "model": "m",
+          "usage": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "stop",
+          "timestamp": 1
+        }
+      ]
+    },
+    {
+      "name": "empty-thinking-dropped-signed-kept",
+      "kind": "transformMessages",
+      "args": [
+        [
+          {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "thinking",
+                "thinking": "  "
+              },
+              {
+                "type": "thinking",
+                "thinking": "",
+                "thinkingSignature": "s"
+              },
+              {
+                "type": "thinking",
+                "thinking": "",
+                "redacted": true
+              }
+            ],
+            "api": "openai-completions",
+            "provider": "sference",
+            "model": "m",
+            "usage": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "totalTokens": 0,
+              "cost": {
+                "input": 0,
+                "output": 0,
+                "cacheRead": 0,
+                "cacheWrite": 0,
+                "total": 0
+              }
+            },
+            "stopReason": "stop",
+            "timestamp": 1
+          }
+        ],
+        {
+          "id": "m",
+          "name": "M",
+          "api": "openai-completions",
+          "provider": "sference",
+          "baseUrl": "https://api.sference.com/v1",
+          "reasoning": true,
+          "input": [
+            "text"
+          ],
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0
+          },
+          "contextWindow": 100000,
+          "maxTokens": 1000
+        }
+      ],
+      "result": [
+        {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "thinking",
+              "thinking": "",
+              "thinkingSignature": "s"
+            },
+            {
+              "type": "thinking",
+              "thinking": "",
+              "redacted": true
+            }
+          ],
+          "api": "openai-completions",
+          "provider": "sference",
+          "model": "m",
+          "usage": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "stop",
+          "timestamp": 1
+        }
+      ]
+    },
+    {
+      "name": "thought-signature-removed-cross-model",
+      "kind": "transformMessages",
+      "args": [
+        [
+          {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "toolCall",
+                "id": "c",
+                "name": "t",
+                "arguments": {},
+                "thoughtSignature": "tsig"
+              }
+            ],
+            "api": "openai-completions",
+            "provider": "sference",
+            "model": "other",
+            "usage": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "totalTokens": 0,
+              "cost": {
+                "input": 0,
+                "output": 0,
+                "cacheRead": 0,
+                "cacheWrite": 0,
+                "total": 0
+              }
+            },
+            "stopReason": "stop",
+            "timestamp": 1
+          }
+        ],
+        {
+          "id": "m",
+          "name": "M",
+          "api": "openai-completions",
+          "provider": "sference",
+          "baseUrl": "https://api.sference.com/v1",
+          "reasoning": true,
+          "input": [
+            "text"
+          ],
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0
+          },
+          "contextWindow": 100000,
+          "maxTokens": 1000
+        }
+      ],
+      "result": [
+        {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "toolCall",
+              "id": "c",
+              "name": "t",
+              "arguments": {}
+            }
+          ],
+          "api": "openai-completions",
+          "provider": "sference",
+          "model": "other",
+          "usage": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "stop",
+          "timestamp": 1
+        },
+        {
+          "role": "toolResult",
+          "toolCallId": "c",
+          "toolName": "t",
+          "content": [
+            {
+              "type": "text",
+              "text": "No result provided"
+            }
+          ],
+          "isError": true,
+          "timestamp": 0
+        }
+      ]
+    },
+    {
+      "name": "tool-call-id-normalized",
+      "kind": "transformMessages",
+      "args": [
+        [
+          {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "toolCall",
+                "id": "weird|id|with:chars-and-more-than-64-chars-to-force-normalization-xx",
+                "name": "bash",
+                "arguments": {}
+              }
+            ],
+            "api": "openai-completions",
+            "provider": "sference",
+            "model": "other",
+            "usage": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "totalTokens": 0,
+              "cost": {
+                "input": 0,
+                "output": 0,
+                "cacheRead": 0,
+                "cacheWrite": 0,
+                "total": 0
+              }
+            },
+            "stopReason": "stop",
+            "timestamp": 1
+          },
+          {
+            "role": "toolResult",
+            "toolCallId": "weird|id|with:chars-and-more-than-64-chars-to-force-normalization-xx",
+            "toolName": "bash",
+            "content": [
+              {
+                "type": "text",
+                "text": "o"
+              }
+            ],
+            "isError": false,
+            "timestamp": 1
+          }
+        ],
+        {
+          "id": "m",
+          "name": "M",
+          "api": "openai-completions",
+          "provider": "sference",
+          "baseUrl": "https://api.sference.com/v1",
+          "reasoning": true,
+          "input": [
+            "text"
+          ],
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0
+          },
+          "contextWindow": 100000,
+          "maxTokens": 1000
+        }
+      ],
+      "normalize": true,
+      "result": [
+        {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "toolCall",
+              "id": "norm_weirdidwithchars-and-more-than-6",
+              "name": "bash",
+              "arguments": {}
+            }
+          ],
+          "api": "openai-completions",
+          "provider": "sference",
+          "model": "other",
+          "usage": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "stop",
+          "timestamp": 1
+        },
+        {
+          "role": "toolResult",
+          "toolCallId": "norm_weirdidwithchars-and-more-than-6",
+          "toolName": "bash",
+          "content": [
+            {
+              "type": "text",
+              "text": "o"
+            }
+          ],
+          "isError": false,
+          "timestamp": 1
+        }
+      ]
+    },
+    {
+      "name": "image-downgrade",
+      "kind": "transformMessages",
+      "args": [
+        [
+          {
+            "role": "user",
+            "content": [
+              {
+                "type": "text",
+                "text": "see"
+              },
+              {
+                "type": "image",
+                "data": "AAAA",
+                "mimeType": "image/png"
+              }
+            ],
+            "timestamp": 1
+          },
+          {
+            "role": "toolResult",
+            "toolCallId": "c",
+            "toolName": "t",
+            "content": [
+              {
+                "type": "text",
+                "text": "r"
+              },
+              {
+                "type": "image",
+                "data": "AAAA",
+                "mimeType": "image/png"
+              }
+            ],
+            "isError": false,
+            "timestamp": 1
+          }
+        ],
+        {
+          "id": "m",
+          "name": "M",
+          "api": "openai-completions",
+          "provider": "sference",
+          "baseUrl": "https://api.sference.com/v1",
+          "reasoning": true,
+          "input": [
+            "text"
+          ],
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0
+          },
+          "contextWindow": 100000,
+          "maxTokens": 1000
+        }
+      ],
+      "result": [
+        {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "see"
+            },
+            {
+              "type": "text",
+              "text": "(image omitted: model does not support images)"
+            }
+          ],
+          "timestamp": 1
+        },
+        {
+          "role": "toolResult",
+          "toolCallId": "c",
+          "toolName": "t",
+          "content": [
+            {
+              "type": "text",
+              "text": "r"
+            },
+            {
+              "type": "text",
+              "text": "(tool image omitted: model does not support images)"
+            }
+          ],
+          "isError": false,
+          "timestamp": 1
+        }
+      ]
+    },
+    {
+      "name": "vision-keeps-images",
+      "kind": "transformMessages",
+      "args": [
+        [
+          {
+            "role": "user",
+            "content": [
+              {
+                "type": "text",
+                "text": "see"
+              },
+              {
+                "type": "image",
+                "data": "AAAA",
+                "mimeType": "image/png"
+              }
+            ],
+            "timestamp": 1
+          }
+        ],
+        {
+          "id": "m",
+          "name": "M",
+          "api": "openai-completions",
+          "provider": "sference",
+          "baseUrl": "https://api.sference.com/v1",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0
+          },
+          "contextWindow": 100000,
+          "maxTokens": 1000
+        }
+      ],
+      "result": [
+        {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "see"
+            },
+            {
+              "type": "image",
+              "data": "AAAA",
+              "mimeType": "image/png"
+            }
+          ],
+          "timestamp": 1
+        }
+      ]
+    },
+    {
+      "name": "orphan-call-synthetic-result",
+      "kind": "transformMessages",
+      "args": [
+        [
+          {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "toolCall",
+                "id": "orphan",
+                "name": "t",
+                "arguments": {}
+              }
+            ],
+            "api": "openai-completions",
+            "provider": "sference",
+            "model": "m",
+            "usage": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "totalTokens": 0,
+              "cost": {
+                "input": 0,
+                "output": 0,
+                "cacheRead": 0,
+                "cacheWrite": 0,
+                "total": 0
+              }
+            },
+            "stopReason": "stop",
+            "timestamp": 1
+          },
+          {
+            "role": "user",
+            "content": "next",
+            "timestamp": 1
+          }
+        ],
+        {
+          "id": "m",
+          "name": "M",
+          "api": "openai-completions",
+          "provider": "sference",
+          "baseUrl": "https://api.sference.com/v1",
+          "reasoning": true,
+          "input": [
+            "text"
+          ],
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0
+          },
+          "contextWindow": 100000,
+          "maxTokens": 1000
+        }
+      ],
+      "result": [
+        {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "toolCall",
+              "id": "orphan",
+              "name": "t",
+              "arguments": {}
+            }
+          ],
+          "api": "openai-completions",
+          "provider": "sference",
+          "model": "m",
+          "usage": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "stop",
+          "timestamp": 1
+        },
+        {
+          "role": "toolResult",
+          "toolCallId": "orphan",
+          "toolName": "t",
+          "content": [
+            {
+              "type": "text",
+              "text": "No result provided"
+            }
+          ],
+          "isError": true,
+          "timestamp": 0
+        },
+        {
+          "role": "user",
+          "content": "next",
+          "timestamp": 1
+        }
+      ]
+    },
+    {
+      "name": "system-held-between-call-result",
+      "kind": "transformMessages",
+      "args": [
+        [
+          {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "toolCall",
+                "id": "c",
+                "name": "t",
+                "arguments": {}
+              }
+            ],
+            "api": "openai-completions",
+            "provider": "sference",
+            "model": "m",
+            "usage": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "totalTokens": 0,
+              "cost": {
+                "input": 0,
+                "output": 0,
+                "cacheRead": 0,
+                "cacheWrite": 0,
+                "total": 0
+              }
+            },
+            "stopReason": "stop",
+            "timestamp": 1
+          },
+          {
+            "role": "system",
+            "content": "mid",
+            "timestamp": 2
+          },
+          {
+            "role": "toolResult",
+            "toolCallId": "c",
+            "toolName": "t",
+            "content": [
+              {
+                "type": "text",
+                "text": "r"
+              }
+            ],
+            "isError": false,
+            "timestamp": 1
+          }
+        ],
+        {
+          "id": "m",
+          "name": "M",
+          "api": "openai-completions",
+          "provider": "sference",
+          "baseUrl": "https://api.sference.com/v1",
+          "reasoning": true,
+          "input": [
+            "text"
+          ],
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0
+          },
+          "contextWindow": 100000,
+          "maxTokens": 1000
+        }
+      ],
+      "result": [
+        {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "toolCall",
+              "id": "c",
+              "name": "t",
+              "arguments": {}
+            }
+          ],
+          "api": "openai-completions",
+          "provider": "sference",
+          "model": "m",
+          "usage": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "stop",
+          "timestamp": 1
+        },
+        {
+          "role": "toolResult",
+          "toolCallId": "c",
+          "toolName": "t",
+          "content": [
+            {
+              "type": "text",
+              "text": "r"
+            }
+          ],
+          "isError": false,
+          "timestamp": 1
+        },
+        {
+          "role": "system",
+          "content": "mid",
+          "timestamp": 2
+        }
+      ]
+    },
+    {
+      "name": "error-assistant-skipped",
+      "kind": "transformMessages",
+      "args": [
+        [
+          {
+            "role": "user",
+            "content": "q",
+            "timestamp": 1
+          },
+          {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "text",
+                "text": "partial"
+              }
+            ],
+            "api": "openai-completions",
+            "provider": "sference",
+            "model": "m",
+            "usage": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "totalTokens": 0,
+              "cost": {
+                "input": 0,
+                "output": 0,
+                "cacheRead": 0,
+                "cacheWrite": 0,
+                "total": 0
+              }
+            },
+            "stopReason": "error",
+            "timestamp": 1
+          },
+          {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "text",
+                "text": "partial2"
+              }
+            ],
+            "api": "openai-completions",
+            "provider": "sference",
+            "model": "m",
+            "usage": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "totalTokens": 0,
+              "cost": {
+                "input": 0,
+                "output": 0,
+                "cacheRead": 0,
+                "cacheWrite": 0,
+                "total": 0
+              }
+            },
+            "stopReason": "aborted",
+            "timestamp": 1
+          },
+          {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "text",
+                "text": "ok"
+              }
+            ],
+            "api": "openai-completions",
+            "provider": "sference",
+            "model": "m",
+            "usage": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "totalTokens": 0,
+              "cost": {
+                "input": 0,
+                "output": 0,
+                "cacheRead": 0,
+                "cacheWrite": 0,
+                "total": 0
+              }
+            },
+            "stopReason": "stop",
+            "timestamp": 1
+          }
+        ],
+        {
+          "id": "m",
+          "name": "M",
+          "api": "openai-completions",
+          "provider": "sference",
+          "baseUrl": "https://api.sference.com/v1",
+          "reasoning": true,
+          "input": [
+            "text"
+          ],
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0
+          },
+          "contextWindow": 100000,
+          "maxTokens": 1000
+        }
+      ],
+      "result": [
+        {
+          "role": "user",
+          "content": "q",
+          "timestamp": 1
+        },
+        {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "ok"
+            }
+          ],
+          "api": "openai-completions",
+          "provider": "sference",
+          "model": "m",
+          "usage": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "stop",
+          "timestamp": 1
+        }
+      ]
+    },
+    {
+      "name": "split-error-images",
+      "kind": "splitErrorToolResultImages",
+      "args": {
+        "role": "toolResult",
+        "toolCallId": "err",
+        "toolName": "img_tool",
+        "content": [
+          {
+            "type": "text",
+            "text": "fail"
+          },
+          {
+            "type": "image",
+            "data": "AAAA",
+            "mimeType": "image/png"
+          },
+          {
+            "type": "image",
+            "data": "AAAA",
+            "mimeType": "image/png"
+          },
+          {
+            "type": "text",
+            "text": "tail"
+          }
+        ],
+        "isError": true,
+        "timestamp": 1
+      },
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "fail"
+          },
+          {
+            "type": "text",
+            "text": "(image attached after the tool results)"
+          },
+          {
+            "type": "text",
+            "text": "tail"
+          }
+        ],
+        "caption": "Images from the error result of tool call err (img_tool):",
+        "images": [
+          {
+            "type": "image",
+            "data": "AAAA",
+            "mimeType": "image/png"
+          },
+          {
+            "type": "image",
+            "data": "AAAA",
+            "mimeType": "image/png"
+          }
+        ]
+      }
+    },
+    {
+      "name": "split-non-error-none",
+      "kind": "splitErrorToolResultImages",
+      "args": {
+        "role": "toolResult",
+        "toolCallId": "ok",
+        "toolName": "t",
+        "content": [
+          {
+            "type": "text",
+            "text": "x"
+          }
+        ],
+        "isError": false,
+        "timestamp": 1
+      }
+    }
+  ]
+}

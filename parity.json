@@ -42,12 +42,41 @@
       "vectors": [],
       "rust": ["crates/ovo-ai/src/stream/accumulator.rs"],
       "classes": []
+    },
+    {
+      "id": "AI-TRANSCRIPT",
+      "upstream": ["packages/ai/src/utils/transcript.ts"],
+      "vectors": ["vectors/ai/transcript.json"],
+      "rust": ["crates/ovo-ai/tests/it/transcript.rs"],
+      "classes": ["key-order"]
+    },
+    {
+      "id": "AI-TRANSFORM-MESSAGES",
+      "upstream": ["packages/ai/src/api/transform-messages.ts"],
+      "vectors": ["vectors/ai/transform.json"],
+      "rust": ["crates/ovo-ai/tests/it/transcript.rs"],
+      "classes": ["key-order", "wall-clock"]
+    },
+    {
+      "id": "AI-SANITIZE",
+      "upstream": ["packages/ai/src/utils/sanitize-unicode.ts", "packages/ai/src/utils/text.ts"],
+      "vectors": ["vectors/ai/text.json"],
+      "rust": ["crates/ovo-ai/tests/it/transcript.rs"],
+      "classes": ["lone-surrogates"]
+    },
+    {
+      "id": "AI-IDENTITY",
+      "upstream": ["packages/ai/src/utils/identity.ts"],
+      "vectors": ["vectors/ai/identity.json"],
+      "rust": ["crates/ovo-ai/tests/it/transcript.rs"],
+      "classes": []
     }
   ],
   "classes": {
     "lone-surrogates": "Lone surrogate escapes in parsed JSON become U+FFFD; upstream keeps them until sanitizeSurrogates.",
     "input-limits": "Numbers outside the f64 range and nesting deeper than 128 levels are rejected; JSON.parse accepts them.",
     "key-order": "Session, RPC and config data are compared by value; object key order may differ where upstream order depends on assignment order.",
-    "engine-error-text": "V8 JSON.parse error details are masked; the surrounding template is compared verbatim."
+    "engine-error-text": "V8 JSON.parse error details are masked; the surrounding template is compared verbatim.",
+    "wall-clock": "Values taken from the wall clock (Date.now) are masked; presence and type are compared."
   }
 }

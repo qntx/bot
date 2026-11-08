@@ -1,0 +1,213 @@
+//! JS-semantics string helpers and the upstream `utils/text.ts` +
+//! `utils/sanitize-unicode.ts` ports.
+//!
+//! ECMAScript indexes and slices strings by UTF-16 code units and trims the
+//! ECMAScript whitespace set (U+FEFF included, U+0085 excluded). Every later
+//! port that mirrors JS string behavior goes through these helpers rather
+//! than Rust's `char`/`trim` semantics.
+
+use crate::types::content::{SystemContentBlock, TextContent, UserContentBlock};
+use crate::types::message::SystemMessage;
+
+/// The ECMAScript whitespace set: `String.prototype.trim`/`trimStart`/
+/// `trimEnd` and the `\s` regex class. Note U+FEFF is included and U+0085
+/// (NEL) is not.
+#[must_use]
+pub const fn is_js_whitespace(c: char) -> bool {
+    matches!(
+        c,
+        '\u{9}' | '\u{b}' | '\u{c}' | '\u{20}' | '\u{a0}' | '\u{1680}' | '\u{2000}'
+            ..='\u{200a}'
+                | '\u{2028}'
+                | '\u{2029}'
+                | '\u{202f}'
+                | '\u{205f}'
+                | '\u{3000}'
+                | '\u{feff}'
+    )
+}
+
+/// `text.length` — the UTF-16 code unit count, not the `char` count.
+#[must_use]
+pub fn js_len(text: &str) -> usize {
+    text.chars().map(char::len_utf16).sum()
+}
+
+/// `text.slice(start, end)` with UTF-16 code-unit indices. A cut inside a
+/// surrogate pair drops the half character (`lone-surrogates` class: JS
+/// strings can hold the half code unit, Rust `String` cannot).
+#[must_use]
+pub fn js_slice(text: &str, start: usize, end: usize) -> &str {
+    let mut from = text.len();
+    let mut to = text.len();
+    let mut units = 0usize;
+    for (offset, c) in text.char_indices() {
+        let next = units + c.len_utf16();
+        if units <= start && start <= next {
+            // A cut inside the pair drops the half character.
+            from = if start == units {
+                offset
+            } else {
+                offset + c.len_utf8()
+            };
+        }
+        if units < end && end <= next {
+            to = if end == next {
+                offset + c.len_utf8()
+            } else {
+                offset
+            };
+            break;
+        }
+        units = next;
+    }
+    &text[from.min(to)..to]
+}
+
+/// `text.slice(start, end)` as an owned `String`, the upstream
+/// `ownedSlice`.
+///
+/// In V8 a long slice keeps the whole original alive, so the upstream
+/// helper forces a copy — in Rust `&str` borrows are already the cheap
+/// view, so this exists only for parity with upstream call sites.
+#[must_use]
+pub fn owned_slice(text: &str, start: usize, end: usize) -> String {
+    js_slice(text, start, end).to_owned()
+}
+
+/// `text.trim()` with the ECMAScript whitespace set.
+#[must_use]
+pub fn js_trim(text: &str) -> &str {
+    text.trim_matches(is_js_whitespace)
+}
+
+/// `text.trimStart()` with the ECMAScript whitespace set.
+#[must_use]
+pub fn js_trim_start(text: &str) -> &str {
+    text.trim_start_matches(is_js_whitespace)
+}
+
+/// `text.trimEnd()` with the ECMAScript whitespace set.
+#[must_use]
+pub fn js_trim_end(text: &str) -> &str {
+    text.trim_end_matches(is_js_whitespace)
+}
+
+/// `sanitizeSurrogates` removes unpaired UTF-16 code units from a JS
+/// string.
+///
+/// Rust `String`/`&str` cannot hold lone surrogates, so this is the
+/// identity on valid input — the upstream behavior is only observable on
+/// values that arrived as raw UTF-16, which the streaming layer handles on
+/// its own units.
+#[must_use]
+pub const fn sanitize_surrogates(text: &str) -> &str {
+    text
+}
+
+/// Content which carries text among its blocks.
+pub trait HasTextBlocks {
+    /// The text blocks in order.
+    fn text_blocks(&self) -> Vec<&TextContent>;
+}
+
+impl HasTextBlocks for [TextContent] {
+    fn text_blocks(&self) -> Vec<&TextContent> {
+        self.iter().collect()
+    }
+}
+
+/// `contentText(content, separator)`: the text blocks joined.
+///
+/// Accepts the block list of any content union that can hold text; string
+/// content is returned by the caller side (`system_content_text`).
+#[must_use]
+pub fn content_text_blocks(blocks: &[impl TextBlock], separator: &str) -> String {
+    let mut parts = Vec::new();
+    for block in blocks {
+        if let Some(text) = block.text() {
+            parts.push(text);
+        }
+    }
+    parts.join(separator)
+}
+
+/// A content block which may carry text.
+pub trait TextBlock {
+    /// The text when this is a text block.
+    fn text(&self) -> Option<&str>;
+}
+
+impl TextBlock for SystemContentBlock {
+    fn text(&self) -> Option<&str> {
+        match self {
+            Self::Text(content) => Some(&content.text),
+        }
+    }
+}
+
+impl TextBlock for UserContentBlock {
+    fn text(&self) -> Option<&str> {
+        match self {
+            Self::Text(content) => Some(&content.text),
+            Self::Image(_) => None,
+        }
+    }
+}
+
+impl TextBlock for crate::types::content::AssistantContentBlock {
+    fn text(&self) -> Option<&str> {
+        match self {
+            Self::Text(content) => Some(&content.text),
+            Self::Thinking(_) | Self::ToolCall(_) => None,
+        }
+    }
+}
+
+/// `contentText(message.content)` for a system message (`string | blocks`).
+#[must_use]
+pub fn system_content_text(content: &crate::types::content::TextOrBlocks) -> String {
+    match content {
+        crate::types::content::TextOrBlocks::Text(text) => text.clone(),
+        crate::types::content::TextOrBlocks::Blocks(blocks) => content_text_blocks(blocks, "\n"),
+    }
+}
+
+/// `getSystemMessageText`: the complete prompt — content followed by each
+/// non-null section, joined by blank lines.
+#[must_use]
+pub fn get_system_message_text(message: &SystemMessage) -> String {
+    let mut parts = vec![system_content_text(&message.content)];
+    if let Some(sections) = &message.sections {
+        for text in sections.values() {
+            if let Some(text) = text.as_str() {
+                parts.push(text.to_owned());
+            }
+        }
+    }
+    parts.retain(|part| !part.is_empty());
+    parts.join("\n\n")
+}
+
+/// `renderSystemMessageUpdate`: a later system message framed by section
+/// name for APIs that accept system messages mid-conversation.
+#[must_use]
+pub fn render_system_message_update(message: &SystemMessage) -> String {
+    let mut parts = Vec::new();
+    let text = system_content_text(&message.content);
+    if !text.is_empty() {
+        parts.push(text);
+    }
+    if let Some(sections) = &message.sections {
+        for (name, value) in sections {
+            if let Some(value) = value.as_str() {
+                parts.push(format!(
+                    "Updated system prompt section \"{name}\":\n\n{value}"
+                ));
+            } else {
+                parts.push(format!("Removed system prompt section \"{name}\"."));
+            }
+        }
+    }
+    parts.join("\n\n")
+}
