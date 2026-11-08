@@ -1,0 +1,60 @@
+{
+  "name": "@qntx/ovo",
+  "version": "0.10.0",
+  "description": "TypeScript SDK for ovo: protocol types, JSONL framing, RPC client.",
+  "homepage": "https://github.com/qntx/bot#readme",
+  "bugs": {
+    "url": "https://github.com/qntx/bot/issues"
+  },
+  "license": "MIT OR Apache-2.0",
+  "author": "QuantX <x@qntx.org>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/qntx/bot.git",
+    "directory": "packages/ovo"
+  },
+  "files": [
+    "dist",
+    "LICENSE-MIT",
+    "LICENSE-APACHE"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs",
+      "default": "./dist/index.mjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "vp pack",
+    "dev": "vp pack --watch",
+    "test": "vp test",
+    "typecheck": "tsc --noEmit",
+    "check:pkg": "vp pack && publint && attw --pack . --profile esm-only",
+    "prepublishOnly": "vp run build"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "0.18.5",
+    "@qntx/tsconfig": "1.0.1",
+    "@types/node": "26.6.5",
+    "publint": "0.3.24",
+    "typescript": "7.0.2",
+    "vite-plus": "1.4.0"
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "bun",
+      "version": "1.4.0",
+      "onFail": "ignore"
+    }
+  },
+  "engines": {
+    "node": ">=20.19.0"
+  }
+}

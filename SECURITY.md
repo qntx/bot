@@ -1,48 +1,40 @@
-# Security
+# Security Policy
 
 ## Supported versions
 
-Only the `main` line (`0.9.1` workspace version) receives fixes.
-Older Machi ≤0.8 is unsupported.
-Historical crates.io `machi*` 1.0.0 and the `ovo` 0.9.0 stub are unsupported.
+| Version | Supported |
+| ------- | --------- |
+| 0.10.x  | Yes       |
+| < 0.10  | No        |
 
-## Reporting
+## Reporting a vulnerability
 
-Report vulnerabilities privately to the maintainers via the repository’s
-security advisory channel (GitHub Security Advisories) when available, or by
-contacting the org listed in the repository metadata. Do not open public
-issues for unfixed critical flaws.
+Report security issues privately via GitHub Security Advisories on
+[qntx/bot](https://github.com/qntx/bot/security/advisories/new), or email
+`security@qntx.org` if that channel is unavailable.
 
-## Dependency policy
+Please include:
 
-```bash
-cargo deny check
-```
+- Affected version and platform (macOS/Linux/Windows, Tauri shell or SDK)
+- Minimal reproduction
+- Impact assessment
 
-- **Advisories:** fail on known RustSec issues (see `deny.toml`).
-- **Licenses:** explicit allow-list (MIT/Apache-2.0 family + common
-  permissive deps used by TLS/ICU).
-- **Bans / sources:** default deny-template rules; crates.io is the expected
-  source for third-party crates.
+Do not open public issues for unfixed vulnerabilities.
 
-## Runtime trust model
+## Threat model (summary)
 
-- Default path is **offline** (`MockSampler`); network providers are feature-gated.
-- Toolkit tools are **cwd-jailed**; do not treat them as a full OS sandbox.
-- cwd-jail ≠ OS sandbox ≠ ExecPolicy allowlist.
-- Default isolation is **in-process** (`InProcessIsolation`). Product sandboxes
-  inject a custom `IsolationBackend`.
-- Depth, concurrency, and journal divergence are **always** fail-closed.
-- Host `agent_budget` defaults to 128; `with_agent_budget` caps at 1024.
-  Unlimited budget requires `with_unlimited_agent_budget(TrustedExecution)`.
-- Workflow adapter is a **second** 128 gate (`run_workflow_on_host(None)` → 128),
-  not the same pool as the host counter.
-- Production path: `TurnOptions::for_host` + `sandboxed_host` /
-  `default_toolkit(jail, backend)` + an installed OS backend. Linux helper:
-  same directory as the host binary, `OVO_LANDLOCK_HELPER`, or PATH.
-  `platform_sandbox()` can fail for a pure library dependency.
-  `cargo add ovo` (default features) does **not** compile `ovo-toolkit`; it
-  does compile `ovo-sandbox` (runtime → `TrustedExecution`). Features
-  `toolkit` / `sandbox` still gate re-exports and `sandboxed_host`.
-- `full` does not include OS backends; `--all-features` does.
-- Workflow engine never loads LLM HTTP clients (`ovo-workflow` firewall).
+The desktop app runs a local agent harness: it spawns processes, reads and
+writes files under user-chosen directories, and talks to model providers over
+the network. The frontend is confined to typed tauri-specta commands with a
+restrictive CSP; agent capabilities (filesystem, shell, network) are gated by
+the harness, not by the webview.
+
+| Threat                                | Severity | Mitigation                                                           |
+| ------------------------------------- | -------- | -------------------------------------------------------------------- |
+| Webview XSS reaching the host         | High     | CSP (`default-src 'self'`), no remote content, typed IPC only        |
+| Untrusted model/agent output executed | High     | Agent actions go through the ovo harness policy, not raw eval/shell  |
+| JSONL record injection over RPC       | Medium   | Strict LF framing; one record per line; `JsonlError` on invalid JSON |
+| Secrets in logs or committed files    | High     | `.env*` gitignored; never log provider keys                          |
+
+Treat all data returned from provider APIs and all content the agent reads as
+untrusted.

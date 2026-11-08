@@ -1,0 +1,7 @@
+{
+  "recommendations": [
+    "VoidZero.vite-plus-extension-pack",
+    "rust-lang.rust-analyzer",
+    "tauri-apps.tauri-vscode"
+  ]
+}
