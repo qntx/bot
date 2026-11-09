@@ -42,6 +42,8 @@ const config: UserConfig = defineConfig({
       "apps/desktop/src-tauri/gen/**",
       // Byte-frozen parity vectors; edited only by their generators.
       "vectors/**",
+      // Copied byte for byte from the pinned pi-ai package (scripts/sync-catalog.ts).
+      "crates/ovo-ai/catalog/**",
     ],
   },
   lint: merge(react, {

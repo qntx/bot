@@ -11,6 +11,7 @@
 
 pub mod api;
 pub mod auth;
+pub mod catalog;
 pub mod cost;
 pub mod estimate;
 pub mod faux;

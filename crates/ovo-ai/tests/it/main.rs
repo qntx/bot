@@ -26,6 +26,7 @@ mod anthropic;
 #[cfg(feature = "http")]
 mod anthropic_stream;
 mod auth;
+mod catalog;
 mod constrained_sampling;
 mod http_client;
 mod http_policy;
