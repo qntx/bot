@@ -10,6 +10,8 @@ repository.workspace   = true
 homepage.workspace     = true
 authors.workspace      = true
 
+readme = "README.md"
+
 [dependencies]
 serde.workspace       = true
 serde_json            = { workspace = true, features = ["preserve_order", "float_roundtrip"] }
@@ -31,6 +33,10 @@ tempfile           = "3"
 wiremock           = "0.6.5"
 tokio              = { workspace = true, features = ["test-util", "macros", "rt"] }
 proptest.workspace = true
+
+[[example]]
+name              = "stream"
+required-features = ["http"]
 
 [lints]
 workspace = true
