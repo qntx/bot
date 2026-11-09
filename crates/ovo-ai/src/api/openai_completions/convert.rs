@@ -13,7 +13,7 @@ use crate::api::constrained_sampling::{
 use crate::hash::short_hash;
 use crate::text::{
     get_system_message_text, js_len, js_slice, js_trim, render_system_message_update,
-    sanitize_surrogates,
+    replace_non_id_chars, sanitize_surrogates,
 };
 use crate::transcript::{
     TranscriptContext, TranscriptToolSupport, resolve_transcript, resolve_transcript_tools,
@@ -47,8 +47,8 @@ pub(super) const fn tool_support(compat: &OpenAiCompletionsCompat) -> Transcript
 #[must_use]
 pub fn normalize_tool_call_id(id: &str, model: &Model) -> String {
     if let Some((call, item)) = id.split_once('|') {
-        let call_id = sanitize_id(call);
-        let item_id = sanitize_id(item);
+        let call_id = replace_non_id_chars(call);
+        let item_id = replace_non_id_chars(item);
         let combined = if item_id.is_empty() {
             call_id.clone()
         } else {
@@ -68,20 +68,6 @@ pub fn normalize_tool_call_id(id: &str, model: &Model) -> String {
         return js_slice(id, 0, 40).to_owned();
     }
     id.to_owned()
-}
-
-/// `replace(/[^a-zA-Z0-9_-]/g, "_")`: the regex matches UTF-16 code units,
-/// so a surrogate pair becomes two underscores.
-fn sanitize_id(id: &str) -> String {
-    let mut out = String::with_capacity(id.len());
-    for c in id.chars() {
-        if c.is_ascii_alphanumeric() || c == '_' || c == '-' {
-            out.push(c);
-        } else {
-            out.extend(std::iter::repeat_n('_', c.len_utf16()));
-        }
-    }
-    out
 }
 
 /// `convertTools`: grammar tools as `custom` tools, the rest as function

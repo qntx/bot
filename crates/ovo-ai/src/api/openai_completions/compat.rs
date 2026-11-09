@@ -4,6 +4,7 @@
 
 use serde_json::{Map, Value};
 
+pub use crate::api::openai_sdk::SessionAffinityFormat;
 use crate::types::model::Model;
 
 /// The resolved compat settings (`ResolvedOpenAICompletionsCompat`).
@@ -123,17 +124,6 @@ pub enum MaxTokensField {
     MaxTokens,
 }
 
-/// `sessionAffinityFormat`.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum SessionAffinityFormat {
-    /// `session_id`, `x-client-request-id` and `x-session-affinity`.
-    Openai,
-    /// `x-client-request-id` and `x-session-affinity`.
-    OpenaiNoSession,
-    /// `x-session-id`.
-    Openrouter,
-}
-
 /// `thinkingTokenBudgetField`.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ThinkingTokenBudgetField {
@@ -246,11 +236,7 @@ impl OpenAiCompletionsCompat {
             compat.anthropic_cache_control = true;
         }
         if let Some(format) = text("sessionAffinityFormat") {
-            compat.session_affinity_format = match format {
-                "openrouter" => SessionAffinityFormat::Openrouter,
-                "openai-nosession" => SessionAffinityFormat::OpenaiNoSession,
-                _ => SessionAffinityFormat::Openai,
-            };
+            compat.session_affinity_format = SessionAffinityFormat::parse(format);
         }
         let record = |key: &str| overrides.get(key).and_then(Value::as_object).cloned();
         if let Some(kwargs) = record("chatTemplateKwargs") {

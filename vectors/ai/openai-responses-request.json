@@ -1,0 +1,5751 @@
+[
+	{
+		"name": "basic",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"store\":false}"
+		}
+	},
+	{
+		"name": "user-string-only",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"store\":false}"
+		}
+	},
+	{
+		"name": "user-blocks",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "user",
+					"content": [
+						{
+							"type": "text",
+							"text": "look"
+						},
+						{
+							"type": "image",
+							"data": "aGk=",
+							"mimeType": "image/png"
+						},
+						{
+							"type": "text",
+							"text": ""
+						}
+					],
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"look\"},{\"type\":\"input_image\",\"detail\":\"auto\",\"image_url\":\"data:image/png;base64,aGk=\"},{\"type\":\"input_text\",\"text\":\"\"}]}],\"stream\":true,\"store\":false}"
+		}
+	},
+	{
+		"name": "user-empty-blocks",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "user",
+					"content": [],
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"store\":false}"
+		}
+	},
+	{
+		"name": "developer-role",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": true,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"developer\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"store\":false,\"reasoning\":{\"effort\":\"none\"}}"
+		}
+	},
+	{
+		"name": "developer-role-disabled",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": true,
+			"contextWindow": 128000,
+			"maxTokens": 4096,
+			"compat": {
+				"supportsDeveloperRole": false
+			}
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"store\":false,\"reasoning\":{\"effort\":\"none\"}}"
+		}
+	},
+	{
+		"name": "system-mid-convo-folded",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "Base.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "a",
+					"timestamp": 0
+				},
+				{
+					"role": "system",
+					"content": "Later rule.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "b",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"Base.\\n\\nLater rule.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"a\"}]},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"b\"}]}],\"stream\":true,\"store\":false}"
+		}
+	},
+	{
+		"name": "system-mid-convo-in-place",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096,
+			"compat": {
+				"supportsMidConvoSystemMessages": true
+			}
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "Base.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "a",
+					"timestamp": 0
+				},
+				{
+					"role": "system",
+					"content": "Later rule.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "b",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"Base.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"a\"}]},{\"role\":\"system\",\"content\":\"Later rule.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"b\"}]}],\"stream\":true,\"store\":false}"
+		}
+	},
+	{
+		"name": "base-url-trailing-slash",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "custom",
+			"baseUrl": "https://llm.example.com/v1/",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0
+		},
+		"request": {
+			"url": "https://llm.example.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"store\":false}"
+		}
+	},
+	{
+		"name": "reasoning-effort",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": true,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0,
+			"reasoningEffort": "high"
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"developer\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"store\":false,\"reasoning\":{\"effort\":\"high\",\"summary\":\"auto\"},\"include\":[\"reasoning.encrypted_content\"]}"
+		}
+	},
+	{
+		"name": "reasoning-effort-mapped",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": true,
+			"contextWindow": 128000,
+			"maxTokens": 4096,
+			"thinkingLevelMap": {
+				"high": "xhigh",
+				"low": null
+			}
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0,
+			"reasoningEffort": "high"
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"developer\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"store\":false,\"reasoning\":{\"effort\":\"xhigh\",\"summary\":\"auto\"},\"include\":[\"reasoning.encrypted_content\"]}"
+		}
+	},
+	{
+		"name": "reasoning-effort-null-mapped",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": true,
+			"contextWindow": 128000,
+			"maxTokens": 4096,
+			"thinkingLevelMap": {
+				"low": null
+			}
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0,
+			"reasoningEffort": "low",
+			"reasoningSummary": "concise"
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"developer\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"store\":false,\"reasoning\":{\"effort\":\"low\",\"summary\":\"concise\"},\"include\":[\"reasoning.encrypted_content\"]}"
+		}
+	},
+	{
+		"name": "reasoning-off-default",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": true,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"developer\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"store\":false,\"reasoning\":{\"effort\":\"none\"}}"
+		}
+	},
+	{
+		"name": "reasoning-off-mapped",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": true,
+			"contextWindow": 128000,
+			"maxTokens": 4096,
+			"thinkingLevelMap": {
+				"off": "minimal"
+			}
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"developer\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"store\":false,\"reasoning\":{\"effort\":\"minimal\"}}"
+		}
+	},
+	{
+		"name": "reasoning-off-unsupported",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": true,
+			"contextWindow": 128000,
+			"maxTokens": 4096,
+			"thinkingLevelMap": {
+				"off": null
+			}
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"developer\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"store\":false}"
+		}
+	},
+	{
+		"name": "reasoning-summary-only",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": true,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0,
+			"reasoningSummary": "detailed"
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"developer\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"store\":false,\"reasoning\":{\"effort\":\"medium\",\"summary\":\"detailed\"},\"include\":[\"reasoning.encrypted_content\"]}"
+		}
+	},
+	{
+		"name": "reasoning-summary-null",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": true,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0,
+			"reasoningEffort": "low",
+			"reasoningSummary": null
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"developer\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"store\":false,\"reasoning\":{\"effort\":\"low\",\"summary\":\"auto\"},\"include\":[\"reasoning.encrypted_content\"]}"
+		}
+	},
+	{
+		"name": "reasoning-github-copilot-off",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "github-copilot",
+			"baseUrl": "https://api.githubcopilot.com",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": true,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0
+		},
+		"request": {
+			"url": "https://api.githubcopilot.com/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json",
+				"openai-intent": "conversation-edits",
+				"x-initiator": "user"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"developer\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"store\":false}"
+		}
+	},
+	{
+		"name": "reasoning-xai-off",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "xai",
+			"baseUrl": "https://api.x.ai/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": true,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0
+		},
+		"request": {
+			"url": "https://api.x.ai/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"developer\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"store\":false,\"reasoning\":{\"effort\":\"none\"},\"include\":[\"reasoning.encrypted_content\"]}"
+		}
+	},
+	{
+		"name": "reasoning-xai-effort",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "xai",
+			"baseUrl": "https://api.x.ai/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": true,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0,
+			"reasoningEffort": "medium"
+		},
+		"request": {
+			"url": "https://api.x.ai/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"developer\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"store\":false,\"reasoning\":{\"effort\":\"medium\",\"summary\":\"auto\"},\"include\":[\"reasoning.encrypted_content\"]}"
+		}
+	},
+	{
+		"name": "reasoning-non-reasoning-model",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0,
+			"reasoningEffort": "high"
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"store\":false}"
+		}
+	},
+	{
+		"name": "configuration-update",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": true,
+			"contextWindow": 128000,
+			"maxTokens": 4096,
+			"compat": {
+				"supportsMidConvoEffort": true
+			},
+			"thinkingLevelMap": {
+				"high": "x"
+			}
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "Base.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "a",
+					"timestamp": 0
+				},
+				{
+					"role": "assistant",
+					"content": [
+						{
+							"type": "text",
+							"text": "one"
+						}
+					],
+					"api": "openai-responses",
+					"provider": "openai",
+					"model": "m",
+					"usage": {
+						"input": 0,
+						"output": 0,
+						"cacheRead": 0,
+						"cacheWrite": 0,
+						"totalTokens": 0,
+						"cost": {
+							"input": 0,
+							"output": 0,
+							"cacheRead": 0,
+							"cacheWrite": 0,
+							"total": 0
+						}
+					},
+					"stopReason": "stop",
+					"timestamp": 0,
+					"providerThinkingLevel": "low"
+				},
+				{
+					"role": "user",
+					"content": "b",
+					"timestamp": 0
+				},
+				{
+					"role": "assistant",
+					"content": [
+						{
+							"type": "text",
+							"text": "two"
+						}
+					],
+					"api": "openai-responses",
+					"provider": "openai",
+					"model": "other",
+					"usage": {
+						"input": 0,
+						"output": 0,
+						"cacheRead": 0,
+						"cacheWrite": 0,
+						"totalTokens": 0,
+						"cost": {
+							"input": 0,
+							"output": 0,
+							"cacheRead": 0,
+							"cacheWrite": 0,
+							"total": 0
+						}
+					},
+					"stopReason": "stop",
+					"timestamp": 0,
+					"providerThinkingLevel": "high"
+				},
+				{
+					"role": "user",
+					"content": "c",
+					"timestamp": 0
+				},
+				{
+					"role": "assistant",
+					"content": [
+						{
+							"type": "text",
+							"text": "three"
+						}
+					],
+					"api": "openai-responses",
+					"provider": "openai",
+					"model": "m",
+					"usage": {
+						"input": 0,
+						"output": 0,
+						"cacheRead": 0,
+						"cacheWrite": 0,
+						"totalTokens": 0,
+						"cost": {
+							"input": 0,
+							"output": 0,
+							"cacheRead": 0,
+							"cacheWrite": 0,
+							"total": 0
+						}
+					},
+					"stopReason": "stop",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "d",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0,
+			"reasoningEffort": "high"
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"developer\",\"content\":\"Base.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"a\"}]},{\"type\":\"configuration_update\",\"reasoning\":{\"effort\":\"low\"}},{\"type\":\"message\",\"role\":\"assistant\",\"content\":[{\"type\":\"output_text\",\"text\":\"one\",\"annotations\":[]}],\"status\":\"completed\",\"id\":\"msg_pi_1\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"b\"}]},{\"type\":\"message\",\"role\":\"assistant\",\"content\":[{\"type\":\"output_text\",\"text\":\"two\",\"annotations\":[]}],\"status\":\"completed\",\"id\":\"msg_pi_3\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"c\"}]},{\"type\":\"message\",\"role\":\"assistant\",\"content\":[{\"type\":\"output_text\",\"text\":\"three\",\"annotations\":[]}],\"status\":\"completed\",\"id\":\"msg_pi_5\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"d\"}]},{\"type\":\"configuration_update\",\"reasoning\":{\"effort\":\"x\"}}],\"stream\":true,\"store\":false,\"reasoning\":{\"effort\":\"medium\",\"summary\":\"auto\"},\"include\":[\"reasoning.encrypted_content\"]}"
+		}
+	},
+	{
+		"name": "configuration-update-without-effort",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": true,
+			"contextWindow": 128000,
+			"maxTokens": 4096,
+			"compat": {
+				"supportsMidConvoEffort": true
+			}
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "user",
+					"content": "a",
+					"timestamp": 0
+				},
+				{
+					"role": "assistant",
+					"content": [
+						{
+							"type": "text",
+							"text": "one"
+						}
+					],
+					"api": "openai-responses",
+					"provider": "openai",
+					"model": "m",
+					"usage": {
+						"input": 0,
+						"output": 0,
+						"cacheRead": 0,
+						"cacheWrite": 0,
+						"totalTokens": 0,
+						"cost": {
+							"input": 0,
+							"output": 0,
+							"cacheRead": 0,
+							"cacheWrite": 0,
+							"total": 0
+						}
+					},
+					"stopReason": "stop",
+					"timestamp": 0,
+					"providerThinkingLevel": "low"
+				},
+				{
+					"role": "user",
+					"content": "b",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"a\"}]},{\"type\":\"message\",\"role\":\"assistant\",\"content\":[{\"type\":\"output_text\",\"text\":\"one\",\"annotations\":[]}],\"status\":\"completed\",\"id\":\"msg_pi_1\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"b\"}]}],\"stream\":true,\"store\":false,\"reasoning\":{\"effort\":\"none\"}}"
+		}
+	},
+	{
+		"name": "chatgpt-sign-in",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": true,
+			"contextWindow": 128000,
+			"maxTokens": 4096,
+			"compat": {
+				"supportsMidConvoEffort": true
+			}
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "eyJ-access-token",
+			"maxRetries": 0,
+			"reasoningEffort": "high",
+			"maxTokens": 500,
+			"temperature": 0.5,
+			"sessionId": "s1",
+			"cacheRetention": "long"
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer eyJ-access-token",
+				"content-type": "application/json",
+				"session_id": "s1",
+				"x-client-request-id": "s1"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"developer\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"prompt_cache_key\":\"s1\",\"store\":false,\"reasoning\":{\"effort\":\"high\",\"summary\":\"auto\"},\"include\":[\"reasoning.encrypted_content\"]}"
+		}
+	},
+	{
+		"name": "cache-short",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0,
+			"sessionId": "s1"
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json",
+				"session_id": "s1",
+				"x-client-request-id": "s1"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"prompt_cache_key\":\"s1\",\"store\":false}"
+		}
+	},
+	{
+		"name": "cache-long",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0,
+			"sessionId": "s1",
+			"cacheRetention": "long"
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json",
+				"session_id": "s1",
+				"x-client-request-id": "s1"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"prompt_cache_key\":\"s1\",\"prompt_cache_retention\":\"24h\",\"store\":false}"
+		}
+	},
+	{
+		"name": "cache-long-unsupported",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096,
+			"compat": {
+				"supportsLongCacheRetention": false
+			}
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0,
+			"sessionId": "s1",
+			"cacheRetention": "long"
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json",
+				"session_id": "s1",
+				"x-client-request-id": "s1"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"prompt_cache_key\":\"s1\",\"store\":false}"
+		}
+	},
+	{
+		"name": "cache-none",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0,
+			"sessionId": "s1",
+			"cacheRetention": "none"
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"store\":false}"
+		}
+	},
+	{
+		"name": "cache-env-long",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0,
+			"sessionId": "s1",
+			"env": {
+				"PI_CACHE_RETENTION": "long"
+			}
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json",
+				"session_id": "s1",
+				"x-client-request-id": "s1"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"prompt_cache_key\":\"s1\",\"prompt_cache_retention\":\"24h\",\"store\":false}"
+		}
+	},
+	{
+		"name": "cache-explicit-none",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096,
+			"compat": {
+				"supportsExplicitPromptCacheMode": true
+			}
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0,
+			"sessionId": "s1",
+			"cacheRetention": "none"
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"prompt_cache_options\":{\"mode\":\"explicit\"},\"store\":false}"
+		}
+	},
+	{
+		"name": "cache-explicit-long",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096,
+			"compat": {
+				"supportsExplicitPromptCacheMode": true
+			}
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0,
+			"sessionId": "s1",
+			"cacheRetention": "long"
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json",
+				"session_id": "s1",
+				"x-client-request-id": "s1"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"prompt_cache_key\":\"s1\",\"prompt_cache_options\":{\"ttl\":\"30m\"},\"store\":false}"
+		}
+	},
+	{
+		"name": "cache-explicit-short",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096,
+			"compat": {
+				"supportsExplicitPromptCacheMode": true
+			}
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0,
+			"sessionId": "s1"
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json",
+				"session_id": "s1",
+				"x-client-request-id": "s1"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"prompt_cache_key\":\"s1\",\"store\":false}"
+		}
+	},
+	{
+		"name": "cache-key-clamped",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0,
+			"sessionId": "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json",
+				"session_id": "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk",
+				"x-client-request-id": "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"prompt_cache_key\":\"kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk\",\"store\":false}"
+		}
+	},
+	{
+		"name": "cache-empty-session",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0,
+			"sessionId": ""
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"prompt_cache_key\":\"\",\"store\":false}"
+		}
+	},
+	{
+		"name": "max-output-tokens-floor",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0,
+			"maxTokens": 8
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"store\":false,\"max_output_tokens\":16}"
+		}
+	},
+	{
+		"name": "max-output-tokens",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0,
+			"maxTokens": 900
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"store\":false,\"max_output_tokens\":900}"
+		}
+	},
+	{
+		"name": "max-output-tokens-unsupported",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096,
+			"compat": {
+				"supportsMaxOutputTokens": false
+			}
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0,
+			"maxTokens": 900
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"store\":false}"
+		}
+	},
+	{
+		"name": "max-output-tokens-zero",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0,
+			"maxTokens": 0
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"store\":false}"
+		}
+	},
+	{
+		"name": "temperature",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0,
+			"temperature": 0
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"store\":false,\"temperature\":0}"
+		}
+	},
+	{
+		"name": "service-tier",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0,
+			"serviceTier": "flex"
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"store\":false,\"service_tier\":\"flex\"}"
+		}
+	},
+	{
+		"name": "tool-choice-object",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"toolsAdded": [
+						{
+							"name": "read",
+							"description": "read tool",
+							"parameters": {
+								"type": "object",
+								"properties": {
+									"path": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"path"
+								]
+							}
+						}
+					],
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "q",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0,
+			"toolChoice": {
+				"type": "function",
+				"name": "read"
+			}
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"q\"}]}],\"stream\":true,\"store\":false,\"tools\":[{\"type\":\"function\",\"name\":\"read\",\"description\":\"read tool\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"}},\"required\":[\"path\"]}}],\"tool_choice\":{\"type\":\"function\",\"name\":\"read\"}}"
+		}
+	},
+	{
+		"name": "sampling-override",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": true,
+			"contextWindow": 128000,
+			"maxTokens": 4096,
+			"samplingParams": {
+				"top_p": 0.9
+			}
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0,
+			"reasoningEffort": "low",
+			"temperature": 0.2,
+			"samplingParams": {
+				"temperature": 0.7,
+				"seed": 1
+			}
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"developer\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"store\":false,\"temperature\":0.7,\"reasoning\":{\"effort\":\"low\",\"summary\":\"auto\"},\"include\":[\"reasoning.encrypted_content\"],\"top_p\":0.9,\"seed\":1}"
+		}
+	},
+	{
+		"name": "affinity-openai",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0,
+			"sessionId": "s1"
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json",
+				"session_id": "s1",
+				"x-client-request-id": "s1"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"prompt_cache_key\":\"s1\",\"store\":false}"
+		}
+	},
+	{
+		"name": "affinity-openrouter",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openrouter",
+			"baseUrl": "https://openrouter.ai/api/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0,
+			"sessionId": "s1"
+		},
+		"request": {
+			"url": "https://openrouter.ai/api/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json",
+				"x-session-id": "s1"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"prompt_cache_key\":\"s1\",\"store\":false}"
+		}
+	},
+	{
+		"name": "affinity-nosession",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "custom",
+			"baseUrl": "https://llm.example.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096,
+			"compat": {
+				"sessionAffinityFormat": "openai-nosession"
+			}
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0,
+			"sessionId": "s1"
+		},
+		"request": {
+			"url": "https://llm.example.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json",
+				"x-client-request-id": "s1"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"prompt_cache_key\":\"s1\",\"store\":false}"
+		}
+	},
+	{
+		"name": "affinity-cache-none",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0,
+			"sessionId": "s1",
+			"cacheRetention": "none"
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"store\":false}"
+		}
+	},
+	{
+		"name": "headers-merge-order",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096,
+			"headers": {
+				"X-Model": "m",
+				"x-shared": "model"
+			}
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0,
+			"sessionId": "s1",
+			"headers": {
+				"x-shared": "request",
+				"x-client-request-id": "r"
+			}
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json",
+				"session_id": "s1",
+				"x-client-request-id": "r",
+				"x-model": "m",
+				"x-shared": "request"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"prompt_cache_key\":\"s1\",\"store\":false}"
+		}
+	},
+	{
+		"name": "headers-null-removal",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096,
+			"headers": {
+				"x-model": "m"
+			}
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0,
+			"headers": {
+				"x-model": null,
+				"accept": null
+			}
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"store\":false}"
+		}
+	},
+	{
+		"name": "identity-openrouter",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openrouter",
+			"baseUrl": "https://openrouter.ai/api/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0,
+			"identity": {
+				"attribution": {
+					"name": "ovo",
+					"url": "https://ovo.example",
+					"categories": [
+						"cli-agent"
+					]
+				}
+			}
+		},
+		"request": {
+			"url": "https://openrouter.ai/api/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json",
+				"http-referer": "https://ovo.example",
+				"x-openrouter-categories": "cli-agent",
+				"x-openrouter-title": "ovo"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"store\":false}"
+		}
+	},
+	{
+		"name": "github-copilot-agent-vision",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "github-copilot",
+			"baseUrl": "https://api.githubcopilot.com",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"toolsAdded": [
+						{
+							"name": "read",
+							"description": "read tool",
+							"parameters": {
+								"type": "object",
+								"properties": {
+									"path": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"path"
+								]
+							}
+						}
+					],
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": [
+						{
+							"type": "text",
+							"text": "look"
+						},
+						{
+							"type": "image",
+							"data": "aGk=",
+							"mimeType": "image/png"
+						}
+					],
+					"timestamp": 0
+				},
+				{
+					"role": "assistant",
+					"content": [
+						{
+							"type": "toolCall",
+							"id": "c1|fc_1",
+							"name": "read",
+							"arguments": {
+								"path": "a"
+							}
+						}
+					],
+					"api": "openai-responses",
+					"provider": "github-copilot",
+					"model": "m",
+					"usage": {
+						"input": 0,
+						"output": 0,
+						"cacheRead": 0,
+						"cacheWrite": 0,
+						"totalTokens": 0,
+						"cost": {
+							"input": 0,
+							"output": 0,
+							"cacheRead": 0,
+							"cacheWrite": 0,
+							"total": 0
+						}
+					},
+					"stopReason": "toolUse",
+					"timestamp": 0
+				},
+				{
+					"role": "toolResult",
+					"toolCallId": "c1|fc_1",
+					"toolName": "read",
+					"content": [
+						{
+							"type": "text",
+							"text": "ok"
+						}
+					],
+					"isError": false,
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0
+		},
+		"request": {
+			"url": "https://api.githubcopilot.com/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json",
+				"copilot-vision-request": "true",
+				"openai-intent": "conversation-edits",
+				"x-initiator": "agent"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"look\"},{\"type\":\"input_image\",\"detail\":\"auto\",\"image_url\":\"data:image/png;base64,aGk=\"}]},{\"type\":\"function_call\",\"id\":\"fc_1\",\"call_id\":\"c1\",\"name\":\"read\",\"arguments\":\"{\\\"path\\\":\\\"a\\\"}\"},{\"type\":\"function_call_output\",\"call_id\":\"c1\",\"output\":\"ok\"}],\"stream\":true,\"store\":false,\"tools\":[{\"type\":\"function\",\"name\":\"read\",\"description\":\"read tool\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"}},\"required\":[\"path\"]}}]}"
+		}
+	},
+	{
+		"name": "auth-no-key",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"maxRetries": 0
+		},
+		"request": {
+			"error": "No API key for provider: openai"
+		}
+	},
+	{
+		"name": "auth-header-only",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "custom",
+			"baseUrl": "https://llm.example.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"maxRetries": 0,
+			"headers": {
+				"Authorization": "Bearer from-header"
+			}
+		},
+		"request": {
+			"url": "https://llm.example.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer from-header",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"store\":false}"
+		}
+	},
+	{
+		"name": "assistant-text-signatures",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "user",
+					"content": "a",
+					"timestamp": 0
+				},
+				{
+					"role": "assistant",
+					"content": [
+						{
+							"type": "text",
+							"text": "v1",
+							"textSignature": "{\"v\":1,\"id\":\"msg_abc\",\"phase\":\"final_answer\"}"
+						},
+						{
+							"type": "text",
+							"text": "legacy",
+							"textSignature": "msg_legacy"
+						},
+						{
+							"type": "text",
+							"text": "long",
+							"textSignature": "msg_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+						},
+						{
+							"type": "text",
+							"text": "plain"
+						},
+						{
+							"type": "text",
+							"text": "bad-phase",
+							"textSignature": "{\"v\":1,\"id\":\"msg_p\",\"phase\":\"other\"}"
+						},
+						{
+							"type": "text",
+							"text": "v2",
+							"textSignature": "{\"v\":2,\"id\":\"msg_v2\"}"
+						}
+					],
+					"api": "openai-responses",
+					"provider": "openai",
+					"model": "m",
+					"usage": {
+						"input": 0,
+						"output": 0,
+						"cacheRead": 0,
+						"cacheWrite": 0,
+						"totalTokens": 0,
+						"cost": {
+							"input": 0,
+							"output": 0,
+							"cacheRead": 0,
+							"cacheWrite": 0,
+							"total": 0
+						}
+					},
+					"stopReason": "stop",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "b",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"a\"}]},{\"type\":\"message\",\"role\":\"assistant\",\"content\":[{\"type\":\"output_text\",\"text\":\"v1\",\"annotations\":[]}],\"status\":\"completed\",\"id\":\"msg_abc\",\"phase\":\"final_answer\"},{\"type\":\"message\",\"role\":\"assistant\",\"content\":[{\"type\":\"output_text\",\"text\":\"legacy\",\"annotations\":[]}],\"status\":\"completed\",\"id\":\"msg_legacy\"},{\"type\":\"message\",\"role\":\"assistant\",\"content\":[{\"type\":\"output_text\",\"text\":\"long\",\"annotations\":[]}],\"status\":\"completed\",\"id\":\"msg_1f43gnm1wcb1pr\"},{\"type\":\"message\",\"role\":\"assistant\",\"content\":[{\"type\":\"output_text\",\"text\":\"plain\",\"annotations\":[]}],\"status\":\"completed\",\"id\":\"msg_pi_1_3\"},{\"type\":\"message\",\"role\":\"assistant\",\"content\":[{\"type\":\"output_text\",\"text\":\"bad-phase\",\"annotations\":[]}],\"status\":\"completed\",\"id\":\"msg_p\"},{\"type\":\"message\",\"role\":\"assistant\",\"content\":[{\"type\":\"output_text\",\"text\":\"v2\",\"annotations\":[]}],\"status\":\"completed\",\"id\":\"{\\\"v\\\":2,\\\"id\\\":\\\"msg_v2\\\"}\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"b\"}]}],\"stream\":true,\"store\":false}"
+		}
+	},
+	{
+		"name": "assistant-fallback-ids-skip-empty",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "Base.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "a",
+					"timestamp": 0
+				},
+				{
+					"role": "assistant",
+					"content": [],
+					"api": "openai-responses",
+					"provider": "openai",
+					"model": "m",
+					"usage": {
+						"input": 0,
+						"output": 0,
+						"cacheRead": 0,
+						"cacheWrite": 0,
+						"totalTokens": 0,
+						"cost": {
+							"input": 0,
+							"output": 0,
+							"cacheRead": 0,
+							"cacheWrite": 0,
+							"total": 0
+						}
+					},
+					"stopReason": "stop",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": [],
+					"timestamp": 0
+				},
+				{
+					"role": "assistant",
+					"content": [
+						{
+							"type": "text",
+							"text": "first"
+						},
+						{
+							"type": "text",
+							"text": "second"
+						}
+					],
+					"api": "openai-responses",
+					"provider": "openai",
+					"model": "m",
+					"usage": {
+						"input": 0,
+						"output": 0,
+						"cacheRead": 0,
+						"cacheWrite": 0,
+						"totalTokens": 0,
+						"cost": {
+							"input": 0,
+							"output": 0,
+							"cacheRead": 0,
+							"cacheWrite": 0,
+							"total": 0
+						}
+					},
+					"stopReason": "stop",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "b",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"Base.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"a\"}]},{\"type\":\"message\",\"role\":\"assistant\",\"content\":[{\"type\":\"output_text\",\"text\":\"first\",\"annotations\":[]}],\"status\":\"completed\",\"id\":\"msg_pi_1\"},{\"type\":\"message\",\"role\":\"assistant\",\"content\":[{\"type\":\"output_text\",\"text\":\"second\",\"annotations\":[]}],\"status\":\"completed\",\"id\":\"msg_pi_1_1\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"b\"}]}],\"stream\":true,\"store\":false}"
+		}
+	},
+	{
+		"name": "assistant-thinking-replay",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": true,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "user",
+					"content": "a",
+					"timestamp": 0
+				},
+				{
+					"role": "assistant",
+					"content": [
+						{
+							"type": "thinking",
+							"thinking": "thought",
+							"thinkingSignature": "{\"type\":\"reasoning\",\"id\":\"rs_1\",\"summary\":[{\"type\":\"summary_text\",\"text\":\"thought\"}],\"encrypted_content\":\"enc\"}"
+						},
+						{
+							"type": "thinking",
+							"thinking": "unsigned"
+						},
+						{
+							"type": "text",
+							"text": "answer"
+						}
+					],
+					"api": "openai-responses",
+					"provider": "openai",
+					"model": "m",
+					"usage": {
+						"input": 0,
+						"output": 0,
+						"cacheRead": 0,
+						"cacheWrite": 0,
+						"totalTokens": 0,
+						"cost": {
+							"input": 0,
+							"output": 0,
+							"cacheRead": 0,
+							"cacheWrite": 0,
+							"total": 0
+						}
+					},
+					"stopReason": "stop",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "b",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0,
+			"reasoningEffort": "low"
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"a\"}]},{\"type\":\"reasoning\",\"id\":\"rs_1\",\"summary\":[{\"type\":\"summary_text\",\"text\":\"thought\"}],\"encrypted_content\":\"enc\"},{\"type\":\"message\",\"role\":\"assistant\",\"content\":[{\"type\":\"output_text\",\"text\":\"answer\",\"annotations\":[]}],\"status\":\"completed\",\"id\":\"msg_pi_1\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"b\"}]}],\"stream\":true,\"store\":false,\"reasoning\":{\"effort\":\"low\",\"summary\":\"auto\"},\"include\":[\"reasoning.encrypted_content\"]}"
+		}
+	},
+	{
+		"name": "assistant-thinking-invalid-signature",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": true,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "user",
+					"content": "a",
+					"timestamp": 0
+				},
+				{
+					"role": "assistant",
+					"content": [
+						{
+							"type": "thinking",
+							"thinking": "t",
+							"thinkingSignature": "{not json"
+						},
+						{
+							"type": "text",
+							"text": "x"
+						}
+					],
+					"api": "openai-responses",
+					"provider": "openai",
+					"model": "m",
+					"usage": {
+						"input": 0,
+						"output": 0,
+						"cacheRead": 0,
+						"cacheWrite": 0,
+						"totalTokens": 0,
+						"cost": {
+							"input": 0,
+							"output": 0,
+							"cacheRead": 0,
+							"cacheWrite": 0,
+							"total": 0
+						}
+					},
+					"stopReason": "stop",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "b",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0
+		},
+		"request": {
+			"error": "Expected property name or '}' in JSON at position 1 (line 1 column 2)"
+		}
+	},
+	{
+		"name": "tool-call-ids-same-model",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"toolsAdded": [
+						{
+							"name": "read",
+							"description": "read tool",
+							"parameters": {
+								"type": "object",
+								"properties": {
+									"path": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"path"
+								]
+							}
+						}
+					],
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "a",
+					"timestamp": 0
+				},
+				{
+					"role": "assistant",
+					"content": [
+						{
+							"type": "toolCall",
+							"id": "call_1|fc_1",
+							"name": "read",
+							"arguments": {
+								"path": "a"
+							}
+						},
+						{
+							"type": "toolCall",
+							"id": "call_2|item_2",
+							"name": "read",
+							"arguments": {
+								"path": "a"
+							}
+						},
+						{
+							"type": "toolCall",
+							"id": "call_3",
+							"name": "read",
+							"arguments": {
+								"path": "a"
+							}
+						}
+					],
+					"api": "openai-responses",
+					"provider": "openai",
+					"model": "m",
+					"usage": {
+						"input": 0,
+						"output": 0,
+						"cacheRead": 0,
+						"cacheWrite": 0,
+						"totalTokens": 0,
+						"cost": {
+							"input": 0,
+							"output": 0,
+							"cacheRead": 0,
+							"cacheWrite": 0,
+							"total": 0
+						}
+					},
+					"stopReason": "toolUse",
+					"timestamp": 0
+				},
+				{
+					"role": "toolResult",
+					"toolCallId": "call_1|fc_1",
+					"toolName": "read",
+					"content": [
+						{
+							"type": "text",
+							"text": "one"
+						}
+					],
+					"isError": false,
+					"timestamp": 0
+				},
+				{
+					"role": "toolResult",
+					"toolCallId": "call_2|item_2",
+					"toolName": "read",
+					"content": [
+						{
+							"type": "text",
+							"text": "two"
+						}
+					],
+					"isError": false,
+					"timestamp": 0
+				},
+				{
+					"role": "toolResult",
+					"toolCallId": "call_3",
+					"toolName": "read",
+					"content": [
+						{
+							"type": "text",
+							"text": "three"
+						}
+					],
+					"isError": false,
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "b",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"a\"}]},{\"type\":\"function_call\",\"id\":\"fc_1\",\"call_id\":\"call_1\",\"name\":\"read\",\"arguments\":\"{\\\"path\\\":\\\"a\\\"}\"},{\"type\":\"function_call\",\"call_id\":\"call_2\",\"name\":\"read\",\"arguments\":\"{\\\"path\\\":\\\"a\\\"}\"},{\"type\":\"function_call\",\"call_id\":\"call_3\",\"name\":\"read\",\"arguments\":\"{\\\"path\\\":\\\"a\\\"}\"},{\"type\":\"function_call_output\",\"call_id\":\"call_1\",\"output\":\"one\"},{\"type\":\"function_call_output\",\"call_id\":\"call_2\",\"output\":\"two\"},{\"type\":\"function_call_output\",\"call_id\":\"call_3\",\"output\":\"three\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"b\"}]}],\"stream\":true,\"store\":false,\"tools\":[{\"type\":\"function\",\"name\":\"read\",\"description\":\"read tool\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"}},\"required\":[\"path\"]}}]}"
+		}
+	},
+	{
+		"name": "tool-call-ids-different-model",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"toolsAdded": [
+						{
+							"name": "read",
+							"description": "read tool",
+							"parameters": {
+								"type": "object",
+								"properties": {
+									"path": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"path"
+								]
+							}
+						}
+					],
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "a",
+					"timestamp": 0
+				},
+				{
+					"role": "assistant",
+					"content": [
+						{
+							"type": "toolCall",
+							"id": "call_1|fc_1",
+							"name": "read",
+							"arguments": {
+								"path": "a"
+							},
+							"namespace": "ns"
+						}
+					],
+					"api": "openai-responses",
+					"provider": "openai",
+					"model": "other",
+					"usage": {
+						"input": 0,
+						"output": 0,
+						"cacheRead": 0,
+						"cacheWrite": 0,
+						"totalTokens": 0,
+						"cost": {
+							"input": 0,
+							"output": 0,
+							"cacheRead": 0,
+							"cacheWrite": 0,
+							"total": 0
+						}
+					},
+					"stopReason": "toolUse",
+					"timestamp": 0
+				},
+				{
+					"role": "toolResult",
+					"toolCallId": "call_1|fc_1",
+					"toolName": "read",
+					"content": [
+						{
+							"type": "text",
+							"text": "one"
+						}
+					],
+					"isError": false,
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "b",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"a\"}]},{\"type\":\"function_call\",\"call_id\":\"call_1\",\"name\":\"read\",\"arguments\":\"{\\\"path\\\":\\\"a\\\"}\"},{\"type\":\"function_call_output\",\"call_id\":\"call_1\",\"output\":\"one\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"b\"}]}],\"stream\":true,\"store\":false,\"tools\":[{\"type\":\"function\",\"name\":\"read\",\"description\":\"read tool\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"}},\"required\":[\"path\"]}}]}"
+		}
+	},
+	{
+		"name": "tool-call-namespace-same-model",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"toolsAdded": [
+						{
+							"name": "read",
+							"description": "read tool",
+							"parameters": {
+								"type": "object",
+								"properties": {
+									"path": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"path"
+								]
+							}
+						}
+					],
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "a",
+					"timestamp": 0
+				},
+				{
+					"role": "assistant",
+					"content": [
+						{
+							"type": "toolCall",
+							"id": "call_1|fc_1",
+							"name": "read",
+							"arguments": {
+								"path": "a"
+							},
+							"namespace": "ns"
+						}
+					],
+					"api": "openai-responses",
+					"provider": "openai",
+					"model": "m",
+					"usage": {
+						"input": 0,
+						"output": 0,
+						"cacheRead": 0,
+						"cacheWrite": 0,
+						"totalTokens": 0,
+						"cost": {
+							"input": 0,
+							"output": 0,
+							"cacheRead": 0,
+							"cacheWrite": 0,
+							"total": 0
+						}
+					},
+					"stopReason": "toolUse",
+					"timestamp": 0
+				},
+				{
+					"role": "toolResult",
+					"toolCallId": "call_1|fc_1",
+					"toolName": "read",
+					"content": [
+						{
+							"type": "text",
+							"text": "one"
+						}
+					],
+					"isError": false,
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"a\"}]},{\"type\":\"function_call\",\"id\":\"fc_1\",\"call_id\":\"call_1\",\"name\":\"read\",\"arguments\":\"{\\\"path\\\":\\\"a\\\"}\",\"namespace\":\"ns\"},{\"type\":\"function_call_output\",\"call_id\":\"call_1\",\"output\":\"one\"}],\"stream\":true,\"store\":false,\"tools\":[{\"type\":\"function\",\"name\":\"read\",\"description\":\"read tool\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"}},\"required\":[\"path\"]}}]}"
+		}
+	},
+	{
+		"name": "tool-call-ids-foreign-provider",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"toolsAdded": [
+						{
+							"name": "read",
+							"description": "read tool",
+							"parameters": {
+								"type": "object",
+								"properties": {
+									"path": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"path"
+								]
+							}
+						}
+					],
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "a",
+					"timestamp": 0
+				},
+				{
+					"role": "assistant",
+					"content": [
+						{
+							"type": "toolCall",
+							"id": "toolu_1|item.with.dots",
+							"name": "read",
+							"arguments": {
+								"path": "a"
+							}
+						},
+						{
+							"type": "toolCall",
+							"id": "call ä|x",
+							"name": "read",
+							"arguments": {
+								"path": "a"
+							}
+						}
+					],
+					"api": "anthropic-messages",
+					"provider": "anthropic",
+					"model": "claude",
+					"usage": {
+						"input": 0,
+						"output": 0,
+						"cacheRead": 0,
+						"cacheWrite": 0,
+						"totalTokens": 0,
+						"cost": {
+							"input": 0,
+							"output": 0,
+							"cacheRead": 0,
+							"cacheWrite": 0,
+							"total": 0
+						}
+					},
+					"stopReason": "toolUse",
+					"timestamp": 0
+				},
+				{
+					"role": "toolResult",
+					"toolCallId": "toolu_1|item.with.dots",
+					"toolName": "read",
+					"content": [
+						{
+							"type": "text",
+							"text": "one"
+						}
+					],
+					"isError": false,
+					"timestamp": 0
+				},
+				{
+					"role": "toolResult",
+					"toolCallId": "call ä|x",
+					"toolName": "read",
+					"content": [
+						{
+							"type": "text",
+							"text": "two"
+						}
+					],
+					"isError": false,
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"a\"}]},{\"type\":\"function_call\",\"id\":\"fc_10elxzq1n5uf6t\",\"call_id\":\"toolu_1\",\"name\":\"read\",\"arguments\":\"{\\\"path\\\":\\\"a\\\"}\"},{\"type\":\"function_call\",\"id\":\"fc_evpdwv6p0anp\",\"call_id\":\"call\",\"name\":\"read\",\"arguments\":\"{\\\"path\\\":\\\"a\\\"}\"},{\"type\":\"function_call_output\",\"call_id\":\"toolu_1\",\"output\":\"one\"},{\"type\":\"function_call_output\",\"call_id\":\"call\",\"output\":\"two\"}],\"stream\":true,\"store\":false,\"tools\":[{\"type\":\"function\",\"name\":\"read\",\"description\":\"read tool\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"}},\"required\":[\"path\"]}}]}"
+		}
+	},
+	{
+		"name": "tool-call-ids-other-target-provider",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "custom",
+			"baseUrl": "https://llm.example.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"toolsAdded": [
+						{
+							"name": "read",
+							"description": "read tool",
+							"parameters": {
+								"type": "object",
+								"properties": {
+									"path": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"path"
+								]
+							}
+						}
+					],
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "a",
+					"timestamp": 0
+				},
+				{
+					"role": "assistant",
+					"content": [
+						{
+							"type": "toolCall",
+							"id": "call_1|fc_1",
+							"name": "read",
+							"arguments": {
+								"path": "a"
+							}
+						}
+					],
+					"api": "openai-responses",
+					"provider": "custom",
+					"model": "m",
+					"usage": {
+						"input": 0,
+						"output": 0,
+						"cacheRead": 0,
+						"cacheWrite": 0,
+						"totalTokens": 0,
+						"cost": {
+							"input": 0,
+							"output": 0,
+							"cacheRead": 0,
+							"cacheWrite": 0,
+							"total": 0
+						}
+					},
+					"stopReason": "toolUse",
+					"timestamp": 0
+				},
+				{
+					"role": "toolResult",
+					"toolCallId": "call_1|fc_1",
+					"toolName": "read",
+					"content": [
+						{
+							"type": "text",
+							"text": "one"
+						}
+					],
+					"isError": false,
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0
+		},
+		"request": {
+			"url": "https://llm.example.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"a\"}]},{\"type\":\"function_call\",\"id\":\"fc_1\",\"call_id\":\"call_1\",\"name\":\"read\",\"arguments\":\"{\\\"path\\\":\\\"a\\\"}\"},{\"type\":\"function_call_output\",\"call_id\":\"call_1\",\"output\":\"one\"}],\"stream\":true,\"store\":false,\"tools\":[{\"type\":\"function\",\"name\":\"read\",\"description\":\"read tool\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"}},\"required\":[\"path\"]}}]}"
+		}
+	},
+	{
+		"name": "tool-results-content",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"toolsAdded": [
+						{
+							"name": "read",
+							"description": "read tool",
+							"parameters": {
+								"type": "object",
+								"properties": {
+									"path": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"path"
+								]
+							}
+						}
+					],
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "a",
+					"timestamp": 0
+				},
+				{
+					"role": "assistant",
+					"content": [
+						{
+							"type": "toolCall",
+							"id": "c1|fc_1",
+							"name": "read",
+							"arguments": {
+								"path": "a"
+							}
+						},
+						{
+							"type": "toolCall",
+							"id": "c2|fc_2",
+							"name": "read",
+							"arguments": {
+								"path": "a"
+							}
+						},
+						{
+							"type": "toolCall",
+							"id": "c3|fc_3",
+							"name": "read",
+							"arguments": {
+								"path": "a"
+							}
+						},
+						{
+							"type": "toolCall",
+							"id": "c4|fc_4",
+							"name": "read",
+							"arguments": {
+								"path": "a"
+							}
+						}
+					],
+					"api": "openai-responses",
+					"provider": "openai",
+					"model": "m",
+					"usage": {
+						"input": 0,
+						"output": 0,
+						"cacheRead": 0,
+						"cacheWrite": 0,
+						"totalTokens": 0,
+						"cost": {
+							"input": 0,
+							"output": 0,
+							"cacheRead": 0,
+							"cacheWrite": 0,
+							"total": 0
+						}
+					},
+					"stopReason": "toolUse",
+					"timestamp": 0
+				},
+				{
+					"role": "toolResult",
+					"toolCallId": "c1|fc_1",
+					"toolName": "read",
+					"content": [
+						{
+							"type": "text",
+							"text": "text"
+						},
+						{
+							"type": "image",
+							"data": "aGk=",
+							"mimeType": "image/png"
+						}
+					],
+					"isError": false,
+					"timestamp": 0
+				},
+				{
+					"role": "toolResult",
+					"toolCallId": "c2|fc_2",
+					"toolName": "read",
+					"content": [
+						{
+							"type": "image",
+							"data": "aGk=",
+							"mimeType": "image/png"
+						}
+					],
+					"isError": false,
+					"timestamp": 0
+				},
+				{
+					"role": "toolResult",
+					"toolCallId": "c3|fc_3",
+					"toolName": "read",
+					"content": [],
+					"isError": false,
+					"timestamp": 0
+				},
+				{
+					"role": "toolResult",
+					"toolCallId": "c4|fc_4",
+					"toolName": "read",
+					"content": [
+						{
+							"type": "text",
+							"text": "  "
+						}
+					],
+					"isError": false,
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"a\"}]},{\"type\":\"function_call\",\"id\":\"fc_1\",\"call_id\":\"c1\",\"name\":\"read\",\"arguments\":\"{\\\"path\\\":\\\"a\\\"}\"},{\"type\":\"function_call\",\"id\":\"fc_2\",\"call_id\":\"c2\",\"name\":\"read\",\"arguments\":\"{\\\"path\\\":\\\"a\\\"}\"},{\"type\":\"function_call\",\"id\":\"fc_3\",\"call_id\":\"c3\",\"name\":\"read\",\"arguments\":\"{\\\"path\\\":\\\"a\\\"}\"},{\"type\":\"function_call\",\"id\":\"fc_4\",\"call_id\":\"c4\",\"name\":\"read\",\"arguments\":\"{\\\"path\\\":\\\"a\\\"}\"},{\"type\":\"function_call_output\",\"call_id\":\"c1\",\"output\":[{\"type\":\"input_text\",\"text\":\"text\"},{\"type\":\"input_image\",\"detail\":\"auto\",\"image_url\":\"data:image/png;base64,aGk=\"}]},{\"type\":\"function_call_output\",\"call_id\":\"c2\",\"output\":[{\"type\":\"input_image\",\"detail\":\"auto\",\"image_url\":\"data:image/png;base64,aGk=\"}]},{\"type\":\"function_call_output\",\"call_id\":\"c3\",\"output\":\"(no tool output)\"},{\"type\":\"function_call_output\",\"call_id\":\"c4\",\"output\":\"(no tool output)\"}],\"stream\":true,\"store\":false,\"tools\":[{\"type\":\"function\",\"name\":\"read\",\"description\":\"read tool\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"}},\"required\":[\"path\"]}}]}"
+		}
+	},
+	{
+		"name": "tool-results-no-image-model",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"toolsAdded": [
+						{
+							"name": "read",
+							"description": "read tool",
+							"parameters": {
+								"type": "object",
+								"properties": {
+									"path": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"path"
+								]
+							}
+						}
+					],
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "a",
+					"timestamp": 0
+				},
+				{
+					"role": "assistant",
+					"content": [
+						{
+							"type": "toolCall",
+							"id": "c1|fc_1",
+							"name": "read",
+							"arguments": {
+								"path": "a"
+							}
+						},
+						{
+							"type": "toolCall",
+							"id": "c2|fc_2",
+							"name": "read",
+							"arguments": {
+								"path": "a"
+							}
+						}
+					],
+					"api": "openai-responses",
+					"provider": "openai",
+					"model": "m",
+					"usage": {
+						"input": 0,
+						"output": 0,
+						"cacheRead": 0,
+						"cacheWrite": 0,
+						"totalTokens": 0,
+						"cost": {
+							"input": 0,
+							"output": 0,
+							"cacheRead": 0,
+							"cacheWrite": 0,
+							"total": 0
+						}
+					},
+					"stopReason": "toolUse",
+					"timestamp": 0
+				},
+				{
+					"role": "toolResult",
+					"toolCallId": "c1|fc_1",
+					"toolName": "read",
+					"content": [
+						{
+							"type": "text",
+							"text": "text"
+						},
+						{
+							"type": "image",
+							"data": "aGk=",
+							"mimeType": "image/png"
+						}
+					],
+					"isError": false,
+					"timestamp": 0
+				},
+				{
+					"role": "toolResult",
+					"toolCallId": "c2|fc_2",
+					"toolName": "read",
+					"content": [
+						{
+							"type": "image",
+							"data": "aGk=",
+							"mimeType": "image/png"
+						}
+					],
+					"isError": false,
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"a\"}]},{\"type\":\"function_call\",\"id\":\"fc_1\",\"call_id\":\"c1\",\"name\":\"read\",\"arguments\":\"{\\\"path\\\":\\\"a\\\"}\"},{\"type\":\"function_call\",\"id\":\"fc_2\",\"call_id\":\"c2\",\"name\":\"read\",\"arguments\":\"{\\\"path\\\":\\\"a\\\"}\"},{\"type\":\"function_call_output\",\"call_id\":\"c1\",\"output\":\"text\\n(tool image omitted: model does not support images)\"},{\"type\":\"function_call_output\",\"call_id\":\"c2\",\"output\":\"(tool image omitted: model does not support images)\"}],\"stream\":true,\"store\":false,\"tools\":[{\"type\":\"function\",\"name\":\"read\",\"description\":\"read tool\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"}},\"required\":[\"path\"]}}]}"
+		}
+	},
+	{
+		"name": "grammar-call-replay",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096,
+			"compat": {
+				"supportsOpenAIGrammarTools": true
+			}
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"toolsAdded": [
+						{
+							"name": "patch",
+							"description": "patch tool",
+							"parameters": {
+								"type": "object",
+								"properties": {
+									"input": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"input"
+								]
+							},
+							"constrainedSampling": {
+								"type": "grammar",
+								"variants": {
+									"openai_lark": "start: WORD"
+								}
+							}
+						}
+					],
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "a",
+					"timestamp": 0
+				},
+				{
+					"role": "assistant",
+					"content": [
+						{
+							"type": "toolCall",
+							"id": "c1|ctc_1",
+							"name": "patch",
+							"arguments": {
+								"input": "abc"
+							}
+						},
+						{
+							"type": "toolCall",
+							"id": "c2|fc_2",
+							"name": "patch",
+							"arguments": {
+								"input": "d"
+							}
+						}
+					],
+					"api": "openai-responses",
+					"provider": "openai",
+					"model": "m",
+					"usage": {
+						"input": 0,
+						"output": 0,
+						"cacheRead": 0,
+						"cacheWrite": 0,
+						"totalTokens": 0,
+						"cost": {
+							"input": 0,
+							"output": 0,
+							"cacheRead": 0,
+							"cacheWrite": 0,
+							"total": 0
+						}
+					},
+					"stopReason": "toolUse",
+					"timestamp": 0
+				},
+				{
+					"role": "toolResult",
+					"toolCallId": "c1|ctc_1",
+					"toolName": "patch",
+					"content": [
+						{
+							"type": "text",
+							"text": "ok"
+						}
+					],
+					"isError": false,
+					"timestamp": 0
+				},
+				{
+					"role": "toolResult",
+					"toolCallId": "c2|fc_2",
+					"toolName": "patch",
+					"content": [
+						{
+							"type": "text",
+							"text": "ok"
+						}
+					],
+					"isError": false,
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"a\"}]},{\"type\":\"custom_tool_call\",\"id\":\"ctc_1\",\"call_id\":\"c1\",\"name\":\"patch\",\"input\":\"abc\"},{\"type\":\"custom_tool_call\",\"call_id\":\"c2\",\"name\":\"patch\",\"input\":\"d\"},{\"type\":\"custom_tool_call_output\",\"call_id\":\"c1\",\"output\":\"ok\"},{\"type\":\"custom_tool_call_output\",\"call_id\":\"c2\",\"output\":\"ok\"}],\"stream\":true,\"store\":false,\"tools\":[{\"type\":\"custom\",\"name\":\"patch\",\"description\":\"patch tool\",\"format\":{\"type\":\"grammar\",\"syntax\":\"lark\",\"definition\":\"start: WORD\"}}]}"
+		}
+	},
+	{
+		"name": "grammar-call-bad-input",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096,
+			"compat": {
+				"supportsOpenAIGrammarTools": true
+			}
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"toolsAdded": [
+						{
+							"name": "patch",
+							"description": "patch tool",
+							"parameters": {
+								"type": "object",
+								"properties": {
+									"input": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"input"
+								]
+							},
+							"constrainedSampling": {
+								"type": "grammar",
+								"variants": {
+									"openai_lark": "start: WORD"
+								}
+							}
+						}
+					],
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "a",
+					"timestamp": 0
+				},
+				{
+					"role": "assistant",
+					"content": [
+						{
+							"type": "toolCall",
+							"id": "c1|ctc_1",
+							"name": "patch",
+							"arguments": {
+								"input": 1
+							}
+						}
+					],
+					"api": "openai-responses",
+					"provider": "openai",
+					"model": "m",
+					"usage": {
+						"input": 0,
+						"output": 0,
+						"cacheRead": 0,
+						"cacheWrite": 0,
+						"totalTokens": 0,
+						"cost": {
+							"input": 0,
+							"output": 0,
+							"cacheRead": 0,
+							"cacheWrite": 0,
+							"total": 0
+						}
+					},
+					"stopReason": "toolUse",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0
+		},
+		"request": {
+			"error": "Grammar tool call \"patch\" requires argument \"input\" to be a string."
+		}
+	},
+	{
+		"name": "tools-function",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"toolsAdded": [
+						{
+							"name": "read",
+							"description": "read tool",
+							"parameters": {
+								"type": "object",
+								"properties": {
+									"path": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"path"
+								]
+							}
+						}
+					],
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "q",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"q\"}]}],\"stream\":true,\"store\":false,\"tools\":[{\"type\":\"function\",\"name\":\"read\",\"description\":\"read tool\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"}},\"required\":[\"path\"]}}]}"
+		}
+	},
+	{
+		"name": "tools-strict-supported",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096,
+			"compat": {
+				"supportsStrictMode": true
+			}
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"toolsAdded": [
+						{
+							"name": "read",
+							"description": "read tool",
+							"parameters": {
+								"type": "object",
+								"properties": {
+									"path": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"path"
+								]
+							}
+						},
+						{
+							"name": "strict",
+							"description": "strict tool",
+							"parameters": {
+								"type": "object",
+								"properties": {
+									"path": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"path"
+								]
+							},
+							"constrainedSampling": {
+								"type": "json_schema",
+								"strict": "prefer"
+							}
+						}
+					],
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "q",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"q\"}]}],\"stream\":true,\"store\":false,\"tools\":[{\"type\":\"function\",\"name\":\"read\",\"description\":\"read tool\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"}},\"required\":[\"path\"]},\"strict\":false},{\"type\":\"function\",\"name\":\"strict\",\"description\":\"strict tool\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"}},\"required\":[\"path\"],\"additionalProperties\":false},\"strict\":true}]}"
+		}
+	},
+	{
+		"name": "tools-strict-require-unsupported",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"toolsAdded": [
+						{
+							"name": "strict",
+							"description": "strict tool",
+							"parameters": {
+								"type": "object",
+								"properties": {
+									"path": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"path"
+								]
+							},
+							"constrainedSampling": {
+								"type": "json_schema",
+								"strict": "require"
+							}
+						}
+					],
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "q",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0
+		},
+		"request": {
+			"error": "Tool \"strict\" requires JSON-schema constrained sampling, but strict tools are unsupported."
+		}
+	},
+	{
+		"name": "tools-grammar",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096,
+			"compat": {
+				"supportsOpenAIGrammarTools": true
+			}
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"toolsAdded": [
+						{
+							"name": "patch",
+							"description": "patch tool",
+							"parameters": {
+								"type": "object",
+								"properties": {
+									"input": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"input"
+								]
+							},
+							"constrainedSampling": {
+								"type": "grammar",
+								"variants": {
+									"openai_lark": "start: WORD",
+									"openai_regex": "a+"
+								}
+							}
+						}
+					],
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "q",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"q\"}]}],\"stream\":true,\"store\":false,\"tools\":[{\"type\":\"custom\",\"name\":\"patch\",\"description\":\"patch tool\",\"format\":{\"type\":\"grammar\",\"syntax\":\"lark\",\"definition\":\"start: WORD\"}}]}"
+		}
+	},
+	{
+		"name": "tools-grammar-unsupported",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"toolsAdded": [
+						{
+							"name": "patch",
+							"description": "patch tool",
+							"parameters": {
+								"type": "object",
+								"properties": {
+									"input": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"input"
+								]
+							},
+							"constrainedSampling": {
+								"type": "grammar",
+								"variants": {
+									"openai_lark": "start: WORD"
+								}
+							}
+						}
+					],
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "q",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"q\"}]}],\"stream\":true,\"store\":false,\"tools\":[{\"type\":\"function\",\"name\":\"patch\",\"description\":\"patch tool\",\"parameters\":{\"type\":\"object\",\"properties\":{\"input\":{\"type\":\"string\"}},\"required\":[\"input\"]}}]}"
+		}
+	},
+	{
+		"name": "tools-additional",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096,
+			"compat": {
+				"supportsMidConvoSystemMessages": true,
+				"supportsAdditionalTools": true
+			}
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"toolsAdded": [
+						{
+							"name": "read",
+							"description": "read tool",
+							"parameters": {
+								"type": "object",
+								"properties": {
+									"path": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"path"
+								]
+							}
+						},
+						{
+							"name": "grep",
+							"description": "grep tool",
+							"parameters": {
+								"type": "object",
+								"properties": {
+									"path": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"path"
+								]
+							}
+						}
+					],
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "a",
+					"timestamp": 0
+				},
+				{
+					"role": "system",
+					"content": "",
+					"toolsRemoved": [
+						{
+							"name": "grep"
+						}
+					],
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "b",
+					"timestamp": 0
+				},
+				{
+					"role": "system",
+					"content": "",
+					"toolsAdded": [
+						{
+							"name": "write",
+							"description": "write tool",
+							"parameters": {
+								"type": "object",
+								"properties": {
+									"path": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"path"
+								]
+							}
+						}
+					],
+					"toolsRemoved": [
+						{
+							"name": "read"
+						},
+						{
+							"name": "grep"
+						}
+					],
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "c",
+					"timestamp": 0
+				},
+				{
+					"role": "system",
+					"content": "",
+					"toolsAdded": [
+						{
+							"name": "grep",
+							"description": "grep tool",
+							"parameters": {
+								"type": "object",
+								"properties": {}
+							}
+						}
+					],
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "d",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"type\":\"additional_tools\",\"role\":\"developer\",\"tools\":[{\"type\":\"function\",\"name\":\"read\",\"description\":\"read tool\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"}},\"required\":[\"path\"]}},{\"type\":\"function\",\"name\":\"grep\",\"description\":\"grep tool\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"}},\"required\":[\"path\"]}}]},{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"a\"}]},{\"role\":\"system\",\"content\":\"The following tools are no longer available. Do not call them:\\n- grep\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"b\"}]},{\"role\":\"system\",\"content\":\"This is an incremental tools update. Previously declared tools remain available unless explicitly marked unavailable. A tool declared again here is available again, and its latest definition replaces the earlier one.\\nStill unavailable: grep.\"},{\"type\":\"additional_tools\",\"role\":\"developer\",\"tools\":[{\"type\":\"function\",\"name\":\"write\",\"description\":\"write tool\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"}},\"required\":[\"path\"]}}]},{\"role\":\"system\",\"content\":\"The following tools are no longer available. Do not call them:\\n- read\\n- grep\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"c\"}]},{\"role\":\"system\",\"content\":\"This is an incremental tools update. Previously declared tools remain available unless explicitly marked unavailable. A tool declared again here is available again, and its latest definition replaces the earlier one.\\nStill unavailable: read.\"},{\"type\":\"additional_tools\",\"role\":\"developer\",\"tools\":[{\"type\":\"function\",\"name\":\"grep\",\"description\":\"grep tool\",\"parameters\":{\"type\":\"object\",\"properties\":{}}}]},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"d\"}]}],\"stream\":true,\"store\":false}"
+		}
+	},
+	{
+		"name": "tools-additional-without-mid-convo",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096,
+			"compat": {
+				"supportsAdditionalTools": true
+			}
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"toolsAdded": [
+						{
+							"name": "read",
+							"description": "read tool",
+							"parameters": {
+								"type": "object",
+								"properties": {
+									"path": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"path"
+								]
+							}
+						}
+					],
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "a",
+					"timestamp": 0
+				},
+				{
+					"role": "system",
+					"content": "",
+					"toolsAdded": [
+						{
+							"name": "write",
+							"description": "write tool",
+							"parameters": {
+								"type": "object",
+								"properties": {
+									"path": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"path"
+								]
+							}
+						}
+					],
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "b",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"a\"}]},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"b\"}]}],\"stream\":true,\"store\":false,\"tools\":[{\"type\":\"function\",\"name\":\"read\",\"description\":\"read tool\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"}},\"required\":[\"path\"]}},{\"type\":\"function\",\"name\":\"write\",\"description\":\"write tool\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"}},\"required\":[\"path\"]}}]}"
+		}
+	},
+	{
+		"name": "tools-tool-search",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096,
+			"compat": {
+				"supportsMidConvoSystemMessages": true,
+				"supportsToolSearch": true,
+				"supportsStrictMode": true
+			}
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"toolsAdded": [
+						{
+							"name": "read",
+							"description": "read tool",
+							"parameters": {
+								"type": "object",
+								"properties": {
+									"path": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"path"
+								]
+							}
+						}
+					],
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "a",
+					"timestamp": 0
+				},
+				{
+					"role": "system",
+					"content": "New tools.",
+					"toolsAdded": [
+						{
+							"name": "write",
+							"description": "write tool",
+							"parameters": {
+								"type": "object",
+								"properties": {
+									"path": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"path"
+								]
+							}
+						},
+						{
+							"name": "grep",
+							"description": "grep tool",
+							"parameters": {
+								"type": "object",
+								"properties": {
+									"path": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"path"
+								]
+							}
+						}
+					],
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "b",
+					"timestamp": 0
+				},
+				{
+					"role": "system",
+					"content": "",
+					"toolsAdded": [
+						{
+							"name": "edit",
+							"description": "edit tool",
+							"parameters": {
+								"type": "object",
+								"properties": {
+									"path": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"path"
+								]
+							}
+						}
+					],
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "c",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"a\"}]},{\"type\":\"tool_search_call\",\"call_id\":\"pi_tool_load_1o6xgj0iyz1ea\",\"execution\":\"client\",\"status\":\"completed\",\"arguments\":{\"query\":\"write grep\",\"limit\":2}},{\"type\":\"tool_search_output\",\"call_id\":\"pi_tool_load_1o6xgj0iyz1ea\",\"execution\":\"client\",\"status\":\"completed\",\"tools\":[{\"type\":\"function\",\"name\":\"write\",\"description\":\"write tool\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"}},\"required\":[\"path\"]},\"defer_loading\":true,\"strict\":false},{\"type\":\"function\",\"name\":\"grep\",\"description\":\"grep tool\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"}},\"required\":[\"path\"]},\"defer_loading\":true,\"strict\":false}]},{\"role\":\"system\",\"content\":\"New tools.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"b\"}]},{\"type\":\"tool_search_call\",\"call_id\":\"pi_tool_load_x02wtx1uqa3g6\",\"execution\":\"client\",\"status\":\"completed\",\"arguments\":{\"query\":\"edit\",\"limit\":1}},{\"type\":\"tool_search_output\",\"call_id\":\"pi_tool_load_x02wtx1uqa3g6\",\"execution\":\"client\",\"status\":\"completed\",\"tools\":[{\"type\":\"function\",\"name\":\"edit\",\"description\":\"edit tool\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"}},\"required\":[\"path\"]},\"defer_loading\":true,\"strict\":false}]},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"c\"}]}],\"stream\":true,\"store\":false,\"tools\":[{\"type\":\"function\",\"name\":\"read\",\"description\":\"read tool\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"}},\"required\":[\"path\"]},\"strict\":false}]}"
+		}
+	},
+	{
+		"name": "tools-tool-search-folded",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096,
+			"compat": {
+				"supportsToolSearch": true,
+				"supportsStrictMode": true
+			}
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"toolsAdded": [
+						{
+							"name": "read",
+							"description": "read tool",
+							"parameters": {
+								"type": "object",
+								"properties": {
+									"path": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"path"
+								]
+							}
+						}
+					],
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "a",
+					"timestamp": 0
+				},
+				{
+					"role": "system",
+					"content": "New tools.",
+					"toolsAdded": [
+						{
+							"name": "write",
+							"description": "write tool",
+							"parameters": {
+								"type": "object",
+								"properties": {
+									"path": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"path"
+								]
+							}
+						},
+						{
+							"name": "grep",
+							"description": "grep tool",
+							"parameters": {
+								"type": "object",
+								"properties": {
+									"path": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"path"
+								]
+							}
+						}
+					],
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "b",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\\n\\nNew tools.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"a\"}]},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"b\"}]}],\"stream\":true,\"store\":false,\"tools\":[{\"type\":\"function\",\"name\":\"read\",\"description\":\"read tool\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"}},\"required\":[\"path\"]},\"strict\":false},{\"type\":\"function\",\"name\":\"write\",\"description\":\"write tool\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"}},\"required\":[\"path\"]},\"strict\":false},{\"type\":\"function\",\"name\":\"grep\",\"description\":\"grep tool\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"}},\"required\":[\"path\"]},\"strict\":false}]}"
+		}
+	},
+	{
+		"name": "tools-history-without-tools",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "user",
+					"content": "a",
+					"timestamp": 0
+				},
+				{
+					"role": "assistant",
+					"content": [
+						{
+							"type": "toolCall",
+							"id": "c1|fc_1",
+							"name": "read",
+							"arguments": {
+								"path": "a"
+							}
+						}
+					],
+					"api": "openai-responses",
+					"provider": "openai",
+					"model": "m",
+					"usage": {
+						"input": 0,
+						"output": 0,
+						"cacheRead": 0,
+						"cacheWrite": 0,
+						"totalTokens": 0,
+						"cost": {
+							"input": 0,
+							"output": 0,
+							"cacheRead": 0,
+							"cacheWrite": 0,
+							"total": 0
+						}
+					},
+					"stopReason": "toolUse",
+					"timestamp": 0
+				},
+				{
+					"role": "toolResult",
+					"toolCallId": "c1|fc_1",
+					"toolName": "read",
+					"content": [
+						{
+							"type": "text",
+							"text": "ok"
+						}
+					],
+					"isError": false,
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0
+		},
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"a\"}]},{\"type\":\"function_call\",\"id\":\"fc_1\",\"call_id\":\"c1\",\"name\":\"read\",\"arguments\":\"{\\\"path\\\":\\\"a\\\"}\"},{\"type\":\"function_call_output\",\"call_id\":\"c1\",\"output\":\"ok\"}],\"stream\":true,\"store\":false}"
+		}
+	},
+	{
+		"name": "simple-reasoning",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": true,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0,
+			"reasoning": "high",
+			"toolChoice": "none"
+		},
+		"simple": true,
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"developer\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"store\":false,\"max_output_tokens\":4096,\"tool_choice\":\"none\",\"reasoning\":{\"effort\":\"high\",\"summary\":\"auto\"},\"include\":[\"reasoning.encrypted_content\"]}"
+		}
+	},
+	{
+		"name": "simple-reasoning-clamped",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": true,
+			"contextWindow": 128000,
+			"maxTokens": 4096,
+			"thinkingLevelMap": {
+				"xhigh": null,
+				"high": "high"
+			}
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0,
+			"reasoning": "xhigh"
+		},
+		"simple": true,
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"developer\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"store\":false,\"max_output_tokens\":4096,\"reasoning\":{\"effort\":\"high\",\"summary\":\"auto\"},\"include\":[\"reasoning.encrypted_content\"]}"
+		}
+	},
+	{
+		"name": "simple-no-reasoning",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": true,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0,
+			"maxTokens": 300
+		},
+		"simple": true,
+		"request": {
+			"url": "https://api.openai.com/v1/responses",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json"
+			},
+			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"developer\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"store\":false,\"max_output_tokens\":300,\"reasoning\":{\"effort\":\"none\"}}"
+		}
+	},
+	{
+		"name": "simple-no-key",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-responses",
+			"provider": "openai",
+			"baseUrl": "https://api.openai.com/v1",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"maxRetries": 0
+		},
+		"simple": true,
+		"request": {
+			"error": "No API key for provider: openai"
+		}
+	}
+]
