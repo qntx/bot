@@ -7,19 +7,18 @@ import { writeFileSync } from "node:fs";
 /* oxlint-disable no-bitwise -- seeded 32-bit PRNG requires int ops */
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const require_ = createRequire(import.meta.url);
 
 // Resolve the vendored streaming modules through the installed
 // packages (works with any package-manager layout). The SDKs are
 // deps of `@earendil-works/pi-ai`, so resolution starts there.
-const piAiDir = dirname(require_.resolve("@earendil-works/pi-ai/package.json"));
+const piAiDir = dirname(dirname(fileURLToPath(import.meta.resolve("@earendil-works/pi-ai"))));
 function sdkFile(package_: string, file: string): string {
-  const packageJson = require_.resolve(`${package_}/package.json`, {
-    paths: [piAiDir],
-  });
-  return join(dirname(packageJson), file);
+  // The package entry (`index.js`) sits at the package root.
+  const entry = require_.resolve(package_, { paths: [piAiDir] });
+  return join(dirname(entry), file);
 }
 
 const anthropic: unknown = await import(

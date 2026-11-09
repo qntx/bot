@@ -175,6 +175,13 @@
       "vectors": ["vectors/ai/auth-store.json"],
       "rust": ["crates/ovo-ai/tests/it/auth.rs"],
       "classes": []
+    },
+    {
+      "id": "AI-API-ANTHROPIC",
+      "upstream": ["packages/ai/src/api/anthropic-messages.ts"],
+      "vectors": ["vectors/ai/anthropic-request.json"],
+      "rust": ["crates/ovo-ai/tests/it/anthropic.rs"],
+      "classes": ["sdk-headers"]
     }
   ],
   "classes": {
@@ -183,6 +190,7 @@
     "key-order": "Session, RPC and config data are compared by value; object key order may differ where upstream order depends on assignment order.",
     "engine-error-text": "V8 JSON.parse error details are masked; the surrounding template is compared verbatim.",
     "wall-clock": "Values taken from the wall clock (Date.now) are masked; presence and type are compared.",
-    "schema-formats": "Format checks use the jsonschema crate's implementations; the decision may differ from TypeBox on edge cases, messages match."
+    "schema-formats": "Format checks use the jsonschema crate's implementations; the decision may differ from TypeBox on edge cases, messages match.",
+    "sdk-headers": "Headers the upstream SDK injects (x-stainless-*) and the client identity User-Agent are not compared; only headers pi sets explicitly are."
   }
 }
