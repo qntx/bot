@@ -1,0 +1,138 @@
+[
+  {
+    "name": "empty",
+    "data": {},
+    "expected": {
+      "read": {},
+      "list": []
+    }
+  },
+  {
+    "name": "api-key",
+    "data": {
+      "anthropic": {
+        "type": "api_key",
+        "key": "sk-ant"
+      }
+    },
+    "expected": {
+      "read": {
+        "anthropic": {
+          "type": "api_key",
+          "key": "sk-ant"
+        }
+      },
+      "list": [
+        {
+          "providerId": "anthropic",
+          "type": "api_key"
+        }
+      ]
+    }
+  },
+  {
+    "name": "api-key-env-template",
+    "data": {
+      "openai": {
+        "type": "api_key",
+        "key": "${KEY}",
+        "env": {
+          "KEY": "resolved"
+        }
+      }
+    },
+    "expected": {
+      "read": {
+        "openai": {
+          "type": "api_key",
+          "key": "resolved",
+          "env": {
+            "KEY": "resolved"
+          }
+        }
+      },
+      "list": [
+        {
+          "providerId": "openai",
+          "type": "api_key"
+        }
+      ]
+    }
+  },
+  {
+    "name": "api-key-command",
+    "data": {
+      "xai": {
+        "type": "api_key",
+        "key": "!pass show xai"
+      }
+    },
+    "expected": {
+      "read": {
+        "xai": {
+          "type": "api_key",
+          "key": "!pass show xai"
+        }
+      },
+      "list": [
+        {
+          "providerId": "xai",
+          "type": "api_key"
+        }
+      ]
+    }
+  },
+  {
+    "name": "oauth",
+    "data": {
+      "anthropic": {
+        "type": "oauth",
+        "access": "a",
+        "refresh": "r",
+        "expires": 1900000000000,
+        "extra": "x"
+      }
+    },
+    "expected": {
+      "read": {
+        "anthropic": {
+          "type": "oauth",
+          "access": "a",
+          "refresh": "r",
+          "expires": 1900000000000,
+          "extra": "x"
+        }
+      },
+      "list": [
+        {
+          "providerId": "anthropic",
+          "type": "oauth"
+        }
+      ]
+    }
+  },
+  {
+    "name": "invalid-type",
+    "data": {
+      "p": {
+        "type": "weird"
+      }
+    },
+    "expected": {
+      "error": "Invalid auth.json credential for provider \"p\""
+    }
+  },
+  {
+    "name": "missing-expires",
+    "data": {
+      "p": {
+        "type": "oauth",
+        "access": "a",
+        "refresh": "r"
+      }
+    },
+    "expected": {
+      "error": "Invalid auth.json credential for provider \"p\""
+    }
+  }
+]

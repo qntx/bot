@@ -1,0 +1,190 @@
+[
+  {
+    "name": "env-full-anthropic",
+    "provider": "anthropic",
+    "env": {
+      "ANTHROPIC_API_KEY": "sk-ant",
+      "ANTHROPIC_AUTH_TOKEN": "oauth-token",
+      "ANTHROPIC_OAUTH_TOKEN": "oauth-t",
+      "OPENAI_API_KEY": "sk-oai",
+      "XAI_API_KEY": "sk-xai",
+      "DEEPSEEK_API_KEY": "sk-ds",
+      "GROQ_API_KEY": "sk-groq",
+      "OPENROUTER_API_KEY": "sk-or"
+    },
+    "expected": {
+      "found": [
+        "ANTHROPIC_AUTH_TOKEN",
+        "ANTHROPIC_OAUTH_TOKEN",
+        "ANTHROPIC_API_KEY"
+      ],
+      "key": "oauth-t"
+    }
+  },
+  {
+    "name": "env-full-openai",
+    "provider": "openai",
+    "env": {
+      "ANTHROPIC_API_KEY": "sk-ant",
+      "ANTHROPIC_AUTH_TOKEN": "oauth-token",
+      "ANTHROPIC_OAUTH_TOKEN": "oauth-t",
+      "OPENAI_API_KEY": "sk-oai",
+      "XAI_API_KEY": "sk-xai",
+      "DEEPSEEK_API_KEY": "sk-ds",
+      "GROQ_API_KEY": "sk-groq",
+      "OPENROUTER_API_KEY": "sk-or"
+    },
+    "expected": {
+      "found": [
+        "OPENAI_API_KEY"
+      ],
+      "key": "sk-oai"
+    }
+  },
+  {
+    "name": "env-full-xai",
+    "provider": "xai",
+    "env": {
+      "ANTHROPIC_API_KEY": "sk-ant",
+      "ANTHROPIC_AUTH_TOKEN": "oauth-token",
+      "ANTHROPIC_OAUTH_TOKEN": "oauth-t",
+      "OPENAI_API_KEY": "sk-oai",
+      "XAI_API_KEY": "sk-xai",
+      "DEEPSEEK_API_KEY": "sk-ds",
+      "GROQ_API_KEY": "sk-groq",
+      "OPENROUTER_API_KEY": "sk-or"
+    },
+    "expected": {
+      "found": [
+        "XAI_API_KEY"
+      ],
+      "key": "sk-xai"
+    }
+  },
+  {
+    "name": "env-full-deepseek",
+    "provider": "deepseek",
+    "env": {
+      "ANTHROPIC_API_KEY": "sk-ant",
+      "ANTHROPIC_AUTH_TOKEN": "oauth-token",
+      "ANTHROPIC_OAUTH_TOKEN": "oauth-t",
+      "OPENAI_API_KEY": "sk-oai",
+      "XAI_API_KEY": "sk-xai",
+      "DEEPSEEK_API_KEY": "sk-ds",
+      "GROQ_API_KEY": "sk-groq",
+      "OPENROUTER_API_KEY": "sk-or"
+    },
+    "expected": {
+      "found": [
+        "DEEPSEEK_API_KEY"
+      ],
+      "key": "sk-ds"
+    }
+  },
+  {
+    "name": "env-full-groq",
+    "provider": "groq",
+    "env": {
+      "ANTHROPIC_API_KEY": "sk-ant",
+      "ANTHROPIC_AUTH_TOKEN": "oauth-token",
+      "ANTHROPIC_OAUTH_TOKEN": "oauth-t",
+      "OPENAI_API_KEY": "sk-oai",
+      "XAI_API_KEY": "sk-xai",
+      "DEEPSEEK_API_KEY": "sk-ds",
+      "GROQ_API_KEY": "sk-groq",
+      "OPENROUTER_API_KEY": "sk-or"
+    },
+    "expected": {
+      "found": [
+        "GROQ_API_KEY"
+      ],
+      "key": "sk-groq"
+    }
+  },
+  {
+    "name": "env-full-openrouter",
+    "provider": "openrouter",
+    "env": {
+      "ANTHROPIC_API_KEY": "sk-ant",
+      "ANTHROPIC_AUTH_TOKEN": "oauth-token",
+      "ANTHROPIC_OAUTH_TOKEN": "oauth-t",
+      "OPENAI_API_KEY": "sk-oai",
+      "XAI_API_KEY": "sk-xai",
+      "DEEPSEEK_API_KEY": "sk-ds",
+      "GROQ_API_KEY": "sk-groq",
+      "OPENROUTER_API_KEY": "sk-or"
+    },
+    "expected": {
+      "found": [
+        "OPENROUTER_API_KEY"
+      ],
+      "key": "sk-or"
+    }
+  },
+  {
+    "name": "env-full-unknown",
+    "provider": "unknown",
+    "env": {
+      "ANTHROPIC_API_KEY": "sk-ant",
+      "ANTHROPIC_AUTH_TOKEN": "oauth-token",
+      "ANTHROPIC_OAUTH_TOKEN": "oauth-t",
+      "OPENAI_API_KEY": "sk-oai",
+      "XAI_API_KEY": "sk-xai",
+      "DEEPSEEK_API_KEY": "sk-ds",
+      "GROQ_API_KEY": "sk-groq",
+      "OPENROUTER_API_KEY": "sk-or"
+    },
+    "expected": {
+      "found": null,
+      "key": null
+    }
+  },
+  {
+    "name": "anthropic-only-auth-token",
+    "provider": "anthropic",
+    "env": {
+      "ANTHROPIC_AUTH_TOKEN": "tok"
+    },
+    "expected": {
+      "found": [
+        "ANTHROPIC_AUTH_TOKEN"
+      ],
+      "key": null
+    }
+  },
+  {
+    "name": "anthropic-no-api-key",
+    "provider": "anthropic",
+    "env": {
+      "ANTHROPIC_AUTH_TOKEN": "tok",
+      "ANTHROPIC_OAUTH_TOKEN": "o"
+    },
+    "expected": {
+      "found": [
+        "ANTHROPIC_AUTH_TOKEN",
+        "ANTHROPIC_OAUTH_TOKEN"
+      ],
+      "key": "o"
+    }
+  },
+  {
+    "name": "openai-empty",
+    "provider": "openai",
+    "env": {
+      "OPENAI_API_KEY": ""
+    },
+    "expected": {
+      "found": null,
+      "key": null
+    }
+  },
+  {
+    "name": "openai-missing",
+    "provider": "openai",
+    "env": {},
+    "expected": {
+      "found": null,
+      "key": null
+    }
+  }
+]

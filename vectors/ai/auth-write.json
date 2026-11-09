@@ -1,0 +1,16 @@
+[
+  {
+    "name": "modify-roundtrip",
+    "expected": {
+      "written": {
+        "type": "api_key",
+        "key": "sk-ant"
+      },
+      "readBack": {
+        "type": "api_key",
+        "key": "sk-ant"
+      },
+      "file": "{\n  \"anthropic\": {\n    \"type\": \"api_key\",\n    \"key\": \"sk-ant\"\n  }\n}"
+    }
+  }
+]

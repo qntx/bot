@@ -95,3 +95,64 @@ export declare function resolveHttpProxyUrlForTarget(
 ): { href: string } | undefined;
 
 export declare const UNSUPPORTED_PROXY_PROTOCOL_MESSAGE: string;
+
+export declare function findEnvKeys(
+  provider: string,
+  env?: Record<string, string>,
+): string[] | undefined;
+
+export declare function getEnvApiKey(
+  provider: string,
+  env?: Record<string, string>,
+): string | undefined;
+
+export declare function getConfigValueEnvVarName(config: string): string | undefined;
+
+export declare function getConfigValueEnvVarNames(config: string): string[];
+
+export declare function getMissingConfigValueEnvVarNames(
+  config: string,
+  env?: Record<string, string>,
+): string[];
+
+export declare function isCommandConfigValue(config: string): boolean;
+
+export declare function isConfigValueConfigured(
+  config: string,
+  env?: Record<string, string>,
+): boolean;
+
+export declare function resolveConfigValue(
+  config: string,
+  env?: Record<string, string>,
+): string | undefined;
+
+interface AuthCredentialLike {
+  type: string;
+  [key: string]: unknown;
+}
+
+export declare class ReadOnlyAuthStorage {
+  constructor(authPath?: string);
+  read(providerId: string, options?: unknown): Promise<AuthCredentialLike | undefined>;
+  list(options?: unknown): Promise<ReadonlyArray<{ providerId: string; type: string }>>;
+  modify(
+    providerId: string,
+    fn: (current: unknown) => Promise<unknown>,
+    options?: unknown,
+  ): Promise<unknown>;
+  delete(providerId: string, options?: unknown): Promise<void>;
+}
+
+export declare class AuthStorage {
+  static create(authPath?: string): AuthStorage;
+  static inMemory(data?: Record<string, unknown>): AuthStorage;
+  read(providerId: string, options?: unknown): Promise<AuthCredentialLike | undefined>;
+  list(options?: unknown): Promise<ReadonlyArray<{ providerId: string; type: string }>>;
+  modify(
+    providerId: string,
+    fn: (current: unknown) => Promise<unknown>,
+    options?: unknown,
+  ): Promise<unknown>;
+  delete(providerId: string, options?: unknown): Promise<void>;
+}

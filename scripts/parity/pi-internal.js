@@ -36,3 +36,19 @@ export {
   resolveHttpProxyUrlForTarget,
   UNSUPPORTED_PROXY_PROTOCOL_MESSAGE,
 } from "../../node_modules/@earendil-works/pi-ai/dist/utils/node-http-proxy.js";
+export {
+  findEnvKeys,
+  getEnvApiKey,
+} from "../../node_modules/@earendil-works/pi-ai/dist/env-api-keys.js";
+export {
+  getConfigValueEnvVarName,
+  getConfigValueEnvVarNames,
+  getMissingConfigValueEnvVarNames,
+  isCommandConfigValue,
+  isConfigValueConfigured,
+  resolveConfigValue,
+} from "../../node_modules/@earendil-works/pi-coding-agent/dist/core/resolve-config-value.js";
+export {
+  AuthStorage,
+  ReadOnlyAuthStorage,
+} from "../../node_modules/@earendil-works/pi-coding-agent/dist/core/auth-storage.js";
