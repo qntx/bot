@@ -1,0 +1,651 @@
+[
+  {
+    "name": "status-none",
+    "headers": {},
+    "max_retries": 1,
+    "no_retry_statuses": [],
+    "now_ms": 1700000000000,
+    "expected": {
+      "outcome": "gave_up",
+      "message": "conn failure",
+      "delays": [
+        437.5
+      ]
+    }
+  },
+  {
+    "name": "status-200",
+    "status": 200,
+    "headers": {},
+    "max_retries": 1,
+    "no_retry_statuses": [],
+    "now_ms": 1700000000000,
+    "expected": {
+      "outcome": "gave_up",
+      "message": "200 failure",
+      "delays": []
+    }
+  },
+  {
+    "name": "status-400",
+    "status": 400,
+    "headers": {},
+    "max_retries": 1,
+    "no_retry_statuses": [],
+    "now_ms": 1700000000000,
+    "expected": {
+      "outcome": "gave_up",
+      "message": "400 failure",
+      "delays": []
+    }
+  },
+  {
+    "name": "status-408",
+    "status": 408,
+    "headers": {},
+    "max_retries": 1,
+    "no_retry_statuses": [],
+    "now_ms": 1700000000000,
+    "expected": {
+      "outcome": "gave_up",
+      "message": "408 failure",
+      "delays": [
+        437.5
+      ]
+    }
+  },
+  {
+    "name": "status-409",
+    "status": 409,
+    "headers": {},
+    "max_retries": 1,
+    "no_retry_statuses": [],
+    "now_ms": 1700000000000,
+    "expected": {
+      "outcome": "gave_up",
+      "message": "409 failure",
+      "delays": [
+        437.5
+      ]
+    }
+  },
+  {
+    "name": "status-429",
+    "status": 429,
+    "headers": {},
+    "max_retries": 1,
+    "no_retry_statuses": [],
+    "now_ms": 1700000000000,
+    "expected": {
+      "outcome": "gave_up",
+      "message": "429 failure",
+      "delays": [
+        437.5
+      ]
+    }
+  },
+  {
+    "name": "status-500",
+    "status": 500,
+    "headers": {},
+    "max_retries": 1,
+    "no_retry_statuses": [],
+    "now_ms": 1700000000000,
+    "expected": {
+      "outcome": "gave_up",
+      "message": "500 failure",
+      "delays": [
+        437.5
+      ]
+    }
+  },
+  {
+    "name": "status-503",
+    "status": 503,
+    "headers": {},
+    "max_retries": 1,
+    "no_retry_statuses": [],
+    "now_ms": 1700000000000,
+    "expected": {
+      "outcome": "gave_up",
+      "message": "503 failure",
+      "delays": [
+        437.5
+      ]
+    }
+  },
+  {
+    "name": "should-retry-true",
+    "status": 400,
+    "headers": {
+      "x-should-retry": "true"
+    },
+    "max_retries": 1,
+    "no_retry_statuses": [],
+    "now_ms": 1700000000000,
+    "expected": {
+      "outcome": "gave_up",
+      "message": "400 failure",
+      "delays": [
+        437.5
+      ]
+    }
+  },
+  {
+    "name": "should-retry-false",
+    "status": 429,
+    "headers": {
+      "x-should-retry": "false"
+    },
+    "max_retries": 1,
+    "no_retry_statuses": [],
+    "now_ms": 1700000000000,
+    "expected": {
+      "outcome": "gave_up",
+      "message": "429 failure",
+      "delays": []
+    }
+  },
+  {
+    "name": "retry-after-ms",
+    "status": 429,
+    "headers": {
+      "retry-after-ms": "2500"
+    },
+    "max_retries": 1,
+    "no_retry_statuses": [],
+    "now_ms": 1700000000000,
+    "expected": {
+      "outcome": "gave_up",
+      "message": "429 failure",
+      "delays": [
+        2500
+      ]
+    }
+  },
+  {
+    "name": "retry-after-seconds",
+    "status": 429,
+    "headers": {
+      "retry-after": "3"
+    },
+    "max_retries": 1,
+    "no_retry_statuses": [],
+    "now_ms": 1700000000000,
+    "expected": {
+      "outcome": "gave_up",
+      "message": "429 failure",
+      "delays": [
+        3000
+      ]
+    }
+  },
+  {
+    "name": "retry-after-date",
+    "status": 429,
+    "headers": {
+      "retry-after": "Tue, 14 Nov 2023 22:13:25 GMT"
+    },
+    "max_retries": 1,
+    "no_retry_statuses": [],
+    "now_ms": 1700000000000,
+    "expected": {
+      "outcome": "gave_up",
+      "message": "429 failure",
+      "delays": [
+        5000
+      ]
+    }
+  },
+  {
+    "name": "retry-after-cap",
+    "status": 429,
+    "headers": {
+      "retry-after": "120"
+    },
+    "max_retries": 1,
+    "no_retry_statuses": [],
+    "now_ms": 1700000000000,
+    "expected": {
+      "outcome": "cap",
+      "message": "Server requested 120s retry delay (max: 60s). 429 failure",
+      "delays": []
+    }
+  },
+  {
+    "name": "retry-after-cap-disabled",
+    "status": 429,
+    "headers": {
+      "retry-after": "120"
+    },
+    "max_retries": 1,
+    "no_retry_statuses": [],
+    "max_retry_delay_ms": 0,
+    "now_ms": 1700000000000,
+    "expected": {
+      "outcome": "gave_up",
+      "message": "429 failure",
+      "delays": [
+        120000
+      ]
+    }
+  },
+  {
+    "name": "retry-after-custom-cap",
+    "status": 429,
+    "headers": {
+      "retry-after": "30"
+    },
+    "max_retries": 1,
+    "no_retry_statuses": [],
+    "max_retry_delay_ms": 20000,
+    "now_ms": 1700000000000,
+    "expected": {
+      "outcome": "cap",
+      "message": "Server requested 30s retry delay (max: 20s). 429 failure",
+      "delays": []
+    }
+  },
+  {
+    "name": "no-retry-statuses",
+    "status": 429,
+    "headers": {},
+    "max_retries": 1,
+    "no_retry_statuses": [
+      429
+    ],
+    "now_ms": 1700000000000,
+    "expected": {
+      "outcome": "gave_up",
+      "message": "429 failure",
+      "delays": []
+    }
+  },
+  {
+    "name": "max-retries-0",
+    "status": 429,
+    "headers": {},
+    "max_retries": 0,
+    "no_retry_statuses": [],
+    "now_ms": 1700000000000,
+    "expected": {
+      "outcome": "gave_up",
+      "message": "429 failure",
+      "delays": []
+    }
+  },
+  {
+    "name": "backoff-sequence",
+    "status": 500,
+    "headers": {},
+    "max_retries": 4,
+    "no_retry_statuses": [],
+    "now_ms": 1700000000000,
+    "expected": {
+      "outcome": "gave_up",
+      "message": "500 failure",
+      "delays": [
+        437.5,
+        875,
+        1750,
+        3500
+      ]
+    }
+  },
+  {
+    "name": "backoff-exhausts",
+    "status": 500,
+    "headers": {},
+    "max_retries": 2,
+    "no_retry_statuses": [],
+    "now_ms": 1700000000000,
+    "expected": {
+      "outcome": "gave_up",
+      "message": "500 failure",
+      "delays": [
+        437.5,
+        875
+      ]
+    }
+  },
+  {
+    "name": "anthropic-retry-should-retry-true",
+    "family": "anthropic",
+    "kind": "should_retry",
+    "status": 400,
+    "headers": {
+      "x-should-retry": "true"
+    },
+    "expected": true
+  },
+  {
+    "name": "anthropic-retry-should-retry-false",
+    "family": "anthropic",
+    "kind": "should_retry",
+    "status": 429,
+    "headers": {
+      "x-should-retry": "false"
+    },
+    "expected": false
+  },
+  {
+    "name": "anthropic-retry-400",
+    "family": "anthropic",
+    "kind": "should_retry",
+    "status": 400,
+    "headers": {},
+    "expected": false
+  },
+  {
+    "name": "anthropic-retry-408",
+    "family": "anthropic",
+    "kind": "should_retry",
+    "status": 408,
+    "headers": {},
+    "expected": true
+  },
+  {
+    "name": "anthropic-retry-409",
+    "family": "anthropic",
+    "kind": "should_retry",
+    "status": 409,
+    "headers": {},
+    "expected": true
+  },
+  {
+    "name": "anthropic-retry-429",
+    "family": "anthropic",
+    "kind": "should_retry",
+    "status": 429,
+    "headers": {},
+    "expected": true
+  },
+  {
+    "name": "anthropic-retry-500",
+    "family": "anthropic",
+    "kind": "should_retry",
+    "status": 500,
+    "headers": {},
+    "expected": true
+  },
+  {
+    "name": "anthropic-retry-503",
+    "family": "anthropic",
+    "kind": "should_retry",
+    "status": 503,
+    "headers": {},
+    "expected": true
+  },
+  {
+    "name": "anthropic-delay-after-ms",
+    "family": "anthropic",
+    "kind": "delay",
+    "headers": {
+      "retry-after-ms": "1500"
+    },
+    "retries_remaining": 2,
+    "max_retries": 2,
+    "now_ms": 1700000000000,
+    "expected": 1500
+  },
+  {
+    "name": "anthropic-delay-after-seconds",
+    "family": "anthropic",
+    "kind": "delay",
+    "headers": {
+      "retry-after": "4"
+    },
+    "retries_remaining": 2,
+    "max_retries": 2,
+    "now_ms": 1700000000000,
+    "expected": 4000
+  },
+  {
+    "name": "anthropic-delay-after-huge",
+    "family": "anthropic",
+    "kind": "delay",
+    "headers": {
+      "retry-after": "999999"
+    },
+    "retries_remaining": 2,
+    "max_retries": 2,
+    "now_ms": 1700000000000,
+    "expected": 999999000
+  },
+  {
+    "name": "anthropic-delay-after-zero",
+    "family": "anthropic",
+    "kind": "delay",
+    "headers": {
+      "retry-after": "0"
+    },
+    "retries_remaining": 2,
+    "max_retries": 2,
+    "now_ms": 1700000000000,
+    "expected": 437.5
+  },
+  {
+    "name": "anthropic-delay-after-past",
+    "family": "anthropic",
+    "kind": "delay",
+    "headers": {
+      "retry-after": "Tue, 14 Nov 2023 22:13:19 GMT"
+    },
+    "retries_remaining": 2,
+    "max_retries": 2,
+    "now_ms": 1700000000000,
+    "expected": 437.5
+  },
+  {
+    "name": "anthropic-delay-after-date",
+    "family": "anthropic",
+    "kind": "delay",
+    "headers": {
+      "retry-after": "Tue, 14 Nov 2023 22:13:25 GMT"
+    },
+    "retries_remaining": 2,
+    "max_retries": 2,
+    "now_ms": 1700000000000,
+    "expected": 5000
+  },
+  {
+    "name": "anthropic-delay-backoff-first",
+    "family": "anthropic",
+    "kind": "delay",
+    "headers": {},
+    "retries_remaining": 2,
+    "max_retries": 2,
+    "now_ms": 1700000000000,
+    "expected": 437.5
+  },
+  {
+    "name": "anthropic-delay-backoff-second",
+    "family": "anthropic",
+    "kind": "delay",
+    "headers": {},
+    "retries_remaining": 1,
+    "max_retries": 2,
+    "now_ms": 1700000000000,
+    "expected": 875
+  },
+  {
+    "name": "anthropic-delay-backoff-more",
+    "family": "anthropic",
+    "kind": "delay",
+    "headers": {},
+    "retries_remaining": 1,
+    "max_retries": 8,
+    "now_ms": 1700000000000,
+    "expected": 7000
+  },
+  {
+    "name": "openai-retry-should-retry-true",
+    "family": "openai",
+    "kind": "should_retry",
+    "status": 400,
+    "headers": {
+      "x-should-retry": "true"
+    },
+    "expected": true
+  },
+  {
+    "name": "openai-retry-should-retry-false",
+    "family": "openai",
+    "kind": "should_retry",
+    "status": 429,
+    "headers": {
+      "x-should-retry": "false"
+    },
+    "expected": false
+  },
+  {
+    "name": "openai-retry-400",
+    "family": "openai",
+    "kind": "should_retry",
+    "status": 400,
+    "headers": {},
+    "expected": false
+  },
+  {
+    "name": "openai-retry-408",
+    "family": "openai",
+    "kind": "should_retry",
+    "status": 408,
+    "headers": {},
+    "expected": true
+  },
+  {
+    "name": "openai-retry-409",
+    "family": "openai",
+    "kind": "should_retry",
+    "status": 409,
+    "headers": {},
+    "expected": true
+  },
+  {
+    "name": "openai-retry-429",
+    "family": "openai",
+    "kind": "should_retry",
+    "status": 429,
+    "headers": {},
+    "expected": true
+  },
+  {
+    "name": "openai-retry-500",
+    "family": "openai",
+    "kind": "should_retry",
+    "status": 500,
+    "headers": {},
+    "expected": true
+  },
+  {
+    "name": "openai-retry-503",
+    "family": "openai",
+    "kind": "should_retry",
+    "status": 503,
+    "headers": {},
+    "expected": true
+  },
+  {
+    "name": "openai-delay-after-ms",
+    "family": "openai",
+    "kind": "delay",
+    "headers": {
+      "retry-after-ms": "1500"
+    },
+    "retries_remaining": 2,
+    "max_retries": 2,
+    "now_ms": 1700000000000,
+    "expected": 1500
+  },
+  {
+    "name": "openai-delay-after-seconds",
+    "family": "openai",
+    "kind": "delay",
+    "headers": {
+      "retry-after": "4"
+    },
+    "retries_remaining": 2,
+    "max_retries": 2,
+    "now_ms": 1700000000000,
+    "expected": 4000
+  },
+  {
+    "name": "openai-delay-after-huge",
+    "family": "openai",
+    "kind": "delay",
+    "headers": {
+      "retry-after": "999999"
+    },
+    "retries_remaining": 2,
+    "max_retries": 2,
+    "now_ms": 1700000000000,
+    "expected": 437.5
+  },
+  {
+    "name": "openai-delay-after-zero",
+    "family": "openai",
+    "kind": "delay",
+    "headers": {
+      "retry-after": "0"
+    },
+    "retries_remaining": 2,
+    "max_retries": 2,
+    "now_ms": 1700000000000,
+    "expected": 0
+  },
+  {
+    "name": "openai-delay-after-past",
+    "family": "openai",
+    "kind": "delay",
+    "headers": {
+      "retry-after": "Tue, 14 Nov 2023 22:13:19 GMT"
+    },
+    "retries_remaining": 2,
+    "max_retries": 2,
+    "now_ms": 1700000000000,
+    "expected": 437.5
+  },
+  {
+    "name": "openai-delay-after-date",
+    "family": "openai",
+    "kind": "delay",
+    "headers": {
+      "retry-after": "Tue, 14 Nov 2023 22:13:25 GMT"
+    },
+    "retries_remaining": 2,
+    "max_retries": 2,
+    "now_ms": 1700000000000,
+    "expected": 5000
+  },
+  {
+    "name": "openai-delay-backoff-first",
+    "family": "openai",
+    "kind": "delay",
+    "headers": {},
+    "retries_remaining": 2,
+    "max_retries": 2,
+    "now_ms": 1700000000000,
+    "expected": 437.5
+  },
+  {
+    "name": "openai-delay-backoff-second",
+    "family": "openai",
+    "kind": "delay",
+    "headers": {},
+    "retries_remaining": 1,
+    "max_retries": 2,
+    "now_ms": 1700000000000,
+    "expected": 875
+  },
+  {
+    "name": "openai-delay-backoff-more",
+    "family": "openai",
+    "kind": "delay",
+    "headers": {},
+    "retries_remaining": 1,
+    "max_retries": 8,
+    "now_ms": 1700000000000,
+    "expected": 7000
+  }
+]

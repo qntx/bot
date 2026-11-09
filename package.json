@@ -22,7 +22,7 @@
     "bundle": "bun run --cwd apps/desktop tauri build",
     "release": "bumpp",
     "prepare": "vp config",
-    "vectors": "node scripts/parity/generate-js-json.ts && node scripts/parity/generate-types.ts && node scripts/parity/generate-streaming-json.ts && node scripts/parity/generate-stream.ts && node scripts/parity/generate-transcript.ts && node scripts/parity/generate-ai-utils.ts && bun run scripts/parity/generate-schema.ts"
+    "vectors": "node scripts/parity/generate-js-json.ts && node scripts/parity/generate-types.ts && node scripts/parity/generate-streaming-json.ts && node scripts/parity/generate-stream.ts && node scripts/parity/generate-transcript.ts && node scripts/parity/generate-ai-utils.ts && bun run scripts/parity/generate-schema.ts && bun run scripts/parity/generate-http-policy.ts"
   },
   "devDependencies": {
     "@earendil-works/pi-ai": "1.5.0",

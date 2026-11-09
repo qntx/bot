@@ -1,0 +1,99 @@
+[
+  {
+    "name": "simple-merge",
+    "sources": [
+      {
+        "A": "1"
+      },
+      {
+        "B": "2"
+      }
+    ],
+    "expected": {
+      "A": "1",
+      "B": "2"
+    }
+  },
+  {
+    "name": "override-case",
+    "sources": [
+      {
+        "X-Auth": "a"
+      },
+      {
+        "x-auth": "b"
+      }
+    ],
+    "expected": {
+      "x-auth": "b"
+    }
+  },
+  {
+    "name": "null-suppresses",
+    "sources": [
+      {
+        "X-A": "1",
+        "X-B": "2"
+      },
+      {
+        "X-B": null
+      }
+    ],
+    "expected": {
+      "X-A": "1"
+    }
+  },
+  {
+    "name": "null-then-set",
+    "sources": [
+      {
+        "X-A": null
+      },
+      {
+        "x-a": "v"
+      }
+    ],
+    "expected": {
+      "x-a": "v"
+    }
+  },
+  {
+    "name": "empty-returns-undefined",
+    "sources": [
+      {
+        "X-A": null
+      }
+    ],
+    "expected": null
+  },
+  {
+    "name": "undefined-sources",
+    "sources": [
+      null,
+      {
+        "A": "1"
+      },
+      null
+    ],
+    "expected": {
+      "A": "1"
+    }
+  },
+  {
+    "name": "null-then-restore",
+    "sources": [
+      {
+        "A": "1"
+      },
+      {
+        "A": null
+      },
+      {
+        "a": "v"
+      }
+    ],
+    "expected": {
+      "a": "v"
+    }
+  }
+]

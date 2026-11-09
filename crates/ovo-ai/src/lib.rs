@@ -7,8 +7,11 @@
 
 pub mod cost;
 pub mod estimate;
+pub mod http;
 pub mod identity;
 pub mod json;
+pub mod models_error;
+pub mod options;
 pub mod overflow;
 pub mod retry;
 pub mod schema;

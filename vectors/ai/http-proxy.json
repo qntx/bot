@@ -1,0 +1,154 @@
+[
+  {
+    "name": "no-proxy-set",
+    "target": "https://api.x.com",
+    "env": {},
+    "expected": null
+  },
+  {
+    "name": "https-proxy",
+    "target": "https://api.x.com",
+    "env": {
+      "https_proxy": "proxy.local:8080"
+    },
+    "expected": "https://proxy.local:8080/"
+  },
+  {
+    "name": "http-target",
+    "target": "http://api.x.com",
+    "env": {
+      "http_proxy": "http://p:3128"
+    },
+    "expected": "http://p:3128/"
+  },
+  {
+    "name": "all-proxy",
+    "target": "https://a.b",
+    "env": {
+      "all_proxy": "http://p:1"
+    },
+    "expected": "http://p:1/"
+  },
+  {
+    "name": "no-proxy-star",
+    "target": "https://a.b",
+    "env": {
+      "https_proxy": "p:1",
+      "no_proxy": "*"
+    },
+    "expected": null
+  },
+  {
+    "name": "no-proxy-exact",
+    "target": "https://api.x.com",
+    "env": {
+      "https_proxy": "p:1",
+      "no_proxy": "api.x.com"
+    },
+    "expected": null
+  },
+  {
+    "name": "no-proxy-suffix",
+    "target": "https://api.x.com",
+    "env": {
+      "https_proxy": "p:1",
+      "no_proxy": ".x.com"
+    },
+    "expected": null
+  },
+  {
+    "name": "no-proxy-suffix-root",
+    "target": "https://x.com",
+    "env": {
+      "https_proxy": "p:1",
+      "no_proxy": ".x.com"
+    },
+    "expected": null
+  },
+  {
+    "name": "no-proxy-suffix-miss",
+    "target": "https://other.com",
+    "env": {
+      "https_proxy": "p:1",
+      "no_proxy": ".x.com"
+    },
+    "expected": "https://p:1/"
+  },
+  {
+    "name": "no-proxy-wildcard",
+    "target": "https://a.x.com",
+    "env": {
+      "https_proxy": "p:1",
+      "no_proxy": "*.x.com"
+    },
+    "expected": null
+  },
+  {
+    "name": "no-proxy-port-match",
+    "target": "https://api.x.com:443",
+    "env": {
+      "https_proxy": "p:1",
+      "no_proxy": "api.x.com:443"
+    },
+    "expected": null
+  },
+  {
+    "name": "no-proxy-port-miss",
+    "target": "https://api.x.com:8443",
+    "env": {
+      "https_proxy": "p:1",
+      "no_proxy": "api.x.com:443"
+    },
+    "expected": "https://p:1/"
+  },
+  {
+    "name": "no-proxy-list",
+    "target": "https://a.b",
+    "env": {
+      "https_proxy": "p:1",
+      "no_proxy": "c.d, a.b"
+    },
+    "expected": null
+  },
+  {
+    "name": "no-proxy-case",
+    "target": "https://API.X.COM",
+    "env": {
+      "https_proxy": "p:1",
+      "no_proxy": "api.x.com"
+    },
+    "expected": null
+  },
+  {
+    "name": "socks-unsupported",
+    "target": "https://a.b",
+    "env": {
+      "https_proxy": "socks5://p:1"
+    },
+    "expectedError": "Unsupported proxy protocol. SOCKS and PAC proxy URLs are not supported; use an HTTP or HTTPS proxy URL. Got socks5:"
+  },
+  {
+    "name": "scheme-added",
+    "target": "https://a.b",
+    "env": {
+      "https_proxy": "p:8080"
+    },
+    "expected": "https://p:8080/"
+  },
+  {
+    "name": "uppercase-env",
+    "target": "https://a.b",
+    "env": {
+      "HTTPS_PROXY": "http://p:1"
+    },
+    "expected": "http://p:1/"
+  },
+  {
+    "name": "ws-scheme",
+    "target": "ws://a.b",
+    "env": {
+      "ws_proxy": "http://p:1"
+    },
+    "expected": "http://p:1/"
+  }
+]
