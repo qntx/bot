@@ -223,9 +223,20 @@ impl std::fmt::Debug for CreateModelsOptions {
     }
 }
 
+/// The pieces `refresh_phase` threads into
+/// `runProviderRefreshPhase`.
+struct RefreshPhase<'a> {
+    credential: Option<Credential>,
+    stored: Option<ModelsStoreEntry>,
+    allow_network: bool,
+    force: Option<bool>,
+    generation: u64,
+    signal: &'a CancellationToken,
+}
+
 /// `Models` — runtime collection of providers plus auth application.
 pub struct Models {
-    providers: RwLock<HashMap<String, Arc<dyn Provider>>>,
+    providers: RwLock<Vec<Arc<dyn Provider>>>,
     credentials: Arc<dyn CredentialStore>,
     store: Arc<dyn ModelsStore>,
     env: Arc<dyn Env>,
@@ -245,7 +256,7 @@ impl std::fmt::Debug for Models {
 #[must_use]
 pub fn create_models(options: CreateModelsOptions) -> Arc<Models> {
     Arc::new(Models {
-        providers: RwLock::new(HashMap::new()),
+        providers: RwLock::new(Vec::new()),
         credentials: options
             .credentials
             .map_or_else(default_credentials, Arc::from),
@@ -342,10 +353,19 @@ impl Models {
     /// `setProvider` — upsert/replace by `provider.id`.
     pub fn set_provider(&self, provider: Arc<dyn Provider>) {
         self.supersede_provider_refresh(provider.id());
-        self.providers
+        // JS `Map.set` keeps the entry's position on replace.
+        let mut providers = self
+            .providers
             .write()
-            .unwrap_or_else(std::sync::PoisonError::into_inner)
-            .insert(provider.id().to_owned(), provider);
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        match providers.iter().position(|p| p.id() == provider.id()) {
+            Some(index) => {
+                if let Some(slot) = providers.get_mut(index) {
+                    *slot = provider;
+                }
+            }
+            None => providers.push(provider),
+        }
     }
 
     /// `deleteProvider`.
@@ -354,7 +374,7 @@ impl Models {
         self.providers
             .write()
             .unwrap_or_else(std::sync::PoisonError::into_inner)
-            .remove(id);
+            .retain(|p| p.id() != id);
     }
 
     /// `clearProviders`.
@@ -369,9 +389,9 @@ impl Models {
                 .lock()
                 .unwrap_or_else(std::sync::PoisonError::into_inner);
             providers
-                .keys()
-                .chain(controllers.keys())
-                .cloned()
+                .iter()
+                .map(|p| p.id().to_owned())
+                .chain(controllers.keys().cloned())
                 .collect::<std::collections::HashSet<_>>()
                 .into_iter()
                 .collect()
@@ -391,9 +411,7 @@ impl Models {
         self.providers
             .read()
             .unwrap_or_else(std::sync::PoisonError::into_inner)
-            .values()
-            .cloned()
-            .collect()
+            .clone()
     }
 
     /// `getProvider(id)`.
@@ -402,7 +420,8 @@ impl Models {
         self.providers
             .read()
             .unwrap_or_else(std::sync::PoisonError::into_inner)
-            .get(id)
+            .iter()
+            .find(|p| p.id() == id)
             .cloned()
     }
 
@@ -410,6 +429,8 @@ impl Models {
     /// throwing providers; ours can't throw, matching that).
     #[must_use]
     pub fn get_models(&self, provider: Option<&str>) -> Vec<Model> {
+        // Upstream swallows provider `getModels` failures at listing —
+        // the throwing analogue of a sync method is a panic.
         provider.map_or_else(
             || {
                 self.get_providers()
@@ -505,7 +526,17 @@ impl Models {
     /// [`ModelsRefreshResult::errors`]; this method itself does not
     /// reject.
     pub async fn refresh(&self, options: ModelsRefreshOptions) -> ModelsRefreshResult {
+        // Upstream `refresh` — `raceWithAbortSignal` per provider op,
+        // `{aborted: callerSignal.aborted, errors}` (models.ts:567-624).
         let allow_network = options.allow_network.unwrap_or(true);
+        let mut errors = HashMap::new();
+        let caller = options.signal.clone().unwrap_or_default();
+        if caller.is_cancelled() {
+            return ModelsRefreshResult {
+                aborted: true,
+                errors,
+            };
+        }
         let selected: Option<std::collections::HashSet<String>> =
             options.providers.map(|p| p.into_iter().collect());
         let refreshable: Vec<Arc<dyn Provider>> = self
@@ -513,70 +544,172 @@ impl Models {
             .into_iter()
             .filter(|p| selected.as_ref().is_none_or(|s| s.contains(p.id())))
             .collect();
-        let errors = HashMap::new();
         for provider in refreshable {
-            self.refresh_one(&provider, allow_network, options.force)
+            // `AbortSignal.any([callerSignal, controller.signal])` —
+            // a child token is cancelled by either.
+            let signal = caller.child_token();
+            let generation = self.supersede_provider_refresh(provider.id());
+            self.refresh_controllers
+                .lock()
+                .unwrap_or_else(std::sync::PoisonError::into_inner)
+                .insert(provider.id().to_owned(), signal.clone());
+            let outcome = self
+                .refresh_operation(&provider, allow_network, options.force, generation, &signal)
                 .await;
+            //  — via the
+            // generation counter (a supersede bumps it).
+            let still_mine = self
+                .refresh_generations
+                .lock()
+                .unwrap_or_else(std::sync::PoisonError::into_inner)
+                .get(provider.id())
+                .copied()
+                == Some(generation);
+            if still_mine {
+                self.refresh_controllers
+                    .lock()
+                    .unwrap_or_else(std::sync::PoisonError::into_inner)
+                    .remove(provider.id());
+            }
+            // A cancellation is not a provider error.
+            if let Err(error) = outcome
+                && !signal.is_cancelled()
+            {
+                errors.insert(provider.id().to_owned(), error);
+            }
+            if caller.is_cancelled() {
+                break;
+            }
         }
         ModelsRefreshResult {
-            aborted: false,
+            aborted: caller.is_cancelled(),
             errors,
         }
     }
 
-    /// `refresh` for one provider — supersede, offline restore, then
-    /// the network phase when allowed.
-    async fn refresh_one(
+    /// One provider's refresh operation (models.ts:577-601): stored
+    /// credential → offline restore phase → `resolveRefreshCredential`
+    /// → network phase. `raceWithAbortSignal` is a `tokio::select!` on
+    /// the linked signal — a stuck provider does not block refresh.
+    async fn refresh_operation(
         &self,
         provider: &Arc<dyn Provider>,
         allow_network: bool,
         force: Option<bool>,
-    ) {
-        let generation = self.supersede_provider_refresh(provider.id());
-        let controller = CancellationToken::new();
-        self.refresh_controllers
-            .lock()
-            .unwrap_or_else(std::sync::PoisonError::into_inner)
-            .insert(provider.id().to_owned(), controller.clone());
+        generation: u64,
+        signal: &CancellationToken,
+    ) -> Result<(), ModelsError> {
+        let stored_credential = self.credentials.read(provider.id()).await;
+        let credential_error = stored_credential.as_ref().err().map(|e| {
+            ModelsError::new(
+                ModelsErrorCode::Auth,
+                format!("Credential store read failed for {}: {e}", provider.id()),
+            )
+        });
         let stored = self.store.read(provider.id()).await.unwrap_or(None);
-        let credential = self.credentials.read(provider.id()).await.unwrap_or(None);
-        let publish = self.publish_for(provider.id(), generation, controller.clone());
-        provider
-            .refresh_models(RefreshModelsContext {
-                credential: credential.clone(),
+        self.refresh_phase(
+            provider,
+            RefreshPhase {
+                credential: stored_credential.as_ref().ok().cloned().flatten(),
                 stored: stored.clone(),
-                publish: Arc::clone(&publish),
                 allow_network: false,
                 force: None,
-                signal: controller.clone(),
-                base_url: provider.base_url().map(str::to_owned),
+                generation,
+                signal,
+            },
+        )
+        .await?;
+        if let Some(error) = credential_error {
+            return Err(error);
+        }
+        if !allow_network || signal.is_cancelled() {
+            return Ok(());
+        }
+        let credential = self.resolve_refresh_credential(
+            provider.as_ref(),
+            stored_credential.ok().flatten().as_ref(),
+        )?;
+        let Some(credential) = credential else {
+            return Ok(());
+        };
+        self.refresh_phase(
+            provider,
+            RefreshPhase {
+                credential: Some(credential),
+                stored,
+                allow_network: true,
+                force,
+                generation,
+                signal,
+            },
+        )
+        .await
+    }
+
+    /// `runProviderRefreshPhase` raced against the linked signal
+    /// (`raceWithAbortSignal`).
+    async fn refresh_phase(
+        &self,
+        provider: &Arc<dyn Provider>,
+        phase: RefreshPhase<'_>,
+    ) -> Result<(), ModelsError> {
+        let RefreshPhase {
+            credential,
+            stored,
+            allow_network,
+            force,
+            generation,
+            signal,
+        } = phase;
+        let publish = self.publish_for(provider.id(), generation, signal.clone());
+        let run = provider.refresh_models(RefreshModelsContext {
+            credential,
+            stored,
+            publish,
+            allow_network,
+            force: if allow_network { force } else { None },
+            signal: signal.clone(),
+            base_url: provider.base_url().map(str::to_owned),
+        });
+        tokio::select! {
+            result = run => result,
+            () = signal.cancelled() => Ok(()),
+        }
+    }
+
+    /// `resolveRefreshCredential` (models.ts:626-652): an unexpired
+    /// stored OAuth credential is used as-is; OAuth refresh flows are
+    /// M5 so an expired one skips the provider. Otherwise the apiKey
+    /// handler resolves the effective credential.
+    fn resolve_refresh_credential(
+        &self,
+        provider: &dyn Provider,
+        stored: Option<&Credential>,
+    ) -> Result<Option<Credential>, ModelsError> {
+        let now = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map_or(0.0, |d| d.as_millis() as f64);
+        if let Some(Credential::OAuth(credential)) = stored {
+            if provider.auth().oauth.is_none() || now >= credential.expires {
+                return Ok(None);
+            }
+            return Ok(stored.cloned());
+        }
+        let Some(api_key) = &provider.auth().api_key else {
+            return Ok(None);
+        };
+        let credential = match stored {
+            Some(Credential::ApiKey(c)) => Some(c.clone()),
+            _ => None,
+        };
+        let result = (api_key.resolve)(credential.as_ref(), self.env.as_ref())
+            .map_err(|e| ModelsError::new(ModelsErrorCode::Auth, e))?;
+        Ok(result.map(|r| {
+            Credential::ApiKey(ApiKeyCredential {
+                key: r.auth.api_key.map(secrecy::SecretString::from),
+                env: r.env,
             })
-            .await;
-        if allow_network && !controller.is_cancelled() {
-            provider
-                .refresh_models(RefreshModelsContext {
-                    credential,
-                    stored,
-                    publish: Arc::clone(&publish),
-                    allow_network: true,
-                    force,
-                    signal: controller.clone(),
-                    base_url: provider.base_url().map(str::to_owned),
-                })
-                .await;
-        }
-        if self
-            .refresh_controllers
-            .lock()
-            .unwrap_or_else(std::sync::PoisonError::into_inner)
-            .get(provider.id())
-            .is_some_and(|t| std::ptr::eq(t, &raw const controller))
-        {
-            self.refresh_controllers
-                .lock()
-                .unwrap_or_else(std::sync::PoisonError::into_inner)
-                .remove(provider.id());
-        }
+        }))
     }
 
     /// The generation-checked `publish` for `refresh` — serialized
@@ -644,7 +777,7 @@ impl Models {
         let result = self
             .resolve_provider_auth(provider.as_ref(), overrides)
             .await
-            .map_err(|e| ModelsError::new(ModelsErrorCode::Auth, format!("{e}")))?;
+            .map_err(Self::auth_wrap)?;
         match (result, provider_or_model) {
             (Some(mut result), ProviderOrModel::Model(AnyModel::Chat(model))) => {
                 if let Some(headers) = &model.headers {
@@ -689,13 +822,16 @@ impl Models {
         if let Some(api_key) = overrides.api_key.as_ref()
             && let Some(api_key_auth) = &auth.api_key
         {
-            return Ok((api_key_auth.resolve)(
+            // Upstream `apiKey.resolve` may throw — `getAuth` wraps it
+            // into `ModelsError("auth")`.
+            return (api_key_auth.resolve)(
                 Some(&ApiKeyCredential {
                     key: Some(secrecy::SecretString::from(api_key.clone())),
                     env: overrides.env.clone(),
                 }),
                 ambient_env,
-            ));
+            )
+            .map_err(|e| crate::auth::types::AuthError::models(ModelsErrorCode::Auth, e));
         }
 
         let stored = self.credentials.read(provider.id()).await?;
@@ -712,10 +848,12 @@ impl Models {
                     }
                     None => credential,
                 };
-                Ok(auth
-                    .api_key
-                    .as_ref()
-                    .and_then(|a| (a.resolve)(Some(&merged), ambient_env)))
+                match &auth.api_key {
+                    Some(a) => (a.resolve)(Some(&merged), ambient_env).map_err(|e| {
+                        crate::auth::types::AuthError::models(ModelsErrorCode::Auth, e)
+                    }),
+                    None => Ok(None),
+                }
             }
             Some(Credential::OAuth(_)) => {
                 if auth.oauth.is_some() {
@@ -729,10 +867,11 @@ impl Models {
                 }
                 Ok(None)
             }
-            None => Ok(auth
-                .api_key
-                .as_ref()
-                .and_then(|a| (a.resolve)(None, ambient_env))),
+            None => match &auth.api_key {
+                Some(a) => (a.resolve)(None, ambient_env)
+                    .map_err(|e| crate::auth::types::AuthError::models(ModelsErrorCode::Auth, e)),
+                None => Ok(None),
+            },
         }
     }
 
@@ -761,7 +900,7 @@ impl Models {
         let resolution = self
             .resolve_provider_auth(&*provider, &overrides_for(options))
             .await
-            .map_err(|e| ModelsError::new(ModelsErrorCode::Auth, format!("{e}")))?;
+            .map_err(Self::auth_wrap)?;
         let Some(resolution) = resolution else {
             return Err(ModelsError::new(
                 ModelsErrorCode::Auth,
@@ -809,8 +948,24 @@ impl Models {
             self.identity.as_ref(),
             options.and_then(|o| o.identity.as_ref()),
         ]);
+        // `requestModel` — `auth.baseUrl` overrides the catalog URL.
+        let request_model = match (model.clone(), resolution.auth.base_url.clone()) {
+            (AnyModel::Chat(mut m), Some(base_url)) => {
+                m.base_url = base_url;
+                AnyModel::Chat(m)
+            }
+            (AnyModel::Image(mut m), Some(base_url)) => {
+                m.base_url = base_url;
+                AnyModel::Image(m)
+            }
+            (AnyModel::Classifier(mut m), Some(base_url)) => {
+                m.base_url = base_url;
+                AnyModel::Classifier(m)
+            }
+            (m, _) => m,
+        };
         Ok((
-            model.clone(),
+            request_model,
             RequestParts {
                 api_key,
                 headers,
@@ -818,6 +973,16 @@ impl Models {
                 identity,
             },
         ))
+    }
+
+    /// `getAuth`'s error wrap: an `AuthError::Models` already carries
+    /// the upstream code ("oauth", "auth"); anything else is an
+    /// `auth` failure.
+    fn auth_wrap(error: crate::auth::types::AuthError) -> ModelsError {
+        match error {
+            crate::auth::types::AuthError::Models(e) => e,
+            e => ModelsError::new(ModelsErrorCode::Auth, e.to_string()),
+        }
     }
 
     /// `requireProvider` — `ModelsError("provider")` on miss.
@@ -863,6 +1028,7 @@ impl Models {
                 ));
             };
             let mut stream_options = options.unwrap_or_default();
+            stream_options.transform_headers = None;
             stream_options.api_key = parts.api_key;
             stream_options.headers = parts.headers;
             stream_options.env = parts.env;
@@ -924,7 +1090,9 @@ impl Models {
             base.headers = parts.headers;
             base.env = parts.env;
             base.identity = parts.identity;
-            Ok(provider.stream_simple(&applied, transcript, simple_options.unwrap_or_default()))
+            let mut request_options = simple_options.unwrap_or_default();
+            request_options.base = base;
+            Ok(provider.stream_simple(&applied, transcript, request_options))
         })
     }
 
@@ -1134,7 +1302,7 @@ impl Models {
                 Box::new(move |_existing| Box::pin(async move { Some(credential.clone()) })),
             )
             .await
-            .map_err(|e| ModelsError::new(ModelsErrorCode::Auth, format!("{e}")))?;
+            .map_err(Self::auth_wrap)?;
         Ok(())
     }
 
@@ -1146,7 +1314,7 @@ impl Models {
         self.credentials
             .delete(provider_id)
             .await
-            .map_err(|e| ModelsError::new(ModelsErrorCode::Auth, format!("{e}")))
+            .map_err(Self::auth_wrap)
     }
 
     /// `checkAuth` — provider configured without refreshing OAuth.
@@ -1167,7 +1335,7 @@ impl Models {
             let resolution = self
                 .resolve_provider_auth(provider.as_ref(), &AuthResolutionOverrides::default())
                 .await
-                .map_err(|e| ModelsError::new(ModelsErrorCode::Auth, format!("{e}")))?;
+                .map_err(Self::auth_wrap)?;
             Ok(resolution.map(|r| AuthCheck {
                 source: r.source,
                 type_: "api_key",
@@ -1242,7 +1410,7 @@ impl Models {
         let resolution = self
             .resolve_provider_auth(provider, &AuthResolutionOverrides::default())
             .await
-            .map_err(|e| ModelsError::new(ModelsErrorCode::Auth, format!("{e}")))?;
+            .map_err(Self::auth_wrap)?;
         Ok(resolution.map(|r| AuthCheck {
             source: r.source,
             type_: "api_key",
@@ -1431,7 +1599,7 @@ fn request_options(options: &StreamOptions) -> RequestOptions {
 #[must_use]
 pub fn with_client_identity(models: &Arc<Models>, identity: ClientIdentity) -> Arc<Models> {
     let clone = Models {
-        providers: RwLock::new(HashMap::new()),
+        providers: RwLock::new(Vec::new()),
         credentials: Arc::clone(&models.credentials),
         store: Arc::clone(&models.store),
         env: Arc::clone(&models.env),
@@ -1442,17 +1610,15 @@ pub fn with_client_identity(models: &Arc<Models>, identity: ClientIdentity) -> A
     };
     // share the provider map — a shallow clone of the registry's
     // contents, matching upstream's wrapper over the same providers.
-    for (id, provider) in models
+    models
         .providers
         .read()
         .unwrap_or_else(std::sync::PoisonError::into_inner)
-        .iter()
-    {
-        clone
-            .providers
-            .write()
-            .unwrap_or_else(std::sync::PoisonError::into_inner)
-            .insert(id.clone(), Arc::clone(provider));
-    }
+        .clone_into(
+            &mut clone
+                .providers
+                .write()
+                .unwrap_or_else(std::sync::PoisonError::into_inner),
+        );
     Arc::new(clone)
 }

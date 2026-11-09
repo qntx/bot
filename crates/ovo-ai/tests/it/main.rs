@@ -33,7 +33,7 @@ mod http_client;
 mod http_policy;
 mod http_sse;
 mod json;
-mod models_faux;
+mod models;
 mod openai_completions;
 #[cfg(feature = "http")]
 mod openai_completions_stream;

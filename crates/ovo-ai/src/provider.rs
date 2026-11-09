@@ -166,8 +166,11 @@ pub trait Provider: Send + Sync + 'static {
     /// `refreshModels(context)` — dynamic providers only. Restores
     /// `context.stored`, optionally fetches a newer list, and
     /// publishes through `context.publish`.
-    fn refresh_models(&self, _context: RefreshModelsContext) -> BoxFuture<'_, ()> {
-        Box::pin(async {})
+    fn refresh_models(
+        &self,
+        _context: RefreshModelsContext,
+    ) -> BoxFuture<'_, Result<(), ModelsError>> {
+        Box::pin(async { Ok(()) })
     }
     /// `filterModels` — credential-specific chat availability.
     fn filter_models(&self, models: &[Model], _credential: Option<&Credential>) -> Vec<Model> {
@@ -620,10 +623,13 @@ impl Provider for SpecProvider {
         clippy::excessive_nesting,
         reason = "mirrors upstream `refreshModels`'s restore/publish phases"
     )]
-    fn refresh_models(&self, context: RefreshModelsContext) -> BoxFuture<'_, ()> {
+    fn refresh_models(
+        &self,
+        context: RefreshModelsContext,
+    ) -> BoxFuture<'_, Result<(), ModelsError>> {
         Box::pin(async move {
             let Some(fetch) = &self.spec.fetch_models else {
-                return;
+                return Ok(());
             };
             if let Some(stored) = &context.stored {
                 let restored: Vec<AnyModel> = stored
@@ -633,19 +639,20 @@ impl Provider for SpecProvider {
                     .cloned()
                     .collect();
                 if !self.publish_restore(&context, restored).await {
-                    return;
+                    return Ok(());
                 }
             }
             if !context.allow_network || context.signal.is_cancelled() {
-                return;
+                return Ok(());
             }
             let fetched = fetch(&context).await;
             if context.signal.is_cancelled() {
-                return;
+                return Ok(());
             }
             let refreshed: Vec<AnyModel> =
                 fetched.into_iter().filter(has_known_model_type).collect();
             self.publish_refresh(&context, refreshed).await;
+            Ok(())
         })
     }
 
