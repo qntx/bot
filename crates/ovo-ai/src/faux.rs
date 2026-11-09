@@ -1269,11 +1269,11 @@ fn faux_auth() -> ProviderAuth {
         api_key: Some(ApiKeyAuth::custom(
             "Faux",
             Arc::new(|_, _| {
-                Some(crate::auth::types::AuthResult {
+                Ok(Some(crate::auth::types::AuthResult {
                     auth: crate::auth::types::ModelAuth::default(),
                     env: None,
                     source: Some(String::from("faux")),
-                })
+                }))
             }),
         )),
         oauth: None,

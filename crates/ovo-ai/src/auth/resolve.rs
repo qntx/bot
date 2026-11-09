@@ -215,8 +215,9 @@ pub async fn resolve_provider_auth(
 /// A stored key wins, else ambient sources (env vars, custom
 /// resolution). `envApiKeyAuth` builds the standard resolver;
 /// providers with custom auth (faux, IAM, ADC) supply their own.
-pub type ApiKeyResolve =
-    Arc<dyn Fn(Option<&ApiKeyCredential>, &dyn Env) -> Option<AuthResult> + Send + Sync>;
+pub type ApiKeyResolve = Arc<
+    dyn Fn(Option<&ApiKeyCredential>, &dyn Env) -> Result<Option<AuthResult>, String> + Send + Sync,
+>;
 
 /// `ApiKeyAuth`-shaped provider hook (`name` + `resolve`), the M1
 /// subset of upstream's `ApiKeyAuth` (`login`/`check` are app-side).
@@ -252,11 +253,11 @@ impl ApiKeyAuth {
         Self {
             name: name.to_owned(),
             resolve: Arc::new(move |credential, env| {
-                resolve_api_key_env(
+                Ok(resolve_api_key_env(
                     &vars.iter().map(String::as_str).collect::<Vec<_>>(),
                     credential,
                     env,
-                )
+                ))
             }),
         }
     }

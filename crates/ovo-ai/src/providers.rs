@@ -198,12 +198,20 @@ fn provider(
 /// key, else workload identity federation. Federation comes last so keys
 /// keep winning, as in the Anthropic SDK; its ids are provider config, so
 /// they travel in `env` and the SDK exchanges the identity token itself.
+#[expect(
+    clippy::unnecessary_wraps,
+    reason = "the `ApiKeyResolve` type requires a `Result` error channel"
+)]
 fn resolve_anthropic_auth(
     credential: Option<&ApiKeyCredential>,
     env: &dyn Env,
-) -> Option<AuthResult> {
+) -> Result<Option<AuthResult>, String> {
     if let Some(credential) = credential.filter(|credential| credential.key.is_some()) {
-        return crate::auth::resolve::resolve_api_key_env(&[], Some(credential), env);
+        return Ok(crate::auth::resolve::resolve_api_key_env(
+            &[],
+            Some(credential),
+            env,
+        ));
     }
     if let Some(token) = env_get(env, "ANTHROPIC_AUTH_TOKEN") {
         let mut headers = Map::new();
@@ -215,31 +223,34 @@ fn resolve_anthropic_auth(
             headers: Some(headers),
             ..ModelAuth::default()
         };
-        return Some(AuthResult {
+        return Ok(Some(AuthResult {
             auth,
             env: None,
             source: Some(String::from("ANTHROPIC_AUTH_TOKEN")),
-        });
+        }));
     }
     if let Some(found) = crate::auth::resolve::resolve_api_key_env(
         &["ANTHROPIC_OAUTH_TOKEN", "ANTHROPIC_API_KEY"],
         None,
         env,
     ) {
-        return Some(found);
+        return Ok(Some(found));
     }
     let mut federation = Map::new();
     for name in ANTHROPIC_FEDERATION_REQUIRED {
-        federation.insert(name.into(), Value::from(env_get(env, name)?));
+        let Some(value) = env_get(env, name) else {
+            return Ok(None);
+        };
+        federation.insert(name.into(), Value::from(value));
     }
     for name in ANTHROPIC_FEDERATION_OPTIONAL {
         if let Some(value) = env_get(env, name) {
             federation.insert(name.into(), Value::from(value));
         }
     }
-    Some(AuthResult {
+    Ok(Some(AuthResult {
         auth: ModelAuth::default(),
         env: Some(federation),
         source: Some(String::from("workload identity federation")),
-    })
+    }))
 }

@@ -223,12 +223,11 @@
       "rust": ["crates/ovo-ai/tests/it/providers.rs"],
       "classes": []
     },
-
     {
       "id": "AI-FAUX",
       "upstream": ["packages/ai/src/providers/faux.ts"],
       "vectors": [],
-      "rust": ["crates/ovo-ai/tests/it/faux.rs", "crates/ovo-ai/tests/it/models_faux.rs"],
+      "rust": ["crates/ovo-ai/tests/it/faux.rs", "crates/ovo-ai/tests/it/models.rs"],
       "classes": []
     },
     {
@@ -281,6 +280,13 @@
         "crates/ovo-ai/tests/it/openai_responses_stream.rs"
       ],
       "classes": ["sdk-headers", "engine-error-text", "wall-clock"]
+    },
+    {
+      "id": "AI-MODELS-REGISTRY",
+      "upstream": ["packages/ai/src/models.ts", "packages/ai/src/models-store.ts"],
+      "vectors": [],
+      "rust": ["crates/ovo-ai/tests/it/models.rs"],
+      "classes": []
     }
   ],
   "classes": {
@@ -585,18 +591,9 @@
     "packages/ai/test/model-data-validation.test.ts": {
       "excluded": "tests the TypeScript catalog generator and its sources, which ovo consumes as built output (ADR-006)"
     },
-    "packages/ai/test/model-types.test.ts": {
-      "milestone": "M1",
-      "capability": "AI-MODELS-REGISTRY"
-    },
-    "packages/ai/test/models-entry.test.ts": {
-      "milestone": "M1",
-      "capability": "AI-MODELS-REGISTRY"
-    },
-    "packages/ai/test/models-runtime.test.ts": {
-      "milestone": "M1",
-      "capability": "AI-MODELS-REGISTRY"
-    },
+    "packages/ai/test/model-types.test.ts": ["AI-MODELS-REGISTRY"],
+    "packages/ai/test/models-entry.test.ts": ["AI-MODELS-REGISTRY"],
+    "packages/ai/test/models-runtime.test.ts": ["AI-MODELS-REGISTRY"],
     "packages/ai/test/node-http-proxy.test.ts": ["AI-HTTP-PROXY"],
     "packages/ai/test/oauth-auth.test.ts": {
       "milestone": "M5",

@@ -104,7 +104,7 @@ fn builtin_providers_match_upstream() {
                 ));
             let stored = credential(&resolution["credential"]);
             let result = (api_key.resolve)(stored.as_ref(), &env);
-            let got = recorded(result.as_ref());
+            let got = recorded(result.as_ref().ok().and_then(Option::as_ref));
             assert!(
                 js_value_eq(&got, &resolution["result"]),
                 "{id}/{name}\n  got:  {got}\n  want: {}",
