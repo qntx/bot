@@ -157,14 +157,21 @@ async fn run(
         base: options.clone(),
         ..AnthropicOptions::default()
     };
-    let (url, headers, body) = build_request(model, &request_context, Some(&anthropic_options));
-    let url = format!("{}/v1/messages?beta=true", url.trim_end_matches('/'));
-    let header_pairs: Vec<(&str, &str)> = headers
+    let request = build_request(model, &request_context, Some(&anthropic_options))
+        .map_err(|error| error.to_string())?;
+    let header_pairs: Vec<(&str, &str)> = request
+        .headers
         .iter()
         .filter_map(|(name, value)| value.as_str().map(|v| (name.as_str(), v)))
         .collect();
     let response = http
-        .post_json(&url, &Bytes::from(body), &header_pairs, signal, &jitter)
+        .post_json(
+            &request.url,
+            &Bytes::from(request.body),
+            &header_pairs,
+            signal,
+            &jitter,
+        )
         .await
         .map_err(|error| match error {
             SendError::Provider(error) => sdk_error_message(&error),
