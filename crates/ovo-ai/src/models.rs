@@ -1174,7 +1174,7 @@ impl Models {
     /// upstream error for providers without OAuth auth.
     ///
     /// # Errors
-    /// [`ModelsError::Provider`] when the provider has no OAuth auth
+    /// [`ModelsErrorCode::Provider`] when the provider has no OAuth auth
     /// or is unknown; `ModelsError::Oauth` for the stored-credential
     /// path until M5.
     pub async fn login(
