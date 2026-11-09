@@ -51,7 +51,9 @@ fn sse_vectors() {
             if end > at {
                 for line in lines.decode(&bytes[at..end]) {
                     if let Some(e) = decoder.decode(&line) {
-                        got.push(serde_json::json!({"event": e.event, "data": e.data, "raw": e.raw}));
+                        got.push(
+                            serde_json::json!({"event": e.event, "data": e.data, "raw": e.raw}),
+                        );
                     }
                 }
             }
