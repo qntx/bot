@@ -201,6 +201,13 @@
       "classes": []
     },
     {
+      "id": "AI-CATALOG-EMBED",
+      "upstream": ["packages/ai/src/model-catalog.ts", "packages/ai/src/providers/all.ts"],
+      "vectors": ["vectors/ai/catalog.json"],
+      "rust": ["crates/ovo-ai/tests/it/catalog.rs"],
+      "classes": []
+    },
+    {
       "id": "AI-SHORT-HASH",
       "upstream": ["packages/ai/src/utils/hash.ts", "packages/ai/src/api/openai-prompt-cache.ts"],
       "vectors": ["vectors/ai/hash.json"],
