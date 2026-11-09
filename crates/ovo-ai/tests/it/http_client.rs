@@ -5,7 +5,7 @@
 //! `post_json` over a real socket (429+retry-after, give-up, cap).
 
 use ovo_ai::http::client::{HttpClient, HttpClientConfig, RequestPolicy, SendError};
-use tokio::io::AsyncWriteExt as _;
+use tokio::io::{AsyncReadExt as _, AsyncWriteExt as _};
 use tokio_util::sync::CancellationToken;
 use wiremock::matchers::{body_bytes, header, method, path};
 use wiremock::{Mock, MockServer, ResponseTemplate};
@@ -242,8 +242,23 @@ async fn idle_timeout_aborts_a_stalled_body() {
         let Ok((mut socket, _)) = listener.accept().await else {
             return;
         };
+        // Read the whole request (headers plus the 2-byte `{}` body)
+        // before answering, so the client never sees a response to a
+        // request it is still writing.
+        let mut request = Vec::new();
+        let mut buf = [0_u8; 1024];
+        while request
+            .windows(4)
+            .position(|w| w == b"\r\n\r\n")
+            .is_none_or(|end| request.len() < end + 4 + 2)
+        {
+            match socket.read(&mut buf).await {
+                Ok(0) | Err(_) => return,
+                Ok(n) => request.extend_from_slice(&buf[..n]),
+            }
+        }
         let _ignored = socket
-            .write_all(b"HTTP/1.1 200 OK\r\nContent-Type: text/event-stream\r\nTransfer-Encoding: chunked\r\n\r\n4\r\nok\n\r\n")
+            .write_all(b"HTTP/1.1 200 OK\r\nContent-Type: text/event-stream\r\nTransfer-Encoding: chunked\r\n\r\n3\r\nok\n\r\n")
             .await
             .ok();
         // Stall forever — the read timeout must kill the body read.
