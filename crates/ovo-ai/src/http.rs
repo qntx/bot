@@ -8,8 +8,10 @@
 //! `ProviderEnv` map; library code here takes the injected snapshot
 //! only — callers resolve process env and pass it in.
 
+pub mod client;
 pub mod env;
 pub mod error_body;
 pub mod headers;
 pub mod proxy;
 pub mod retry;
+pub mod sse;

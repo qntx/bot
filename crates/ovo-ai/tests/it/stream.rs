@@ -272,3 +272,81 @@ fn stream_cases_replay() {
         );
     }
 }
+
+mod spawn_tests {
+    use std::sync::Arc;
+    use std::sync::atomic::{AtomicBool, Ordering};
+
+    use serde_json::json;
+
+    use super::*;
+    use ovo_ai::stream::AssistantStream;
+    use ovo_ai::types::content::AssistantContentBlock;
+
+    /// Drop observer for the producer-abort test.
+    struct Guard(Arc<AtomicBool>);
+
+    impl Drop for Guard {
+        fn drop(&mut self) {
+            self.0.store(true, Ordering::Relaxed);
+        }
+    }
+
+    fn base() -> AssistantMessage {
+        base_from(&json!({
+            "role": "assistant",
+            "content": [],
+            "api": "anthropic-messages",
+            "provider": "anthropic",
+            "model": "m",
+            "usage": {
+                "input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0,
+                "totalTokens": 0,
+                "cost": {"input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0, "total": 0}
+            },
+            "stopReason": "stop",
+            "timestamp": 0
+        }))
+    }
+
+    /// Dropping the stream aborts the producer task.
+    #[tokio::test]
+    async fn drop_aborts_producer() {
+        let dropped = Arc::new(AtomicBool::new(false));
+        let guard = Arc::clone(&dropped);
+        let stream = AssistantStream::spawn(base(), 8, move |mut sender| {
+            let _guard = Guard(guard);
+            async move {
+                sender.start().await.expect("start");
+                futures::future::pending::<()>().await;
+            }
+        });
+        drop(stream);
+        tokio::task::yield_now().await;
+        assert!(
+            dropped.load(Ordering::Relaxed),
+            "producer guard not dropped"
+        );
+    }
+
+    /// Producer finishes normally; `result()` returns the folded message.
+    #[tokio::test]
+    async fn completes_and_results() {
+        let stream = AssistantStream::spawn(base(), 8, |mut sender| async move {
+            sender.start().await.expect("start");
+            let i = sender.text_start().await.expect("text_start");
+            sender.text_delta(i, "hello").await.expect("delta");
+            let block: TextContent =
+                serde_json::from_value(json!({"type": "text", "text": "hello"}))
+                    .unwrap_or_else(|e| panic!("text: {e}"));
+            sender.text_end(i, block).await.expect("end");
+            sender.done(DoneReason::Stop).await.expect("done");
+        });
+        let message = stream.result().await;
+        let text = match &message.content[0] {
+            AssistantContentBlock::Text(t) => t.text.as_str(),
+            other => panic!("expected text, got {other:?}"),
+        };
+        assert_eq!(text, "hello");
+    }
+}

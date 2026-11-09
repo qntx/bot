@@ -22,7 +22,9 @@
 )]
 
 mod ai_utils;
+mod http_client;
 mod http_policy;
+mod http_sse;
 mod json;
 mod schema;
 mod stream;

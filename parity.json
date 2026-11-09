@@ -144,6 +144,16 @@
       "vectors": ["vectors/ai/http-proxy.json"],
       "rust": ["crates/ovo-ai/tests/it/http_policy.rs"],
       "classes": []
+    },
+    {
+      "id": "AI-HTTP-SSE",
+      "upstream": [
+        "node_modules/@anthropic-ai/sdk@0.129.0 internal/decoders/line.js + core/streaming.js",
+        "node_modules/openai@7.19.0 internal/decoders/line.js + core/streaming.js"
+      ],
+      "vectors": ["vectors/ai/sse.json"],
+      "rust": ["crates/ovo-ai/tests/it/http_sse.rs"],
+      "classes": []
     }
   ],
   "classes": {
