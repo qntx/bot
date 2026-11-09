@@ -577,7 +577,7 @@ impl<'a> ChunkState<'a> {
         }
         if late_id.is_some() || late_name.is_some() {
             sender
-                .toolcall_identity(call.index, &call.id, &call.name)
+                .toolcall_fields(call.index, tool_call_block(call))
                 .await
                 .map_err(|_| closed())?;
         }
