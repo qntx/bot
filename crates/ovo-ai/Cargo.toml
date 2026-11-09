@@ -48,3 +48,8 @@ workspace = true
 default = ["http", "host"]
 http    = ["dep:reqwest"]
 host    = ["tokio/process", "dep:rustix"]
+
+[[test]]
+name              = "e2e"
+path              = "tests/e2e/main.rs"
+required-features = ["http"]

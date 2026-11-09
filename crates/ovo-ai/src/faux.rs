@@ -1053,7 +1053,7 @@ pub fn faux_provider(options: FauxOptions) -> Result<FauxProvider, ModelsError> 
         filter_all_models: None,
     };
     let built = create_provider(spec)?;
-    let chat_models = built.get_models();
+    let chat_models = built.get_models().to_vec();
     let provider_arc: Arc<dyn Provider> = Arc::new(built);
     Ok(FauxProvider {
         provider: provider_arc,

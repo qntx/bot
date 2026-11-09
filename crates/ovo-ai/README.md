@@ -99,3 +99,17 @@ regenerate only when upstream or Node changes.
 ## License
 
 MIT OR Apache-2.0
+
+## Live smoke tests
+
+`tests/e2e` runs real requests against Anthropic, OpenAI and
+OpenRouter. Every test is `#[ignore]`d and skips when its key is
+missing; model ids default to reasoning-capable catalog ids and can be
+overridden:
+
+```bash
+cargo test -p ovo-ai --test e2e -- --ignored
+```
+
+Keys come from `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` /
+`OPENROUTER_API_KEY`; models from `OVO_E2E_<PROVIDER>_MODEL`.

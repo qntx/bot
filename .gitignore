@@ -15,6 +15,7 @@ dist
 
 # Rust
 /target
+/fuzz/target
 
 # Internal documentation (kept locally, not published)
 docs/*

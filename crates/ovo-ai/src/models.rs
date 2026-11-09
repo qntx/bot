@@ -436,12 +436,12 @@ impl Models {
             || {
                 self.get_providers()
                     .into_iter()
-                    .flat_map(|p| p.get_models())
+                    .flat_map(|p| p.get_models().iter().cloned().collect::<Vec<_>>())
                     .collect()
             },
             |id| {
                 self.get_provider(id)
-                    .map_or_else(Vec::new, |p| p.get_models())
+                    .map_or_else(Vec::new, |p| p.get_models().to_vec())
             },
         )
     }
@@ -453,12 +453,12 @@ impl Models {
             || {
                 self.get_providers()
                     .into_iter()
-                    .flat_map(|p| p.get_all_models())
+                    .flat_map(|p| p.get_all_models().iter().cloned().collect::<Vec<_>>())
                     .collect()
             },
             |id| {
                 self.get_provider(id)
-                    .map_or_else(Vec::new, |p| p.get_all_models())
+                    .map_or_else(Vec::new, |p| p.get_all_models().to_vec())
             },
         )
     }
@@ -479,9 +479,8 @@ impl Models {
     /// `getModel(provider, id)` — chat lookup.
     #[must_use]
     pub fn get_model(&self, provider: &str, id: &str) -> Option<Model> {
-        self.get_models(Some(provider))
-            .into_iter()
-            .find(|m| m.id == id)
+        self.get_provider(provider)
+            .and_then(|p| p.get_models().iter().find(|m| m.id == id).cloned())
     }
 
     /// `getModelOfType(type, provider, id)`.
@@ -492,9 +491,12 @@ impl Models {
         provider: &str,
         id: &str,
     ) -> Option<AnyModel> {
-        self.get_models_of_type(kind, Some(provider))
-            .into_iter()
-            .find(|m| model_ids(m).1 == id)
+        self.get_provider(provider).and_then(|p| {
+            p.get_all_models()
+                .iter()
+                .find(|m| is_model_type(m, kind) && model_ids(m).1 == id)
+                .cloned()
+        })
     }
 
     fn supersede_provider_refresh(&self, provider_id: &str) -> u64 {
@@ -1807,8 +1809,8 @@ mod tests {
         fn auth(&self) -> &ProviderAuth {
             &self.auth
         }
-        fn get_models(&self) -> Vec<Model> {
-            Vec::new()
+        fn get_models(&self) -> Arc<[Model]> {
+            Vec::new().into()
         }
         fn stream(
             &self,
