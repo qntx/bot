@@ -24,50 +24,20 @@
 //!
 //! - `http` (default) — the HTTP adapters and built-in providers
 //!   (`anthropic-messages`, `openai-completions`, `openai-responses`).
+//! - `host` (default) — `auth::file` (file credential store) and
+//!   `ProcessCommandRunner` for `!command` config values. Without it
+//!   `!command` values resolve exactly as a failed command does.
 //!
-//! # Example
-//!
-//! ```no_run
-//! # async fn run() -> Result<(), Box<dyn std::error::Error>> {
-//! use std::sync::Arc;
-//!
-//! use futures::StreamExt;
-//! use ovo_ai::auth::ProcessEnv;
-//! use ovo_ai::http::client::{HttpClient, HttpClientConfig};
-//! use ovo_ai::models::CreateModelsOptions;
-//! use ovo_ai::providers::builtin_models;
-//! use ovo_ai::stream::AssistantMessageEvent;
-//! use ovo_ai::types::context::Context;
-//!
-//! let http = Arc::new(HttpClient::new(HttpClientConfig::default()));
-//! let models = builtin_models(
-//!     CreateModelsOptions {
-//!         env: Some(Arc::new(ProcessEnv)),
-//!         ..CreateModelsOptions::default()
-//!     },
-//!     &http,
-//! )?;
-//! let model = models
-//!     .get_model("anthropic", "claude-fable-5")
-//!     .ok_or("anthropic/claude-fable-5 not in catalog")?;
-//! let context: Context = serde_json::from_value(serde_json::json!({
-//!     "messages": [{ "role": "user", "content": "Say hi in one word.", "timestamp": 0 }]
-//! }))?;
-//! let mut stream = models.stream(&model, &context, None);
-//! while let Some(event) = stream.next().await {
-//!     if let AssistantMessageEvent::TextDelta { delta, .. } = event {
-//!         print!("{delta}");
-//!     }
-//! }
-//! let message = stream.result().await;
-//! println!("{:?}", message.stop_reason);
-//! #     Ok(())
-//! # }
-//! ```
-#![allow(
-    unused_crate_dependencies,
-    reason = "wiremock is a dev-dep used only by integration tests"
-)]
+/// Compiles the README's quick start as a doctest under the http
+/// feature — the example imports `http`/`providers`.
+#[cfg(all(doctest, feature = "http"))]
+#[doc = include_str!("../README.md")]
+struct ReadmeDoctest;
+
+#[cfg(test)]
+use tempfile as _;
+#[cfg(test)]
+use wiremock as _;
 
 pub mod api;
 pub mod auth;

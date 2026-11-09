@@ -8,8 +8,7 @@ use super::content::ImageContent;
 use super::usage::Usage;
 
 /// A choice question: pick one named option.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[non_exhaustive]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ClassifierChoiceQuestion {
     /// What the classifier should evaluate.
     pub instructions: String,
@@ -18,8 +17,7 @@ pub struct ClassifierChoiceQuestion {
 }
 
 /// A score question: rate on the provider's scale.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[non_exhaustive]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ClassifierScoreQuestion {
     /// What the classifier should evaluate.
     pub instructions: String,
@@ -28,8 +26,7 @@ pub struct ClassifierScoreQuestion {
 }
 
 /// A yes/no question.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[non_exhaustive]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ClassifierBoolQuestion {
     /// What the classifier should evaluate.
     pub instructions: String,
@@ -38,8 +35,7 @@ pub struct ClassifierBoolQuestion {
 }
 
 /// The true/false labels of a bool question.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[non_exhaustive]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ClassifierBoolCriteria {
     /// Label for the true outcome.
     #[serde(rename = "true")]
@@ -50,7 +46,7 @@ pub struct ClassifierBoolCriteria {
 }
 
 /// One classifier question.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "type")]
 pub enum ClassifierQuestion {
     /// Pick one named option.
@@ -65,8 +61,7 @@ pub enum ClassifierQuestion {
 }
 
 /// Input to a classifier request.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[non_exhaustive]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ClassifierContext {
     /// The structured state to judge.
     pub state: Map<String, Value>,
@@ -79,7 +74,6 @@ pub struct ClassifierContext {
 
 /// Choice answer.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[non_exhaustive]
 pub struct ClassifierChoiceAnswer {
     /// The chosen label.
     pub choice: String,
@@ -90,8 +84,7 @@ pub struct ClassifierChoiceAnswer {
 }
 
 /// Score answer.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[non_exhaustive]
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub struct ClassifierScoreAnswer {
     /// The score.
     pub score: f64,
@@ -100,8 +93,7 @@ pub struct ClassifierScoreAnswer {
 }
 
 /// Bool answer.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[non_exhaustive]
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub struct ClassifierBoolAnswer {
     /// Probability of the true outcome.
     pub probability: f64,
@@ -139,7 +131,6 @@ pub enum ClassifierStopReason {
 /// Result of a classify request.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[non_exhaustive]
 pub struct ClassifierResult {
     /// Classifier API family that produced the result.
     pub api: ClassifierApi,

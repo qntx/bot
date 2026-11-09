@@ -33,8 +33,7 @@ pub type SamplingParams = Map<String, Value>;
 
 /// `ThinkingBudgets`: token budgets per thinking level; any absent field
 /// falls back to [`DEFAULT_THINKING_BUDGETS`].
-#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
-#[non_exhaustive]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ThinkingBudgets {
     /// Budget for the `minimal` level.
     #[serde(skip_serializing_if = "Option::is_none")]

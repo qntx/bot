@@ -8,9 +8,10 @@ vectors.
 
 ## Features
 
-| Feature | Default | Effect                                                                                                                                                                 |
-| ------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `http`  | yes     | HTTP adapters and the built-in providers (`reqwest`). Without it the crate keeps the non-network surface: models registry, auth, streaming fold, JSON, catalogs, faux. |
+| Feature | Default | Effect                                                                                                                                                                                                                            |
+| ------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `http`  | yes     | HTTP adapters and the built-in providers (`reqwest`). Without it the crate keeps the non-network surface: models registry, auth, streaming fold, JSON, catalogs, faux.                                                            |
+| `host`  | yes     | Host-side capabilities: `auth::file` (file credential store) and `ProcessCommandRunner` for `!command` config values. Without it there is no default command runner — `!command` values resolve exactly as a failed command does. |
 
 ## Providers and protocols
 

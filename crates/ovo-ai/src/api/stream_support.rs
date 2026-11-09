@@ -8,35 +8,15 @@ use crate::http::client::RequestPolicy;
 use crate::options::{ResponseMetadata, StreamOptions};
 use crate::stream::accumulator::wall_ms;
 use crate::stream::{AssistantStreamSender, DoneReason, ErrorReason, Metadata};
-use crate::types::content::StopReason;
 use crate::types::message::AssistantMessage;
 use crate::types::model::Model;
-use crate::types::usage::Usage;
 
 /// Bounded capacity of an adapter's event channel.
 pub(super) const STREAM_CAPACITY: usize = 64;
 
 /// The `output` literal upstream adapters start every response from.
 pub(super) fn initial_message(model: &Model) -> AssistantMessage {
-    AssistantMessage {
-        content: Vec::new(),
-        api: model.api.clone(),
-        provider: model.provider.clone(),
-        model: model.id.clone(),
-        usage: Usage::default(),
-        stop_reason: StopReason::Pending,
-        timestamp: wall_ms(),
-        provider_thinking_level: None,
-        response_id: None,
-        response_model: None,
-        raw_stop_reason: None,
-        error_message: None,
-        diagnostics: None,
-        deferred: None,
-        end_turn: None,
-        duration_ms: None,
-        thinking_level: None,
-    }
+    AssistantMessage::empty(model, wall_ms())
 }
 
 /// The request policy from upstream's `timeoutMs`, `maxRetries` and

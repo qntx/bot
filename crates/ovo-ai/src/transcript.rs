@@ -246,7 +246,7 @@ pub fn declarations_equal(left: &Tool, right: &Tool) -> bool {
 
 /// `getToolStateChanges`: the difference of two complete tool states. A
 /// changed definition is a removal followed by an addition.
-#[derive(Clone, Debug, Default, PartialEq)]
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct ToolStateChanges {
     /// Declarations newly available (or redeclared with different content).
     pub tools_added: Vec<Tool>,
@@ -364,7 +364,7 @@ pub enum TranscriptToolSupport {
 
 /// `TranscriptTools`: split tool declarations between the top-level request
 /// field and in-place changes.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct TranscriptTools {
     /// Tools sent in the top-level request field.
     pub request_tools: Vec<Tool>,

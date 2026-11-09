@@ -58,7 +58,6 @@ pub type ProviderEnv = Map<String, Value>;
 
 /// `StreamOptions` — every data field upstream carries.
 #[derive(Clone, Default)]
-#[non_exhaustive]
 pub struct StreamOptions {
     /// `temperature`.
     pub temperature: Option<f64>,
@@ -66,8 +65,8 @@ pub struct StreamOptions {
     pub sampling_params: Option<Map<String, Value>>,
     /// `maxTokens`.
     pub max_tokens: Option<u64>,
-    /// `apiKey`.
-    pub api_key: Option<String>,
+    /// `apiKey` — `Debug` redacts it.
+    pub api_key: Option<secrecy::SecretString>,
     /// `env` — provider-scoped environment overrides.
     pub env: Option<ProviderEnv>,
     /// `headers` — `null` suppresses a default header.
@@ -155,7 +154,6 @@ pub enum CacheRetention {
 /// `SimpleStreamOptions`: `StreamOptions` plus the simple-request
 /// fields.
 #[derive(Clone, Debug, Default)]
-#[non_exhaustive]
 pub struct SimpleStreamOptions {
     /// The underlying `StreamOptions`.
     pub base: StreamOptions,
@@ -210,14 +208,11 @@ pub fn build_base_options(
     );
     let base = options.map(|o| o.base.clone()).unwrap_or_default();
     StreamOptions {
-        api_key: api_key.map(str::to_owned).or_else(|| {
-            base.api_key
-                .clone()
-                .or_else(|| options.and_then(|o| o.base.api_key.clone()))
-        }),
-        temperature: options
-            .and_then(|o| o.base.temperature)
-            .or(base.temperature),
+        api_key: api_key
+            .filter(|key| !key.is_empty())
+            .map(|key| secrecy::SecretString::from(key.to_owned()))
+            .or_else(|| base.api_key.clone()),
+        temperature: options.and_then(|o| o.base.temperature),
         sampling_params,
         max_tokens: Some(max_tokens),
         env: base.env,
@@ -248,10 +243,9 @@ pub fn build_base_options(
 /// type aliases keep the API surface distinct without duplicating
 /// the struct.
 #[derive(Clone, Default)]
-#[non_exhaustive]
 pub struct RequestOptions {
-    /// `apiKey` — explicit per-request key.
-    pub api_key: Option<String>,
+    /// `apiKey` — explicit per-request key; `Debug` redacts it.
+    pub api_key: Option<secrecy::SecretString>,
     /// `env` — provider-scoped environment overrides.
     pub env: Option<ProviderEnv>,
     /// `headers` — request header overlay (`null` suppresses).
@@ -280,8 +274,11 @@ pub type ClassifierOptions = RequestOptions;
 impl std::fmt::Debug for StreamOptions {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("StreamOptions")
-            .field("api_key", &self.api_key)
-            .field("headers", &self.headers)
+            .field("api_key", &self.api_key.as_ref().map(|_| "<redacted>"))
+            .field(
+                "headers",
+                &self.headers.as_ref().map(|h| h.keys().collect::<Vec<_>>()),
+            )
             .field("session_id", &self.session_id)
             .finish_non_exhaustive()
     }
@@ -290,8 +287,11 @@ impl std::fmt::Debug for StreamOptions {
 impl std::fmt::Debug for RequestOptions {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("RequestOptions")
-            .field("api_key", &self.api_key)
-            .field("headers", &self.headers)
+            .field("api_key", &self.api_key.as_ref().map(|_| "<redacted>"))
+            .field(
+                "headers",
+                &self.headers.as_ref().map(|h| h.keys().collect::<Vec<_>>()),
+            )
             .field("session_id", &self.session_id)
             .finish_non_exhaustive()
     }

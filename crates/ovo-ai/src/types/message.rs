@@ -15,9 +15,8 @@ use super::tool::{Tool, ToolReference};
 use super::usage::Usage;
 
 /// System instructions and tool declarations at one point in the transcript.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[non_exhaustive]
 pub struct SystemMessage {
     /// Instruction text; the base prompt on the leading message.
     pub content: TextOrBlocks,
@@ -35,9 +34,8 @@ pub struct SystemMessage {
 }
 
 /// A user message.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[non_exhaustive]
 pub struct UserMessage {
     /// Text or text-and-image content.
     pub content: TextOrBlocksWithImages,
@@ -56,7 +54,6 @@ pub struct UserMessage {
 /// `thinkingLevel` (agent-loop.ts:419 after the stream).
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[non_exhaustive]
 pub struct AssistantMessage {
     /// The response content blocks.
     pub content: Vec<AssistantContentBlock>,
@@ -104,10 +101,36 @@ pub struct AssistantMessage {
     pub thinking_level: Option<ModelThinkingLevel>,
 }
 
+impl AssistantMessage {
+    /// The empty `output` literal upstream adapters start every response
+    /// from: no content, zeroed usage, `stopReason: pending`.
+    #[must_use]
+    pub fn empty(model: &crate::types::model::Model, timestamp: i64) -> Self {
+        Self {
+            content: Vec::new(),
+            api: model.api.clone(),
+            provider: model.provider.clone(),
+            model: model.id.clone(),
+            usage: Usage::default(),
+            stop_reason: StopReason::Pending,
+            timestamp,
+            provider_thinking_level: None,
+            response_id: None,
+            response_model: None,
+            raw_stop_reason: None,
+            error_message: None,
+            diagnostics: None,
+            deferred: None,
+            end_turn: None,
+            duration_ms: None,
+            thinking_level: None,
+        }
+    }
+}
+
 /// A tool call another tool made while it ran (e.g. codemode).
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[non_exhaustive]
 pub struct NestedToolCallRecord {
     /// The nested call's identifier.
     pub id: String,
@@ -144,8 +167,7 @@ pub enum NestedToolCallStatus {
 }
 
 /// Bounded record of the nested calls a tool made.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[non_exhaustive]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct NestedToolCalls {
     /// The recorded calls; results are not recorded.
     pub calls: Vec<NestedToolCallRecord>,
@@ -156,7 +178,6 @@ pub struct NestedToolCalls {
 /// A tool result message.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[non_exhaustive]
 pub struct ToolResultMessage {
     /// The tool call this result answers.
     pub tool_call_id: String,

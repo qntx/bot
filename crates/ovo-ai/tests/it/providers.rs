@@ -48,7 +48,10 @@ fn recorded(result: Option<&AuthResult>) -> Value {
     };
     let mut auth = Map::new();
     if let Some(key) = &result.auth.api_key {
-        auth.insert("apiKey".into(), Value::from(key.clone()));
+        auth.insert(
+            "apiKey".into(),
+            Value::from(secrecy::ExposeSecret::expose_secret(key).to_owned()),
+        );
     }
     if let Some(headers) = &result.auth.headers {
         auth.insert("headers".into(), Value::Object(headers.clone()));

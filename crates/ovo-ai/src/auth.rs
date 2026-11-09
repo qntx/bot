@@ -9,6 +9,7 @@
 
 pub mod config_value;
 pub mod env;
+#[cfg(feature = "host")]
 pub mod file;
 pub mod resolve;
 pub mod store;
@@ -16,6 +17,7 @@ pub mod types;
 
 pub use config_value::*;
 pub use env::*;
+#[cfg(feature = "host")]
 pub use file::*;
 pub use resolve::*;
 pub use store::*;

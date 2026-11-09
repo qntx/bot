@@ -96,7 +96,7 @@ impl AssistantStream {
                 message.error_message = Some(String::from(
                     "producer dropped without a done or error event",
                 ));
-                self.acc.time_public();
+                self.acc.time();
             }
         }
         self.acc.into_message()

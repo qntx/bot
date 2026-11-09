@@ -16,9 +16,18 @@ pub trait Env: Send + Sync + std::fmt::Debug {
 /// `MapEnv`: an env snapshot (merged `ProviderEnv` over process env,
 /// or a test fixture). Provider-injected values take precedence via
 /// [`MapEnv::with_overlay`].
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Default)]
 pub struct MapEnv {
     values: HashMap<String, String>,
+}
+
+impl std::fmt::Debug for MapEnv {
+    /// Values are secrets — print variable names only.
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("MapEnv")
+            .field("values", &self.values.keys().collect::<Vec<_>>())
+            .finish()
+    }
 }
 
 impl MapEnv {

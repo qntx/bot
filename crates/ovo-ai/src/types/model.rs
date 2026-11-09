@@ -112,8 +112,7 @@ pub enum ThinkingLevelMapValue {
 ///
 /// Each key is tri-state: absent means the provider default, `null` marks the
 /// level unsupported, a string is the provider-native value.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[non_exhaustive]
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ThinkingLevelMap {
     /// Mapping for the `off` level.
     #[serde(
@@ -220,9 +219,8 @@ pub enum CacheRetention {
 }
 
 /// Cost in USD per million tokens.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[non_exhaustive]
 pub struct ModelCostRates {
     /// Input cost.
     pub input: f64,
@@ -235,9 +233,8 @@ pub struct ModelCostRates {
 }
 
 /// A request-wide pricing tier; the highest matching threshold applies.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[non_exhaustive]
 pub struct ModelCostTier {
     /// Applies when total request input exceeds this token count.
     pub input_tokens_above: f64,
@@ -254,7 +251,6 @@ pub struct ModelCostTier {
 /// Catalog cost of a model.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[non_exhaustive]
 pub struct ModelCost {
     /// Input cost.
     pub input: f64,
@@ -270,8 +266,7 @@ pub struct ModelCost {
 }
 
 /// Prompt cache lifetimes in seconds per retention tier.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[non_exhaustive]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ModelPromptCache {
     /// Lifetime of short-retention entries.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -282,9 +277,8 @@ pub struct ModelPromptCache {
 }
 
 /// Cache-safe image resize profile.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[non_exhaustive]
 pub struct ModelImageResizeOptions {
     /// Maximum image width in pixels.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -301,9 +295,8 @@ pub struct ModelImageResizeOptions {
 }
 
 /// Image input limits.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[non_exhaustive]
 pub struct ModelImageInputLimits {
     /// Cache-safe resize profile applied before a new image enters history.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -317,9 +310,8 @@ pub struct ModelImageInputLimits {
 }
 
 /// Provider input limits and cache-safe preprocessing metadata.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[non_exhaustive]
 pub struct ModelInputLimits {
     /// Maximum serialized provider request size in bytes.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -341,7 +333,6 @@ pub enum ChatType {
 /// absent means chat.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[non_exhaustive]
 pub struct Model {
     /// Model identifier.
     pub id: String,
@@ -414,7 +405,6 @@ pub enum ImageModelOutput {
 /// Image-generation model.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[non_exhaustive]
 pub struct ImageModel {
     /// Model identifier.
     pub id: String,
@@ -457,7 +447,6 @@ pub enum ClassifierModelType {
 /// Structured classifier model.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[non_exhaustive]
 pub struct ClassifierModel {
     /// Model identifier.
     pub id: String,

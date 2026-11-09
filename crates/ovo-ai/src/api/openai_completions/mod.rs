@@ -44,7 +44,6 @@ pub const API: &str = "openai-completions";
 /// `OpenAICompletionsOptions`: the stream options plus Chat Completions
 /// controls.
 #[derive(Clone, Default)]
-#[non_exhaustive]
 pub struct OpenAiCompletionsOptions {
     /// The shared stream options.
     pub base: StreamOptions,
@@ -80,13 +79,17 @@ impl OpenAiCompletionsOptions {
                 model,
                 context,
                 Some(options),
-                options.base.api_key.as_deref(),
+                options
+                    .base
+                    .api_key
+                    .as_ref()
+                    .map(secrecy::ExposeSecret::expose_secret),
             ),
             tool_choice: options.tool_choice.map(tool_choice_value),
             reasoning_effort: options.reasoning.and_then(|level| {
                 crate::cost::clamp_thinking_level(model, level.into()).thinking()
             }),
-            thinking_budgets: options.thinking_budgets.clone(),
+            thinking_budgets: options.thinking_budgets,
         }
     }
 }

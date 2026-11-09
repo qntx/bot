@@ -4,9 +4,8 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 /// Handle identifying a deferred response on the provider side.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[non_exhaustive]
 pub struct DeferredHandle {
     /// Provider that owns the deferred response.
     pub provider: String,

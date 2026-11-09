@@ -7,9 +7,8 @@ use super::tool::Tool;
 
 /// Request input: `systemPrompt` and `tools` are shorthand for a leading
 /// system message.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[non_exhaustive]
 pub struct Context {
     /// System prompt for the request.
     #[serde(skip_serializing_if = "Option::is_none")]

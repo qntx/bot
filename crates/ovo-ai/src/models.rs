@@ -6,7 +6,7 @@
 //! (`mergeHeaders` → `transformHeaders`), then delegate to the owning
 //! provider. Read accessors mirror upstream: `models`/`model`/`of_type`
 //! chat vs `all_*` every type, `get_available*` only configured
-//! providers. Registry state uses `RwLock<HashMap>` — `set_provider`
+//! providers. Registry state uses `RwLock<Vec>` — `set_provider`
 //! from the UI is rare and each call clones an `Arc` under a short
 //! read lock; snapshots (`arc-swap`) would only add a dep for the
 //! same read pattern.
@@ -44,7 +44,6 @@ use crate::types::model::{ClassifierModel, ImageModel};
 use crate::types::context::Context;
 use crate::types::message::AssistantMessage;
 use crate::types::model::Model;
-use crate::types::usage::{Usage, UsageCost};
 
 /// `ModelsStoreEntry` persistence (`models-store.ts`): keyed by
 /// provider id; `write`/`delete` mutate, `read` returns the last
@@ -303,50 +302,7 @@ pub(crate) fn lazy_stream_error(model: &Model, message: String) -> AssistantStre
 
 /// An empty `AssistantMessage` skeleton for lazy streams.
 fn empty_message(model: &Model) -> AssistantMessage {
-    AssistantMessage {
-        content: Vec::new(),
-        api: model.api.clone(),
-        provider: model.provider.clone(),
-        model: model.id.clone(),
-        usage: Usage {
-            input: 0,
-            output: 0,
-            cache_read: 0,
-            cache_write: 0,
-            total_tokens: 0,
-            cost: UsageCost {
-                input: 0.0,
-                output: 0.0,
-                cache_read: 0.0,
-                cache_write: 0.0,
-                total: 0.0,
-                total_from_provider: None,
-            },
-            cache_write1h: None,
-            reasoning: None,
-        },
-        stop_reason: crate::types::content::StopReason::Pending,
-        timestamp: now_ms(),
-        provider_thinking_level: None,
-        response_id: None,
-        response_model: None,
-        raw_stop_reason: None,
-        error_message: None,
-        diagnostics: None,
-        deferred: None,
-        end_turn: None,
-        duration_ms: None,
-        thinking_level: None,
-    }
-}
-
-fn now_ms() -> i64 {
-    i64::try_from(
-        std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .map_or(0, |d| d.as_millis()),
-    )
-    .unwrap_or(0)
+    AssistantMessage::empty(model, crate::stream::accumulator::wall_ms())
 }
 
 impl Models {
@@ -706,7 +662,7 @@ impl Models {
             .map_err(|e| ModelsError::new(ModelsErrorCode::Auth, e))?;
         Ok(result.map(|r| {
             Credential::ApiKey(ApiKeyCredential {
-                key: r.auth.api_key.map(secrecy::SecretString::from),
+                key: r.auth.api_key,
                 env: r.env,
             })
         }))
@@ -1085,7 +1041,10 @@ impl Models {
                 &applied,
                 &transcript,
                 simple_options.as_ref(),
-                parts.api_key.as_deref(),
+                parts
+                    .api_key
+                    .as_ref()
+                    .map(secrecy::ExposeSecret::expose_secret),
             );
             base.headers = parts.headers;
             base.env = parts.env;
@@ -1438,8 +1397,8 @@ pub enum ProviderOrModel<'a> {
 /// The `ProviderRequestOptions` fields assembled by `apply_auth`.
 #[derive(Clone, Default)]
 pub struct RequestParts {
-    /// `apiKey`.
-    pub api_key: Option<String>,
+    /// `apiKey` — `Debug` redacts it.
+    pub api_key: Option<secrecy::SecretString>,
     /// `headers` — fully merged.
     pub headers: Option<ProviderHeaders>,
     /// `env` — resolution env over request env.
@@ -1451,8 +1410,11 @@ pub struct RequestParts {
 impl std::fmt::Debug for RequestParts {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("RequestParts")
-            .field("api_key", &self.api_key)
-            .field("headers", &self.headers)
+            .field("api_key", &self.api_key.as_ref().map(|_| "<redacted>"))
+            .field(
+                "headers",
+                &self.headers.as_ref().map(|h| h.keys().collect::<Vec<_>>()),
+            )
             .finish_non_exhaustive()
     }
 }
@@ -1525,7 +1487,7 @@ fn error_images(model: &ImageModel, message: &str) -> AssistantImages {
         usage: None,
         stop_reason: crate::types::images::ImagesStopReason::Error,
         error_message: Some(message.to_owned()),
-        timestamp: now_ms(),
+        timestamp: crate::stream::accumulator::wall_ms(),
     }
 }
 
@@ -1539,7 +1501,7 @@ fn error_classifier(model: &ClassifierModel, message: &str) -> ClassifierResult 
         usage: None,
         stop_reason: crate::types::classifier::ClassifierStopReason::Error,
         error_message: Some(message.to_owned()),
-        timestamp: now_ms(),
+        timestamp: crate::stream::accumulator::wall_ms(),
     }
 }
 

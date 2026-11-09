@@ -128,7 +128,6 @@ impl AnthropicMessagesCompat {
 
 /// `AnthropicOptions`: the stream options plus Anthropic thinking controls.
 #[derive(Clone, Default)]
-#[non_exhaustive]
 pub struct AnthropicOptions {
     /// The shared stream options.
     pub base: StreamOptions,
@@ -173,7 +172,11 @@ impl AnthropicOptions {
             model,
             context,
             Some(options),
-            options.base.api_key.as_deref(),
+            options
+                .base
+                .api_key
+                .as_ref()
+                .map(secrecy::ExposeSecret::expose_secret),
         );
         let tool_choice = options.tool_choice.map(|choice| {
             Value::from(match choice {
@@ -352,6 +355,17 @@ pub struct AnthropicRequest {
     pub provider_thinking_level: Option<String>,
 }
 
+/// Compat + oauth resolved before building.
+fn request_prelude(model: &Model, base: &StreamOptions) -> (AnthropicMessagesCompat, bool) {
+    let oauth = is_oauth_token(
+        base.api_key
+            .as_ref()
+            .map(secrecy::ExposeSecret::expose_secret)
+            .unwrap_or_default(),
+    );
+    (AnthropicMessagesCompat::of(model), oauth)
+}
+
 /// `buildParams` and `createClient`: the request body in upstream key order
 /// and the request headers.
 ///
@@ -368,8 +382,7 @@ pub fn build_request(
     disable_preferred_strict_tools: bool,
 ) -> Result<AnthropicRequest, String> {
     let base = &options.base;
-    let compat = AnthropicMessagesCompat::of(model);
-    let oauth = is_oauth_token(base.api_key.as_deref().unwrap_or_default());
+    let (compat, oauth) = request_prelude(model, base);
     let transcript = crate::transcript::resolve_transcript(
         context,
         Some(compat.supports_mid_convo_system_messages),
@@ -696,7 +709,11 @@ fn request_headers(
     session_id: Option<&str>,
     compat: &AnthropicMessagesCompat,
 ) -> Map<String, Value> {
-    let api_key = base.api_key.as_deref().unwrap_or_default();
+    let api_key = base
+        .api_key
+        .as_ref()
+        .map(secrecy::ExposeSecret::expose_secret)
+        .unwrap_or_default();
     let oauth = is_oauth_token(api_key);
     let mut sdk = Map::new();
     sdk.insert("content-type".into(), Value::from("application/json"));

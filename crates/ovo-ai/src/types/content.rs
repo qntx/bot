@@ -5,9 +5,8 @@ use serde_json::{Map, Value};
 
 /// Text block; `textSignature` is provider metadata (legacy id string or
 /// `TextSignatureV1` JSON).
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[non_exhaustive]
 pub struct TextContent {
     /// The block's text.
     pub text: String,
@@ -17,9 +16,8 @@ pub struct TextContent {
 }
 
 /// Thinking block; `thinkingSignature` replays provider reasoning data.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[non_exhaustive]
 pub struct ThinkingContent {
     /// The model's reasoning text.
     pub thinking: String,
@@ -32,9 +30,8 @@ pub struct ThinkingContent {
 }
 
 /// Base64-encoded image block.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[non_exhaustive]
 pub struct ImageContent {
     /// Base64-encoded image data.
     pub data: String,
@@ -43,9 +40,8 @@ pub struct ImageContent {
 }
 
 /// A tool call the model made.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[non_exhaustive]
 pub struct ToolCall {
     /// The provider's call identifier.
     pub id: String,
@@ -65,7 +61,7 @@ pub struct ToolCall {
 }
 
 /// Block allowed in system message content.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "type")]
 pub enum SystemContentBlock {
     /// Text block.
@@ -74,7 +70,7 @@ pub enum SystemContentBlock {
 }
 
 /// Block allowed in user and tool-result content.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "type")]
 pub enum UserContentBlock {
     /// Text block.
@@ -86,7 +82,7 @@ pub enum UserContentBlock {
 }
 
 /// Block allowed in assistant content.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "type")]
 pub enum AssistantContentBlock {
     /// Text block.
@@ -101,7 +97,7 @@ pub enum AssistantContentBlock {
 }
 
 /// `string | TextContent[]` (system message content).
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum TextOrBlocks {
     /// Plain instruction text.
@@ -111,7 +107,7 @@ pub enum TextOrBlocks {
 }
 
 /// `string | (TextContent | ImageContent)[]` (user message content).
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum TextOrBlocksWithImages {
     /// Plain user text.

@@ -28,6 +28,7 @@ mod anthropic_stream;
 mod auth;
 mod catalog;
 mod constrained_sampling;
+mod construct;
 mod faux;
 mod http_client;
 mod http_policy;
@@ -42,6 +43,7 @@ mod openai_responses;
 mod openai_responses_stream;
 #[cfg(feature = "http")]
 mod providers;
+mod redaction;
 mod schema;
 mod stream;
 mod stream_forward;
