@@ -1,5 +1,6 @@
-//! `HttpClient`: pooled `reqwest` clients (rustls with platform roots, HTTP/2
-//! negotiated by ALPN) shared by every adapter.
+//! `HttpClient`: pooled `reqwest` clients (rustls with platform roots,
+//! HTTP/1.1 — pi's host dispatcher sets `allowH2: false`) shared by every
+//! adapter.
 //!
 //! `post_json` sends `ovo_ai::json` bytes, applies the provider retry
 //! decisions, and aborts the in-flight request and the backoff sleep on the
@@ -20,10 +21,23 @@ use crate::http::proxy::resolve_http_proxy_url_for_target;
 use crate::http::retry::{RetryDecision, provider_retry_decision};
 
 /// Transport settings shared by every request.
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug)]
 pub struct HttpClientConfig {
     /// Merged `ProviderEnv` snapshot used for proxy selection.
     pub env: Option<Map<String, Value>>,
+    /// `bodyTimeout`/`headersTimeout` — idle-read cap on the whole
+    /// response. `Some(300 s)` matches pi's host default; `None`
+    /// disables it (pi's `0`).
+    pub idle_timeout: Option<Duration>,
+}
+
+impl Default for HttpClientConfig {
+    fn default() -> Self {
+        Self {
+            env: None,
+            idle_timeout: Some(Duration::from_secs(300)),
+        }
+    }
 }
 
 /// Per-request policy: upstream's `timeoutMs`, `maxRetries` and
@@ -175,11 +189,18 @@ impl HttpClient {
         if let Some(client) = clients.get(&proxy) {
             return Ok(client.clone());
         }
-        let mut builder = reqwest::Client::builder();
+        let mut builder = reqwest::Client::builder().http1_only();
+        if let Some(timeout) = self.config.idle_timeout {
+            builder = builder.read_timeout(timeout);
+        }
         if let Some(proxy) = &proxy {
             let proxy = reqwest::Proxy::all(proxy.as_str())
                 .map_err(|error| SendError::Transport(error.to_string()))?;
             builder = builder.proxy(proxy);
+        } else {
+            // reqwest 0.13 otherwise installs `ProxyMatcher::system()`
+            // and honors process env / platform proxy settings.
+            builder = builder.no_proxy();
         }
         let client = builder
             .build()
@@ -225,7 +246,8 @@ async fn send_once(
     policy: &RequestPolicy,
     token: &CancellationToken,
 ) -> Result<Attempt, SendError> {
-    let send = tokio::time::timeout(policy.timeout, request(client, url, body, headers).send());
+    let builder = request(client, url, body, headers)?;
+    let send = tokio::time::timeout(policy.timeout, builder.send());
     let outcome = tokio::select! {
         outcome = send => outcome,
         () = token.cancelled() => return Err(SendError::Aborted),
@@ -263,20 +285,19 @@ fn request(
     url: &str,
     body: &Bytes,
     headers: &[(&str, &str)],
-) -> reqwest::RequestBuilder {
+) -> Result<reqwest::RequestBuilder, SendError> {
     let mut map = HeaderMap::new();
     for (name, value) in headers {
-        if let (Ok(name), Ok(value)) = (
-            HeaderName::from_bytes(name.as_bytes()),
-            HeaderValue::from_str(value),
-        ) {
-            map.insert(name, value);
-        }
+        let header_name = HeaderName::from_bytes(name.as_bytes())
+            .map_err(|_| SendError::Transport(format!("Invalid request header: {name:?}")))?;
+        let header_value = HeaderValue::from_str(value)
+            .map_err(|_| SendError::Transport(format!("Invalid request header: {name}")))?;
+        map.insert(header_name, header_value);
     }
     if !map.contains_key(CONTENT_TYPE) {
         map.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
     }
-    client.post(url).headers(map).body(body.clone())
+    Ok(client.post(url).headers(map).body(body.clone()))
 }
 
 fn header_record(headers: &HeaderMap) -> HeaderRecord {

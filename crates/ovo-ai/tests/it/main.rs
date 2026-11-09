@@ -43,6 +43,7 @@ mod openai_responses;
 mod openai_responses_stream;
 #[cfg(feature = "http")]
 mod providers;
+mod proxy_env;
 mod redaction;
 mod schema;
 mod stream;
