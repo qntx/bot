@@ -68,8 +68,8 @@ fn recorded(result: Option<&AuthResult>) -> Value {
 }
 
 /// parity: AI-PROVIDERS-CORE
-#[test]
-fn builtin_providers_match_upstream() {
+#[tokio::test]
+async fn builtin_providers_match_upstream() {
     let providers = builtin_providers(&http()).unwrap_or_else(|e| panic!("providers: {e}"));
     let cases = vectors();
     let ids: Vec<&str> = providers.iter().map(Provider::id).collect();
@@ -106,7 +106,21 @@ fn builtin_providers_match_upstream() {
                     |(key, value)| (key.clone(), value.as_str().unwrap_or_default().to_owned()),
                 ));
             let stored = credential(&resolution["credential"]);
-            let result = (api_key.resolve)(stored.as_ref(), &env);
+            let result = (api_key.resolve)(ovo_ai::auth::resolve::ApiKeyResolveInput {
+                credential: stored.as_ref(),
+                env: &env,
+                signal: &tokio_util::sync::CancellationToken::new(),
+            })
+            .await;
+            if matches!(name, "federation" | "federation-with-optional-ids") {
+                // The workload-identity token exchange is M5 — only
+                // federation variables resolve to no auth.
+                assert!(
+                    matches!(result, Ok(None)),
+                    "{id}/{name}: federation resolves None (M5)"
+                );
+                continue;
+            }
             let got = recorded(result.as_ref().ok().and_then(Option::as_ref));
             assert!(
                 js_value_eq(&got, &resolution["result"]),

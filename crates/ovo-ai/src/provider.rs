@@ -396,10 +396,34 @@ impl std::fmt::Debug for ProviderSpec {
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ModelsStoreEntry {
-    /// Persisted model list.
+    /// Persisted model list — elements with an unknown `type` are
+    /// dropped, matching upstream `withKnownModelTypes`.
+    #[serde(deserialize_with = "models_store_models")]
     pub models: Vec<AnyModel>,
     /// `checkedAt` (epoch ms).
-    pub checked_at: f64,
+    pub checked_at: u64,
+}
+
+/// Decode `models` element by element: elements whose `type` is a
+/// known model type decode (malformed known-type elements still
+/// error); unknown `type` values are dropped.
+fn models_store_models<'de, D>(d: D) -> Result<Vec<AnyModel>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let elements = Vec::<serde_json::Value>::deserialize(d)?;
+    let mut models = Vec::new();
+    for element in elements {
+        let known = matches!(
+            element.get("type").and_then(serde_json::Value::as_str),
+            Some("chat" | "image" | "classifier")
+        );
+        if !known {
+            continue;
+        }
+        models.push(serde_json::from_value(element).map_err(serde::de::Error::custom)?);
+    }
+    Ok(models)
 }
 
 /// `ModelsPublication.persist` tri-state.
@@ -570,9 +594,12 @@ impl SpecProvider {
         let _ = (context.publish)(ModelsPublication {
             persist: PersistAction::Write(ModelsStoreEntry {
                 models: refreshed,
-                checked_at: std::time::SystemTime::now()
-                    .duration_since(std::time::UNIX_EPOCH)
-                    .map_or(0.0, |d| d.as_millis() as f64),
+                checked_at: u64::try_from(
+                    std::time::SystemTime::now()
+                        .duration_since(std::time::UNIX_EPOCH)
+                        .map_or(0, |d| d.as_millis()),
+                )
+                .unwrap_or(0),
             }),
             update: Some(Box::new(move || {
                 *dynamic
@@ -649,8 +676,7 @@ impl Provider for SpecProvider {
             if context.signal.is_cancelled() {
                 return Ok(());
             }
-            let refreshed: Vec<AnyModel> =
-                fetched.into_iter().filter(has_known_model_type).collect();
+            let refreshed: Vec<AnyModel> = fetched.into_iter().collect();
             self.publish_refresh(&context, refreshed).await;
             Ok(())
         })
@@ -736,13 +762,4 @@ fn merge_one(merged: &mut Vec<AnyModel>, model: AnyModel) {
         }
         None => merged.push(model),
     }
-}
-
-/// `hasKnownModelType` — stored catalogs may carry types newer
-/// versions know and this build does not.
-const fn has_known_model_type(model: &AnyModel) -> bool {
-    matches!(
-        model,
-        AnyModel::Chat(_) | AnyModel::Image(_) | AnyModel::Classifier(_)
-    )
 }

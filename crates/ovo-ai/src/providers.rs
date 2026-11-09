@@ -22,17 +22,6 @@ use crate::provider::{
     ApiDispatch, ChatApi, ModelType, ProviderAuth, ProviderSpec, SpecProvider, create_provider,
 };
 
-/// The workload identity federation variables that must all be set.
-const ANTHROPIC_FEDERATION_REQUIRED: [&str; 3] = [
-    "ANTHROPIC_FEDERATION_RULE_ID",
-    "ANTHROPIC_ORGANIZATION_ID",
-    "ANTHROPIC_IDENTITY_TOKEN_FILE",
-];
-
-/// Federation ids sent when set.
-const ANTHROPIC_FEDERATION_OPTIONAL: [&str; 2] =
-    ["ANTHROPIC_SERVICE_ACCOUNT_ID", "ANTHROPIC_WORKSPACE_ID"];
-
 /// Every built-in provider, in upstream's order.
 ///
 /// # Errors
@@ -196,22 +185,20 @@ fn provider(
 /// `anthropicApiKeyAuth().resolve`: a stored key, else
 /// `ANTHROPIC_AUTH_TOKEN` as a bearer header, else the OAuth token or API
 /// key, else workload identity federation. Federation comes last so keys
-/// keep winning, as in the Anthropic SDK; its ids are provider config, so
-/// they travel in `env` and the SDK exchanges the identity token itself.
-#[expect(
-    clippy::unnecessary_wraps,
-    reason = "the `ApiKeyResolve` type requires a `Result` error channel"
-)]
+/// keep winning, as in the Anthropic SDK; the identity-token exchange is
+/// M5, so federation variables alone resolve to `None`.
 fn resolve_anthropic_auth(
+    input: crate::auth::resolve::ApiKeyResolveInput<'_>,
+) -> crate::provider::BoxFuture<'_, Result<Option<AuthResult>, String>> {
+    Box::pin(async move { Ok(resolve_anthropic_auth_inner(input.credential, input.env)) })
+}
+
+fn resolve_anthropic_auth_inner(
     credential: Option<&ApiKeyCredential>,
     env: &dyn Env,
-) -> Result<Option<AuthResult>, String> {
+) -> Option<AuthResult> {
     if let Some(credential) = credential.filter(|credential| credential.key.is_some()) {
-        return Ok(crate::auth::resolve::resolve_api_key_env(
-            &[],
-            Some(credential),
-            env,
-        ));
+        return crate::auth::resolve::resolve_api_key_env(&[], Some(credential), env);
     }
     if let Some(token) = env_get(env, "ANTHROPIC_AUTH_TOKEN") {
         let mut headers = Map::new();
@@ -223,34 +210,21 @@ fn resolve_anthropic_auth(
             headers: Some(headers),
             ..ModelAuth::default()
         };
-        return Ok(Some(AuthResult {
+        return Some(AuthResult {
             auth,
             env: None,
             source: Some(String::from("ANTHROPIC_AUTH_TOKEN")),
-        }));
+        });
     }
     if let Some(found) = crate::auth::resolve::resolve_api_key_env(
         &["ANTHROPIC_OAUTH_TOKEN", "ANTHROPIC_API_KEY"],
         None,
         env,
     ) {
-        return Ok(Some(found));
+        return Some(found);
     }
-    let mut federation = Map::new();
-    for name in ANTHROPIC_FEDERATION_REQUIRED {
-        let Some(value) = env_get(env, name) else {
-            return Ok(None);
-        };
-        federation.insert(name.into(), Value::from(value));
-    }
-    for name in ANTHROPIC_FEDERATION_OPTIONAL {
-        if let Some(value) = env_get(env, name) {
-            federation.insert(name.into(), Value::from(value));
-        }
-    }
-    Ok(Some(AuthResult {
-        auth: ModelAuth::default(),
-        env: Some(federation),
-        source: Some(String::from("workload identity federation")),
-    }))
+    // Workload identity federation: upstream exchanges the identity
+    // token for a credential, which is M5 — with only federation
+    // variables present the provider resolves to no auth.
+    None
 }

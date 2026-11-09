@@ -168,13 +168,34 @@ pub fn models_are_equal(a: &AnyModel, b: &AnyModel) -> bool {
         && model_ids(a).0 == model_ids(b).0
 }
 
+/// `AuthType` — `"api_key"` | `"oauth"` like upstream's auth
+/// resolution kind.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum AuthType {
+    /// API key auth.
+    ApiKey,
+    /// OAuth auth.
+    OAuth,
+}
+
+impl AuthType {
+    /// Upstream's `type` string.
+    #[must_use]
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::ApiKey => "api_key",
+            Self::OAuth => "oauth",
+        }
+    }
+}
+
 /// `AuthCheck` — provider auth availability without refreshing OAuth.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct AuthCheck {
     /// `source` — `"ANTHROPIC_API_KEY"`, `"OAuth"`, etc.
     pub source: Option<String>,
     /// `type` — `"api_key"` | `"oauth"`.
-    pub type_: &'static str,
+    pub kind: AuthType,
 }
 
 /// `ModelsRefreshOptions` — `allowNetwork`, `providers`, `force`,
@@ -233,16 +254,39 @@ struct RefreshPhase<'a> {
     signal: &'a CancellationToken,
 }
 
-/// `Models` — runtime collection of providers plus auth application.
-pub struct Models {
+/// `Registry` — the shared state every `Models` handle reads and
+/// mutates; `withClientIdentity` wrappers alias it.
+struct Registry {
+    /// `providers` — insertion-ordered like upstream's `Map`.
     providers: RwLock<Vec<Arc<dyn Provider>>>,
+    /// `credentials`.
     credentials: Arc<dyn CredentialStore>,
+    /// `modelsStore`.
     store: Arc<dyn ModelsStore>,
+    /// `env`.
     env: Arc<dyn Env>,
-    identity: Option<ClientIdentity>,
+    /// Per-provider refresh generation — a supersede bumps it.
     refresh_generations: Mutex<HashMap<String, u64>>,
+    /// Per-provider linked `AbortSignal.any` tokens.
     refresh_controllers: Mutex<HashMap<String, CancellationToken>>,
+    /// Per-provider publication serialization chain.
     publication_chains: Mutex<HashMap<String, Arc<tokio::sync::Mutex<()>>>>,
+}
+
+/// `Models` — a handle over a shared `Registry` plus this handle's
+/// default `identity`. Mutations through any handle are visible to
+/// the others, like upstream's shared `ModelsRegistry`.
+pub struct Models {
+    /// The shared registry.
+    registry: Arc<Registry>,
+    /// This handle's default request identity.
+    identity: Option<ClientIdentity>,
+}
+
+impl std::fmt::Debug for Registry {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Registry").finish_non_exhaustive()
+    }
 }
 
 impl std::fmt::Debug for Models {
@@ -255,18 +299,20 @@ impl std::fmt::Debug for Models {
 #[must_use]
 pub fn create_models(options: CreateModelsOptions) -> Arc<Models> {
     Arc::new(Models {
-        providers: RwLock::new(Vec::new()),
-        credentials: options
-            .credentials
-            .map_or_else(default_credentials, Arc::from),
-        store: options
-            .models_store
-            .map_or_else(default_models_store, Arc::from),
-        env: options.env.map_or_else(default_env, Arc::from),
+        registry: Arc::new(Registry {
+            providers: RwLock::new(Vec::new()),
+            credentials: options
+                .credentials
+                .map_or_else(default_credentials, Arc::from),
+            store: options
+                .models_store
+                .map_or_else(default_models_store, Arc::from),
+            env: options.env.map_or_else(default_env, Arc::from),
+            refresh_generations: Mutex::new(HashMap::new()),
+            refresh_controllers: Mutex::new(HashMap::new()),
+            publication_chains: Mutex::new(HashMap::new()),
+        }),
         identity: options.identity,
-        refresh_generations: Mutex::new(HashMap::new()),
-        refresh_controllers: Mutex::new(HashMap::new()),
-        publication_chains: Mutex::new(HashMap::new()),
     })
 }
 
@@ -311,6 +357,7 @@ impl Models {
         self.supersede_provider_refresh(provider.id());
         // JS `Map.set` keeps the entry's position on replace.
         let mut providers = self
+            .registry
             .providers
             .write()
             .unwrap_or_else(std::sync::PoisonError::into_inner);
@@ -327,7 +374,8 @@ impl Models {
     /// `deleteProvider`.
     pub fn delete_provider(&self, id: &str) {
         self.supersede_provider_refresh(id);
-        self.providers
+        self.registry
+            .providers
             .write()
             .unwrap_or_else(std::sync::PoisonError::into_inner)
             .retain(|p| p.id() != id);
@@ -337,10 +385,12 @@ impl Models {
     pub fn clear_providers(&self) {
         let ids: Vec<String> = {
             let providers = self
+                .registry
                 .providers
                 .read()
                 .unwrap_or_else(std::sync::PoisonError::into_inner);
             let controllers = self
+                .registry
                 .refresh_controllers
                 .lock()
                 .unwrap_or_else(std::sync::PoisonError::into_inner);
@@ -355,7 +405,8 @@ impl Models {
         for id in ids {
             self.supersede_provider_refresh(&id);
         }
-        self.providers
+        self.registry
+            .providers
             .write()
             .unwrap_or_else(std::sync::PoisonError::into_inner)
             .clear();
@@ -364,7 +415,8 @@ impl Models {
     /// `getProviders()`.
     #[must_use]
     pub fn get_providers(&self) -> Vec<Arc<dyn Provider>> {
-        self.providers
+        self.registry
+            .providers
             .read()
             .unwrap_or_else(std::sync::PoisonError::into_inner)
             .clone()
@@ -373,7 +425,8 @@ impl Models {
     /// `getProvider(id)`.
     #[must_use]
     pub fn get_provider(&self, id: &str) -> Option<Arc<dyn Provider>> {
-        self.providers
+        self.registry
+            .providers
             .read()
             .unwrap_or_else(std::sync::PoisonError::into_inner)
             .iter()
@@ -455,6 +508,7 @@ impl Models {
     fn supersede_provider_refresh(&self, provider_id: &str) -> u64 {
         let generation = {
             let mut generations = self
+                .registry
                 .refresh_generations
                 .lock()
                 .unwrap_or_else(std::sync::PoisonError::into_inner);
@@ -464,6 +518,7 @@ impl Models {
         };
         {
             let mut controllers = self
+                .registry
                 .refresh_controllers
                 .lock()
                 .unwrap_or_else(std::sync::PoisonError::into_inner);
@@ -505,7 +560,8 @@ impl Models {
             // a child token is cancelled by either.
             let signal = caller.child_token();
             let generation = self.supersede_provider_refresh(provider.id());
-            self.refresh_controllers
+            self.registry
+                .refresh_controllers
                 .lock()
                 .unwrap_or_else(std::sync::PoisonError::into_inner)
                 .insert(provider.id().to_owned(), signal.clone());
@@ -515,6 +571,7 @@ impl Models {
             //  — via the
             // generation counter (a supersede bumps it).
             let still_mine = self
+                .registry
                 .refresh_generations
                 .lock()
                 .unwrap_or_else(std::sync::PoisonError::into_inner)
@@ -522,7 +579,8 @@ impl Models {
                 .copied()
                 == Some(generation);
             if still_mine {
-                self.refresh_controllers
+                self.registry
+                    .refresh_controllers
                     .lock()
                     .unwrap_or_else(std::sync::PoisonError::into_inner)
                     .remove(provider.id());
@@ -555,14 +613,19 @@ impl Models {
         generation: u64,
         signal: &CancellationToken,
     ) -> Result<(), ModelsError> {
-        let stored_credential = self.credentials.read(provider.id()).await;
+        let stored_credential = self.registry.credentials.read(provider.id()).await;
         let credential_error = stored_credential.as_ref().err().map(|e| {
             ModelsError::new(
                 ModelsErrorCode::Auth,
                 format!("Credential store read failed for {}: {e}", provider.id()),
             )
         });
-        let stored = self.store.read(provider.id()).await.unwrap_or(None);
+        let stored = self
+            .registry
+            .store
+            .read(provider.id())
+            .await
+            .unwrap_or(None);
         self.refresh_phase(
             provider,
             RefreshPhase {
@@ -581,10 +644,13 @@ impl Models {
         if !allow_network || signal.is_cancelled() {
             return Ok(());
         }
-        let credential = self.resolve_refresh_credential(
-            provider.as_ref(),
-            stored_credential.ok().flatten().as_ref(),
-        )?;
+        let credential = self
+            .resolve_refresh_credential(
+                provider.as_ref(),
+                stored_credential.ok().flatten().as_ref(),
+                signal,
+            )
+            .await?;
         let Some(credential) = credential else {
             return Ok(());
         };
@@ -637,10 +703,11 @@ impl Models {
     /// stored OAuth credential is used as-is; OAuth refresh flows are
     /// M5 so an expired one skips the provider. Otherwise the apiKey
     /// handler resolves the effective credential.
-    fn resolve_refresh_credential(
+    async fn resolve_refresh_credential(
         &self,
         provider: &dyn Provider,
         stored: Option<&Credential>,
+        signal: &CancellationToken,
     ) -> Result<Option<Credential>, ModelsError> {
         let now = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
@@ -658,8 +725,13 @@ impl Models {
             Some(Credential::ApiKey(c)) => Some(c.clone()),
             _ => None,
         };
-        let result = (api_key.resolve)(credential.as_ref(), self.env.as_ref())
-            .map_err(|e| ModelsError::new(ModelsErrorCode::Auth, e))?;
+        let result = (api_key.resolve)(crate::auth::resolve::ApiKeyResolveInput {
+            credential: credential.as_ref(),
+            env: self.registry.env.as_ref(),
+            signal,
+        })
+        .await
+        .map_err(|e| ModelsError::new(ModelsErrorCode::Auth, e))?;
         Ok(result.map(|r| {
             Credential::ApiKey(ApiKeyCredential {
                 key: r.auth.api_key,
@@ -679,15 +751,17 @@ impl Models {
         signal: CancellationToken,
     ) -> Arc<dyn Fn(ModelsPublication) -> BoxFuture<'static, bool> + Send + Sync> {
         let provider_id = provider_id.to_owned();
-        let models_store = Arc::clone(&self.store);
+        let models_store = Arc::clone(&self.registry.store);
         let gen_snapshot = self
+            .registry
             .refresh_generations
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner)
             .clone();
         let generations_cell = Arc::new(tokio::sync::Mutex::new(gen_snapshot));
         let chain = Arc::clone(
-            self.publication_chains
+            self.registry
+                .publication_chains
                 .lock()
                 .unwrap_or_else(std::sync::PoisonError::into_inner)
                 .entry(provider_id.clone())
@@ -730,26 +804,27 @@ impl Models {
         let Some(provider) = self.get_provider(provider_id) else {
             return Ok(None);
         };
+        let fresh = CancellationToken::new();
+        let signal = overrides.signal.as_ref().unwrap_or(&fresh);
         let result = self
-            .resolve_provider_auth(provider.as_ref(), overrides)
+            .resolve_provider_auth(provider.as_ref(), overrides, signal)
             .await
             .map_err(Self::auth_wrap)?;
-        match (result, provider_or_model) {
-            (Some(mut result), ProviderOrModel::Model(AnyModel::Chat(model))) => {
-                if let Some(headers) = &model.headers {
-                    result.auth.headers =
-                        merge_headers(result.auth.headers.as_ref(), Some(headers));
-                }
-                Ok(Some(result))
+        // `model.headers` merges over the resolved auth headers for
+        // any model that carries them (Chat/Image/Classifier).
+        let model_headers = match provider_or_model {
+            ProviderOrModel::Model(AnyModel::Chat(m)) => m.headers.as_ref(),
+            ProviderOrModel::Model(AnyModel::Image(m)) => m.headers.as_ref(),
+            ProviderOrModel::Model(AnyModel::Classifier(m)) => m.headers.as_ref(),
+            ProviderOrModel::Id(_) => None,
+        };
+        Ok(match (result, model_headers) {
+            (Some(mut result), Some(headers)) => {
+                result.auth.headers = merge_headers(result.auth.headers.as_ref(), Some(headers));
+                Some(result)
             }
-            (Some(result), ProviderOrModel::Model(AnyModel::Image(model))) => {
-                if model.headers.is_none() {
-                    return Ok(Some(result));
-                }
-                Ok(Some(result))
-            }
-            (result, _) => Ok(result),
-        }
+            (result, _) => result,
+        })
     }
 
     /// `resolveProviderAuth` — explicit `apiKey` → stored credential →
@@ -764,15 +839,17 @@ impl Models {
         &self,
         provider: &dyn Provider,
         overrides: &AuthResolutionOverrides,
+        signal: &CancellationToken,
     ) -> Result<Option<AuthResult>, crate::auth::types::AuthError> {
         let auth = provider.auth();
         let overlay_env;
         let ambient_env: &dyn Env = match overrides.env.as_ref() {
             Some(overlay) => {
-                overlay_env = crate::auth::env::OverlayEnv::new(overlay, self.env.as_ref());
+                overlay_env =
+                    crate::auth::env::OverlayEnv::new(overlay, self.registry.env.as_ref());
                 &overlay_env
             }
-            None => self.env.as_ref(),
+            None => self.registry.env.as_ref(),
         };
 
         if let Some(api_key) = overrides.api_key.as_ref()
@@ -780,17 +857,19 @@ impl Models {
         {
             // Upstream `apiKey.resolve` may throw — `getAuth` wraps it
             // into `ModelsError("auth")`.
-            return (api_key_auth.resolve)(
-                Some(&ApiKeyCredential {
+            return (api_key_auth.resolve)(crate::auth::resolve::ApiKeyResolveInput {
+                credential: Some(&ApiKeyCredential {
                     key: Some(secrecy::SecretString::from(api_key.clone())),
                     env: overrides.env.clone(),
                 }),
-                ambient_env,
-            )
+                env: ambient_env,
+                signal,
+            })
+            .await
             .map_err(|e| crate::auth::types::AuthError::models(ModelsErrorCode::Auth, e));
         }
 
-        let stored = self.credentials.read(provider.id()).await?;
+        let stored = self.registry.credentials.read(provider.id()).await?;
         match stored {
             Some(Credential::ApiKey(credential)) => {
                 let merged = match overrides.env.as_ref() {
@@ -805,9 +884,13 @@ impl Models {
                     None => credential,
                 };
                 match &auth.api_key {
-                    Some(a) => (a.resolve)(Some(&merged), ambient_env).map_err(|e| {
-                        crate::auth::types::AuthError::models(ModelsErrorCode::Auth, e)
-                    }),
+                    Some(a) => (a.resolve)(crate::auth::resolve::ApiKeyResolveInput {
+                        credential: Some(&merged),
+                        env: ambient_env,
+                        signal,
+                    })
+                    .await
+                    .map_err(|e| crate::auth::types::AuthError::models(ModelsErrorCode::Auth, e)),
                     None => Ok(None),
                 }
             }
@@ -824,8 +907,13 @@ impl Models {
                 Ok(None)
             }
             None => match &auth.api_key {
-                Some(a) => (a.resolve)(None, ambient_env)
-                    .map_err(|e| crate::auth::types::AuthError::models(ModelsErrorCode::Auth, e)),
+                Some(a) => (a.resolve)(crate::auth::resolve::ApiKeyResolveInput {
+                    credential: None,
+                    env: ambient_env,
+                    signal,
+                })
+                .await
+                .map_err(|e| crate::auth::types::AuthError::models(ModelsErrorCode::Auth, e)),
                 None => Ok(None),
             },
         }
@@ -853,8 +941,13 @@ impl Models {
             ));
         }
         let provider = self.require_provider(model)?;
+        let fresh = CancellationToken::new();
         let resolution = self
-            .resolve_provider_auth(&*provider, &overrides_for(options))
+            .resolve_provider_auth(
+                &*provider,
+                &overrides_for(options),
+                options.and_then(|o| o.signal.as_ref()).unwrap_or(&fresh),
+            )
             .await
             .map_err(Self::auth_wrap)?;
         let Some(resolution) = resolution else {
@@ -1255,7 +1348,8 @@ impl Models {
                 format!("Provider {provider_id} does not support OAuth login"),
             ));
         }
-        self.credentials
+        self.registry
+            .credentials
             .modify(
                 provider_id,
                 Box::new(move |_existing| Box::pin(async move { Some(credential.clone()) })),
@@ -1270,7 +1364,8 @@ impl Models {
     /// # Errors
     /// [`ModelsError`] on store failures.
     pub async fn logout(&self, provider_id: &str) -> Result<(), ModelsError> {
-        self.credentials
+        self.registry
+            .credentials
             .delete(provider_id)
             .await
             .map_err(Self::auth_wrap)
@@ -1284,20 +1379,29 @@ impl Models {
         let Some(provider) = self.get_provider(provider_id) else {
             return Ok(None);
         };
-        let credential = self.credentials.read(provider_id).await.unwrap_or(None);
+        let credential = self
+            .registry
+            .credentials
+            .read(provider_id)
+            .await
+            .unwrap_or(None);
         if let Some(Credential::OAuth(_)) = credential {
             Ok(provider.auth().oauth.as_ref().map(|_| AuthCheck {
                 source: Some(String::from("OAuth")),
-                type_: "oauth",
+                kind: AuthType::OAuth,
             }))
         } else {
             let resolution = self
-                .resolve_provider_auth(provider.as_ref(), &AuthResolutionOverrides::default())
+                .resolve_provider_auth(
+                    provider.as_ref(),
+                    &AuthResolutionOverrides::default(),
+                    &CancellationToken::new(),
+                )
                 .await
                 .map_err(Self::auth_wrap)?;
             Ok(resolution.map(|r| AuthCheck {
                 source: r.source,
-                type_: "api_key",
+                kind: AuthType::ApiKey,
             }))
         }
     }
@@ -1344,7 +1448,12 @@ impl Models {
         );
         let mut out = Vec::new();
         for provider in providers {
-            let credential = self.credentials.read(provider.id()).await.unwrap_or(None);
+            let credential = self
+                .registry
+                .credentials
+                .read(provider.id())
+                .await
+                .unwrap_or(None);
             let check = self
                 .check_provider_auth(provider.as_ref(), credential.as_ref())
                 .await?;
@@ -1363,16 +1472,20 @@ impl Models {
         if let Some(Credential::OAuth(_)) = credential {
             return Ok(provider.auth().oauth.as_ref().map(|_| AuthCheck {
                 source: Some(String::from("OAuth")),
-                type_: "oauth",
+                kind: AuthType::OAuth,
             }));
         }
         let resolution = self
-            .resolve_provider_auth(provider, &AuthResolutionOverrides::default())
+            .resolve_provider_auth(
+                provider,
+                &AuthResolutionOverrides::default(),
+                &CancellationToken::new(),
+            )
             .await
             .map_err(Self::auth_wrap)?;
         Ok(resolution.map(|r| AuthCheck {
             source: r.source,
-            type_: "api_key",
+            kind: AuthType::ApiKey,
         }))
     }
 }
@@ -1423,7 +1536,7 @@ fn overrides_for(options: Option<&RequestOptions>) -> AuthResolutionOverrides {
     AuthResolutionOverrides {
         api_key: options.and_then(|o| o.api_key.clone()),
         env: options.and_then(|o| o.env.clone()),
-        min_oauth_validity_ms: None,
+        signal: options.and_then(|o| o.signal.clone()),
     }
 }
 
@@ -1552,35 +1665,20 @@ fn request_options(options: &StreamOptions) -> RequestOptions {
     }
 }
 
-/// `withClientIdentity(models, identity)` — a wrapper whose default
-/// `identity` merges into every request's options.
+/// `withClientIdentity(models, identity)` — a wrapper sharing the
+/// same `Registry`.
 ///
-/// # Errors
-/// Returns a new `Arc<Models>` sharing the registry; mutation
-/// methods are identical — only request identity differs.
+/// Its `identity` merges over the base handle's for every request,
+/// field by field (base → wrapper → options); mutators on either
+/// handle are visible to the other.
 #[must_use]
-pub fn with_client_identity(models: &Arc<Models>, identity: ClientIdentity) -> Arc<Models> {
-    let clone = Models {
-        providers: RwLock::new(Vec::new()),
-        credentials: Arc::clone(&models.credentials),
-        store: Arc::clone(&models.store),
-        env: Arc::clone(&models.env),
-        identity: Some(identity),
-        refresh_generations: Mutex::new(HashMap::new()),
-        refresh_controllers: Mutex::new(HashMap::new()),
-        publication_chains: Mutex::new(HashMap::new()),
-    };
-    // share the provider map — a shallow clone of the registry's
-    // contents, matching upstream's wrapper over the same providers.
-    models
-        .providers
-        .read()
-        .unwrap_or_else(std::sync::PoisonError::into_inner)
-        .clone_into(
-            &mut clone
-                .providers
-                .write()
-                .unwrap_or_else(std::sync::PoisonError::into_inner),
-        );
-    Arc::new(clone)
+#[expect(
+    clippy::needless_pass_by_value,
+    reason = "the upstream  signature takes ownership"
+)]
+pub fn with_client_identity(models: &Models, identity: ClientIdentity) -> Arc<Models> {
+    Arc::new(Models {
+        registry: Arc::clone(&models.registry),
+        identity: merge_client_identity(&[models.identity.as_ref(), Some(&identity)]),
+    })
 }
