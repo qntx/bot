@@ -278,7 +278,17 @@ const THINKING_CASES = [
   },
 ];
 
-const CASES = [
+type RequestCase = {
+  name: string;
+  model: unknown;
+  context: unknown;
+  options: Record<string, unknown>;
+  simple?: boolean;
+  payloadPatch?: { set?: Record<string, unknown>; delete?: string[] };
+  payloadUndefined?: boolean;
+};
+
+const CASES: RequestCase[] = [
   {
     name: "plain-text",
     model: BASE_MODEL,
@@ -528,6 +538,20 @@ const CASES = [
     options: { ...BASE_OPTIONS, temperature: 0.5 },
   },
   ...THINKING_CASES,
+  {
+    name: "onPayload-patch",
+    model: BASE_MODEL,
+    context: ctx([user("hello")]),
+    options: BASE_OPTIONS,
+    payloadPatch: { set: { "x-ovo-probe": "anthropic" }, delete: ["metadata"] },
+  },
+  {
+    name: "onPayload-undefined",
+    model: BASE_MODEL,
+    context: ctx([user("hello")]),
+    options: BASE_OPTIONS,
+    payloadUndefined: true,
+  },
 ];
 
 const results: Array<{
@@ -546,7 +570,22 @@ for (const testCase of CASES) {
   globalThis.fetch = fetch;
   try {
     const run = "simple" in testCase && testCase.simple ? streamAnthropicSimple : streamAnthropic;
-    const stream = run(testCase.model, testCase.context, { ...testCase.options, fetch });
+    const patch = testCase.payloadPatch;
+    const onPayload = patch
+      ? (params: Record<string, unknown>) => {
+          const drop = new Set(patch.delete);
+          const next = Object.fromEntries(Object.entries(params).filter(([key]) => !drop.has(key)));
+          Object.assign(next, patch.set ?? {});
+          return next;
+        }
+      : testCase.payloadUndefined === true
+        ? () => undefined
+        : undefined;
+    const stream = run(testCase.model, testCase.context, {
+      ...testCase.options,
+      fetch,
+      ...(onPayload ? { onPayload } : {}),
+    });
     // Cases run one at a time: each swaps the global fetch.
     // oxlint-disable-next-line no-await-in-loop -- sequential by design (global fetch swap)
     const message = await stream.result();
@@ -564,6 +603,8 @@ for (const testCase of CASES) {
     model: testCase.model,
     context: testCase.context,
     options: testCase.options,
+    ...(testCase.payloadPatch === undefined ? {} : { payloadPatch: testCase.payloadPatch }),
+    ...(testCase.payloadUndefined === true ? { payloadUndefined: true } : {}),
     request: recorded[0] ?? { error: failure ?? "no request was sent" },
   });
 }

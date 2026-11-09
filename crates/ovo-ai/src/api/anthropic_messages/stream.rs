@@ -5,8 +5,7 @@
 //! pi decodes SSE itself and delivers a record left pending at end of
 //! stream, which is [`EndOfStream::Flush`].
 //!
-//! Not yet ported: `input_transformations` diagnostics and
-//! `onProviderStreamEvent`.
+//! Not yet ported: `input_transformations` diagnostics.
 
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -20,7 +19,7 @@ use super::convert::from_claude_code_name;
 use super::{AnthropicOptions, build_request, is_oauth_token};
 use crate::api::constrained_sampling::is_strict_tool_limit_error_message;
 use crate::api::stream_support::{
-    STREAM_CAPACITY, closed, finish, header_pairs, initial_message, notify_response,
+    PayloadMerge, STREAM_CAPACITY, closed, finish, header_pairs, initial_message, notify_response,
     request_policy, send,
 };
 use crate::cost::{apply_openrouter_reported_cost, calculate_cost, is_openrouter_model};
@@ -135,10 +134,20 @@ async fn run(
         if let Some(level) = &request.provider_thinking_level {
             send(sender, Metadata::ProviderThinkingLevel(level.clone())).await?;
         }
+        // `onPayload` runs per attempt; a replacement is spread and
+        // `stream` forced on like `{ ...nextParams, stream: true }`.
+        let body = crate::api::stream_support::on_payload_body(
+            base,
+            &Value::Object(request.params.clone()),
+            &request.body,
+            model,
+            PayloadMerge::Stream,
+        )
+        .await?;
         let sent = http
             .post_json(
                 &request.url,
-                &Bytes::from(request.body.clone()),
+                &Bytes::from(body),
                 &header_pairs(&request.headers),
                 &request_policy(base),
                 signal,
@@ -184,6 +193,9 @@ async fn run(
         let Some(next) = next else { break };
         let sse = next.map_err(|error| error.to_string())?;
         if let Some(event) = gate.admit(&sse)? {
+            if let Some(hook) = &base.on_provider_stream_event {
+                hook(&event, model).await;
+            }
             state.apply(&event, sender).await?;
         }
     }

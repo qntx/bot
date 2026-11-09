@@ -102,6 +102,9 @@ pub struct OpenAiCompletionsRequest {
     pub headers: Map<String, Value>,
     /// The JSON body, byte-identical to upstream's `buildParams` output.
     pub body: Vec<u8>,
+    /// The request params before serialization — `onPayload` sees and
+    /// may replace these.
+    pub params: Map<String, Value>,
     /// The input property of each tool sent as a grammar tool, by name; the
     /// stream maps `custom` tool-call input onto it.
     pub grammar_tool_input_properties: BTreeMap<String, String>,
@@ -150,7 +153,9 @@ pub fn build_request(
             &api_key,
             &session_affinity(session_id, &compat),
         ),
-        body: crate::json::to_vec(&Value::Object(params)).map_err(|error| error.to_string())?,
+        body: crate::json::to_vec(&Value::Object(params.clone()))
+            .map_err(|error| error.to_string())?,
+        params,
         grammar_tool_input_properties,
     })
 }

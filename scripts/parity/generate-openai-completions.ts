@@ -173,7 +173,15 @@ const grammarTool = (variants: Json, parameters?: Json) =>
 const withTools = (...tools: unknown[]) => system("You are helpful.", tools);
 const conversation = ctx(system("You are helpful."), user("hi"));
 
-type Case = { name: string; model: Json; context: unknown; options: Json; simple?: boolean };
+type Case = {
+  name: string;
+  model: Json;
+  context: unknown;
+  options: Json;
+  simple?: boolean;
+  payloadPatch?: { set?: Record<string, unknown>; delete?: string[] };
+  payloadUndefined?: boolean;
+};
 
 const DETECTION_TARGETS: Array<[string, Json]> = [
   ["openai", OPENAI],
@@ -1016,12 +1024,42 @@ const CASES: Case[] = [
   ...SAMPLING,
   ...HEADERS,
   ...SIMPLE,
+  {
+    name: "onPayload-patch",
+    model: model(),
+    context: conversation,
+    options: options(),
+    payloadPatch: { set: { "x-ovo-probe": "completions" }, delete: ["store"] },
+  },
+  {
+    name: "onPayload-undefined",
+    model: model(),
+    context: conversation,
+    options: options(),
+    payloadUndefined: true,
+  },
 ];
 
 function errorOf(message: unknown): string | undefined {
   return typeof message === "object" && message !== null && "errorMessage" in message
     ? String(message.errorMessage)
     : undefined;
+}
+
+/** `payloadPatch`/`payloadUndefined` become an `onPayload` the adapter applies. */
+function onPayloadOption(testCase: Case) {
+  const patch = testCase.payloadPatch;
+  if (patch) {
+    return {
+      onPayload: (params: Record<string, unknown>) => {
+        const drop = new Set(patch.delete);
+        const next = Object.fromEntries(Object.entries(params).filter(([key]) => !drop.has(key)));
+        Object.assign(next, patch.set ?? {});
+        return next;
+      },
+    };
+  }
+  return testCase.payloadUndefined === true ? { onPayload: () => undefined } : {};
 }
 
 const results: Array<Case & { request: CapturedRequest | { error: string } }> = [];
@@ -1035,6 +1073,7 @@ for (const testCase of CASES) {
       await run(testCase.model, testCase.context, {
         ...testCase.options,
         fetch: captureFetch(recorded),
+        ...onPayloadOption(testCase),
       }).result(),
     );
   } catch (error) {

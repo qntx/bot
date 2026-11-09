@@ -27,6 +27,17 @@ pub type OnResponseFuture = std::pin::Pin<Box<dyn Future<Output = ()> + Send>>;
 /// upstream.
 pub type OnResponse = Arc<dyn Fn(&ResponseMetadata, &Model) -> OnResponseFuture + Send + Sync>;
 
+/// The future `onPayload` returns — `undefined` keeps the params.
+pub type OnPayloadFuture = std::pin::Pin<Box<dyn Future<Output = Option<Value>> + Send>>;
+
+/// `onPayload`: request-side callback that may replace the request
+/// params (`undefined` keeps them).
+pub type OnPayload = Arc<dyn Fn(&Value, &Model) -> OnPayloadFuture + Send + Sync>;
+
+/// `onProviderStreamEvent` — raw provider events before the adapter
+/// folds them.
+pub type OnProviderStreamEvent = Arc<dyn Fn(&Value, &Model) -> OnResponseFuture + Send + Sync>;
+
 /// `{status, headers}` — the response metadata `onResponse` sees.
 #[derive(Clone, Debug, Default)]
 pub struct ResponseMetadata {
@@ -86,6 +97,10 @@ pub struct StreamOptions {
     pub transform_headers: Option<TransformHeaders>,
     /// `onResponse` — response-side callback (`stream`/fetch/cancel).
     pub on_response: Option<OnResponse>,
+    /// `onPayload` — may replace the request params per attempt.
+    pub on_payload: Option<OnPayload>,
+    /// `onProviderStreamEvent` — raw provider events, pre-fold.
+    pub on_provider_stream_event: Option<OnProviderStreamEvent>,
     /// `options.deferred.pendingFetches` — how many fetches a
     /// scripted deferred provider tolerates before resolving.
     pub deferred_pending_fetches: Option<usize>,
@@ -219,6 +234,8 @@ pub fn build_base_options(
         signal: base.signal,
         transform_headers: base.transform_headers,
         on_response: base.on_response,
+        on_payload: base.on_payload,
+        on_provider_stream_event: base.on_provider_stream_event,
         deferred_pending_fetches: base.deferred_pending_fetches,
     }
 }

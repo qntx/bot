@@ -652,12 +652,16 @@ for (const testCase of CASES) {
   const fetch: typeof globalThis.fetch = async () => respond(testCase);
   const caseModel = testCase.model ?? model();
   const context = testCase.context ?? CONTEXT;
+  const providerEvents: Array<Record<string, unknown>> = [];
   const options = {
     apiKey: "sk-test",
     maxRetries: 0,
     fetch,
     signal: controller.signal,
     ...(testCase.abort === "on-response" ? { onResponse: () => controller.abort() } : {}),
+    onProviderStreamEvent: (data: Record<string, unknown>) => {
+      providerEvents.push(data);
+    },
     ...testCase.options,
   };
   const stream =
@@ -672,7 +676,7 @@ for (const testCase of CASES) {
   }
   // oxlint-disable-next-line no-await-in-loop -- sequential by design
   const { timestamp: _timestamp, durationMs: _durationMs, ...message } = await stream.result();
-  results.push({ ...testCase, model: caseModel, context, events, message });
+  results.push({ ...testCase, model: caseModel, context, events, providerEvents, message });
 }
 
 const document = {

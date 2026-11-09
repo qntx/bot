@@ -12,6 +12,34 @@ fn vectors() -> Value {
     serde_json::from_str(&std::fs::read_to_string(path).unwrap_or_default()).unwrap_or_default()
 }
 
+/// `payloadPatch`/`payloadUndefined` — the deterministic `onPayload`
+/// the vectors' generator applies before the request is sent.
+fn patched_body(
+    case: &Value,
+    params: &serde_json::Map<String, Value>,
+    body: &[u8],
+    merge_stream: bool,
+) -> Vec<u8> {
+    if case["payloadUndefined"].as_bool() == Some(true) || case["payloadPatch"].is_null() {
+        return body.to_vec();
+    }
+    let mut params = params.clone();
+    if let Some(keys) = case["payloadPatch"]["delete"].as_array() {
+        for key in keys {
+            params.remove(key.as_str().unwrap_or_default());
+        }
+    }
+    if let Some(set) = case["payloadPatch"]["set"].as_object() {
+        for (key, value) in set {
+            params.insert(key.clone(), value.clone());
+        }
+    }
+    if merge_stream {
+        params.insert("stream".into(), Value::Bool(true));
+    }
+    ovo_ai::json::to_vec(&Value::Object(params)).unwrap_or_else(|e| panic!("patched body: {e}"))
+}
+
 #[test]
 fn anthropic_request() {
     for case in vectors().as_array().unwrap_or(&Vec::new()) {
@@ -48,7 +76,8 @@ fn anthropic_request() {
             continue;
         }
         let request = built.unwrap_or_else(|e| panic!("{name}: build_request: {e}"));
-        let (url, headers, body) = (request.url, request.headers, request.body);
+        let body = patched_body(case, &request.params, &request.body, true);
+        let (url, headers) = (request.url, request.headers);
         assert_eq!(
             url,
             case["request"]["url"].as_str().unwrap_or_default(),

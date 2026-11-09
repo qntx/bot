@@ -119,3 +119,46 @@ pub(super) async fn send(sender: &AssistantStreamSender, metadata: Metadata) -> 
 pub(super) fn closed() -> String {
     String::from("stream consumer closed")
 }
+
+/// How `onPayload`'s replacement is folded into the request body.
+pub(super) enum PayloadMerge {
+    /// `{ ...nextParams, stream: true }` — the Anthropic merge.
+    Stream,
+    /// `params = nextParams` — the `OpenAI` adapters replace entirely.
+    Replace,
+}
+
+/// `onPayload` at upstream's call site: `await onPayload(params,
+/// model)`; `undefined` keeps the built body.
+pub(super) async fn on_payload_body(
+    base: &StreamOptions,
+    params: &Value,
+    body: &[u8],
+    model: &Model,
+    merge: PayloadMerge,
+) -> Result<Vec<u8>, String> {
+    let Some(hook) = &base.on_payload else {
+        return Ok(body.to_vec());
+    };
+    let Some(next) = hook(params, model).await else {
+        return Ok(body.to_vec());
+    };
+    let value = match (merge, next) {
+        // A non-object spreads to nothing — `{ stream: true }`.
+        (PayloadMerge::Stream, Value::Object(mut map)) => {
+            map.insert("stream".into(), Value::Bool(true));
+            Value::Object(map)
+        }
+        (PayloadMerge::Stream, _) => serde_json::json!({"stream": true}),
+        (PayloadMerge::Replace, value) => value,
+    };
+    crate::json::to_vec(&value).map_err(|error| error.to_string())
+}
+
+/// `onProviderStreamEvent` at upstream's call site: awaited for every
+/// SDK-yielded event before the adapter folds it.
+pub(super) async fn on_provider_stream_event(base: &StreamOptions, event: &Value, model: &Model) {
+    if let Some(hook) = &base.on_provider_stream_event {
+        hook(event, model).await;
+    }
+}

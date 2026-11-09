@@ -92,6 +92,20 @@ async fn anthropic_stream_replays_upstream_events() {
             signal.cancel();
             options.signal = Some(signal);
         }
+        let provider_events = Arc::new(std::sync::Mutex::new(Vec::<Value>::new()));
+        {
+            let captured = Arc::clone(&provider_events);
+            options.on_provider_stream_event = Some(Arc::new(move |data, _model| {
+                let captured = Arc::clone(&captured);
+                let data = data.clone();
+                Box::pin(async move {
+                    captured
+                        .lock()
+                        .unwrap_or_else(std::sync::PoisonError::into_inner)
+                        .push(data);
+                })
+            }));
+        }
         let mut stream = api.stream(&model, normalize_context(&context), options);
         let mut events = Vec::new();
         while let Some(event) = stream.next().await {
@@ -110,6 +124,17 @@ async fn anthropic_stream_replays_upstream_events() {
             js_value_eq(&events, &case["events"]),
             "{name}: events\n  got:  {events}\n  want: {}",
             case["events"]
+        );
+        let provider_events = {
+            let captured = provider_events
+                .lock()
+                .unwrap_or_else(std::sync::PoisonError::into_inner);
+            Value::Array(captured.clone())
+        };
+        assert!(
+            js_value_eq(&provider_events, &case["providerEvents"]),
+            "{name}: providerEvents\n  got:  {provider_events}\n  want: {}",
+            case["providerEvents"]
         );
         assert!(
             js_value_eq(&message, &case["message"]),
