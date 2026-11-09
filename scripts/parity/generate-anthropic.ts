@@ -59,7 +59,9 @@ function captureFetch(recorded: CapturedRequest[]): typeof globalThis.fetch {
   return async (url: string | URL | Request, init?: RequestInit) => {
     const headers: Record<string, string> = {};
     for (const [key, value] of new Headers(init?.headers)) {
-      if (!key.startsWith("x-stainless-")) {
+      // `x-stainless-*` is SDK telemetry; pi's default `user-agent` embeds the host platform and
+      // Node version, so freezing it would make the vectors machine-dependent.
+      if (!key.startsWith("x-stainless-") && !(key === "user-agent" && value.startsWith("pi/"))) {
         headers[key] = value;
       }
     }

@@ -48,7 +48,6 @@
 				"anthropic-dangerous-direct-browser-access": "true",
 				"anthropic-version": "2023-06-01",
 				"content-type": "application/json",
-				"user-agent": "pi/1.5.0 (darwin; node/v26.13.0; arm64)",
 				"x-api-key": "sk-ant-api03-test"
 			},
 			"body": "{\"model\":\"claude-test\",\"messages\":[{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"hello\",\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"max_tokens\":8192,\"stream\":true}"
@@ -104,7 +103,6 @@
 				"anthropic-dangerous-direct-browser-access": "true",
 				"anthropic-version": "2023-06-01",
 				"content-type": "application/json",
-				"user-agent": "pi/1.5.0 (darwin; node/v26.13.0; arm64)",
 				"x-api-key": "sk-ant-api03-test"
 			},
 			"body": "{\"model\":\"claude-test\",\"messages\":[{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"hello\",\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"max_tokens\":8192,\"stream\":true}"
@@ -165,7 +163,6 @@
 				"anthropic-dangerous-direct-browser-access": "true",
 				"anthropic-version": "2023-06-01",
 				"content-type": "application/json",
-				"user-agent": "pi/1.5.0 (darwin; node/v26.13.0; arm64)",
 				"x-api-key": "sk-ant-api03-test"
 			},
 			"body": "{\"model\":\"claude-test\",\"messages\":[{\"role\":\"user\",\"content\":[{\"type\":\"image\",\"source\":{\"type\":\"base64\",\"media_type\":\"image/png\",\"data\":\"aW1hZ2U=\"},\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"max_tokens\":8192,\"stream\":true}"
@@ -230,7 +227,6 @@
 				"anthropic-dangerous-direct-browser-access": "true",
 				"anthropic-version": "2023-06-01",
 				"content-type": "application/json",
-				"user-agent": "pi/1.5.0 (darwin; node/v26.13.0; arm64)",
 				"x-api-key": "sk-ant-api03-test"
 			},
 			"body": "{\"model\":\"claude-test\",\"messages\":[{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"see this\"},{\"type\":\"image\",\"source\":{\"type\":\"base64\",\"media_type\":\"image/jpeg\",\"data\":\"aW1hZ2U=\"},\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"max_tokens\":8192,\"stream\":true}"
@@ -323,7 +319,6 @@
 				"anthropic-dangerous-direct-browser-access": "true",
 				"anthropic-version": "2023-06-01",
 				"content-type": "application/json",
-				"user-agent": "pi/1.5.0 (darwin; node/v26.13.0; arm64)",
 				"x-api-key": "sk-ant-api03-test"
 			},
 			"body": "{\"model\":\"claude-test\",\"messages\":[{\"role\":\"user\",\"content\":\"q\"},{\"role\":\"assistant\",\"content\":[{\"type\":\"thinking\",\"thinking\":\"hmm\",\"signature\":\"sig-1\"},{\"type\":\"text\",\"text\":\"answer\"}]},{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"followup\",\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"max_tokens\":8192,\"stream\":true}"
@@ -413,7 +408,6 @@
 				"anthropic-dangerous-direct-browser-access": "true",
 				"anthropic-version": "2023-06-01",
 				"content-type": "application/json",
-				"user-agent": "pi/1.5.0 (darwin; node/v26.13.0; arm64)",
 				"x-api-key": "sk-ant-api03-test"
 			},
 			"body": "{\"model\":\"claude-test\",\"messages\":[{\"role\":\"user\",\"content\":\"q\"},{\"role\":\"assistant\",\"content\":[{\"type\":\"redacted_thinking\",\"data\":\"redacted-blob\"}]},{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"next\",\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"max_tokens\":8192,\"stream\":true}"
@@ -513,7 +507,6 @@
 				"anthropic-dangerous-direct-browser-access": "true",
 				"anthropic-version": "2023-06-01",
 				"content-type": "application/json",
-				"user-agent": "pi/1.5.0 (darwin; node/v26.13.0; arm64)",
 				"x-api-key": "sk-ant-api03-test"
 			},
 			"body": "{\"model\":\"claude-test\",\"messages\":[{\"role\":\"user\",\"content\":\"check\"},{\"role\":\"assistant\",\"content\":[{\"type\":\"tool_use\",\"id\":\"call_1\",\"name\":\"Read\",\"input\":{\"path\":\"/tmp/a\"}}]},{\"role\":\"user\",\"content\":[{\"type\":\"tool_result\",\"tool_use_id\":\"call_1\",\"content\":\"file contents\",\"is_error\":false,\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"max_tokens\":8192,\"stream\":true}"
@@ -616,7 +609,6 @@
 				"anthropic-dangerous-direct-browser-access": "true",
 				"anthropic-version": "2023-06-01",
 				"content-type": "application/json",
-				"user-agent": "pi/1.5.0 (darwin; node/v26.13.0; arm64)",
 				"x-api-key": "sk-ant-api03-test"
 			},
 			"body": "{\"model\":\"claude-test\",\"messages\":[{\"role\":\"user\",\"content\":\"check\"},{\"role\":\"assistant\",\"content\":[{\"type\":\"tool_use\",\"id\":\"call_1\",\"name\":\"Screenshot\",\"input\":{}}]},{\"role\":\"user\",\"content\":[{\"type\":\"tool_result\",\"tool_use_id\":\"call_1\",\"content\":\"failed\\n(image attached after the tool results)\",\"is_error\":true},{\"type\":\"text\",\"text\":\"Images from the error result of tool call call_1 (Screenshot):\"},{\"type\":\"image\",\"source\":{\"type\":\"base64\",\"media_type\":\"image/png\",\"data\":\"aW1hZ2U=\"},\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"max_tokens\":8192,\"stream\":true}"
@@ -733,7 +725,6 @@
 				"anthropic-dangerous-direct-browser-access": "true",
 				"anthropic-version": "2023-06-01",
 				"content-type": "application/json",
-				"user-agent": "pi/1.5.0 (darwin; node/v26.13.0; arm64)",
 				"x-api-key": "sk-ant-api03-test"
 			},
 			"body": "{\"model\":\"claude-test\",\"messages\":[{\"role\":\"user\",\"content\":\"check\"},{\"role\":\"assistant\",\"content\":[{\"type\":\"tool_use\",\"id\":\"c1\",\"name\":\"Read\",\"input\":{}},{\"type\":\"tool_use\",\"id\":\"c2\",\"name\":\"Read\",\"input\":{}}]},{\"role\":\"user\",\"content\":[{\"type\":\"tool_result\",\"tool_use_id\":\"c1\",\"content\":\"r1\",\"is_error\":false},{\"type\":\"tool_result\",\"tool_use_id\":\"c2\",\"content\":\"r2\",\"is_error\":false,\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"max_tokens\":8192,\"stream\":true}"
@@ -848,7 +839,6 @@
 				"anthropic-dangerous-direct-browser-access": "true",
 				"anthropic-version": "2023-06-01",
 				"content-type": "application/json",
-				"user-agent": "pi/1.5.0 (darwin; node/v26.13.0; arm64)",
 				"x-api-key": "sk-ant-api03-test"
 			},
 			"body": "{\"model\":\"claude-test\",\"messages\":[{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"hi\",\"cache_control\":{\"type\":\"ephemeral\",\"ttl\":\"1h\"}}]}],\"max_tokens\":8192,\"stream\":true}"
@@ -905,7 +895,6 @@
 				"anthropic-dangerous-direct-browser-access": "true",
 				"anthropic-version": "2023-06-01",
 				"content-type": "application/json",
-				"user-agent": "pi/1.5.0 (darwin; node/v26.13.0; arm64)",
 				"x-api-key": "sk-ant-api03-test"
 			},
 			"body": "{\"model\":\"claude-test\",\"messages\":[{\"role\":\"user\",\"content\":\"hi\"}],\"max_tokens\":8192,\"stream\":true}"
@@ -978,7 +967,6 @@
 				"anthropic-dangerous-direct-browser-access": "true",
 				"anthropic-version": "2023-06-01",
 				"content-type": "application/json",
-				"user-agent": "pi/1.5.0 (darwin; node/v26.13.0; arm64)",
 				"x-api-key": "sk-ant-api03-test"
 			},
 			"body": "{\"model\":\"claude-test\",\"messages\":[{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"hi\",\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"max_tokens\":8192,\"stream\":true,\"temperature\":0.5}"
@@ -1037,7 +1025,6 @@
 				"anthropic-dangerous-direct-browser-access": "true",
 				"anthropic-version": "2023-06-01",
 				"content-type": "application/json",
-				"user-agent": "pi/1.5.0 (darwin; node/v26.13.0; arm64)",
 				"x-api-key": "sk-ant-api03-test"
 			},
 			"body": "{\"model\":\"claude-test\",\"messages\":[{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"think\",\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"max_tokens\":8192,\"stream\":true,\"thinking\":{\"type\":\"enabled\",\"budget_tokens\":2048,\"display\":\"summarized\"}}"
@@ -1094,7 +1081,6 @@
 				"anthropic-dangerous-direct-browser-access": "true",
 				"anthropic-version": "2023-06-01",
 				"content-type": "application/json",
-				"user-agent": "pi/1.5.0 (darwin; node/v26.13.0; arm64)",
 				"x-api-key": "sk-ant-api03-test"
 			},
 			"body": "{\"model\":\"claude-test\",\"messages\":[{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"think\",\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"max_tokens\":8192,\"stream\":true,\"thinking\":{\"type\":\"enabled\",\"budget_tokens\":1024,\"display\":\"summarized\"}}"
@@ -1155,7 +1141,6 @@
 				"anthropic-dangerous-direct-browser-access": "true",
 				"anthropic-version": "2023-06-01",
 				"content-type": "application/json",
-				"user-agent": "pi/1.5.0 (darwin; node/v26.13.0; arm64)",
 				"x-api-key": "sk-ant-api03-test"
 			},
 			"body": "{\"model\":\"claude-test\",\"messages\":[{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"think\",\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"max_tokens\":8192,\"stream\":true,\"thinking\":{\"type\":\"adaptive\",\"display\":\"omitted\"},\"output_config\":{\"effort\":\"medium\"}}"
@@ -1211,7 +1196,6 @@
 				"anthropic-dangerous-direct-browser-access": "true",
 				"anthropic-version": "2023-06-01",
 				"content-type": "application/json",
-				"user-agent": "pi/1.5.0 (darwin; node/v26.13.0; arm64)",
 				"x-api-key": "sk-ant-api03-test"
 			},
 			"body": "{\"model\":\"claude-test\",\"messages\":[{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"no thinking\",\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"max_tokens\":8192,\"stream\":true,\"thinking\":{\"type\":\"disabled\"}}"
@@ -1306,7 +1290,6 @@
 				"anthropic-dangerous-direct-browser-access": "true",
 				"anthropic-version": "2023-06-01",
 				"content-type": "application/json",
-				"user-agent": "pi/1.5.0 (darwin; node/v26.13.0; arm64)",
 				"x-api-key": "sk-ant-api03-test"
 			},
 			"body": "{\"model\":\"claude-test\",\"messages\":[{\"role\":\"user\",\"content\":\"one\"},{\"role\":\"system\",\"content\":[],\"output_config\":{\"effort\":\"medium\"}},{\"role\":\"assistant\",\"content\":[{\"type\":\"text\",\"text\":\"earlier\"}]},{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"two\",\"cache_control\":{\"type\":\"ephemeral\"}}]},{\"role\":\"system\",\"content\":[],\"output_config\":{\"effort\":\"xhigh\"}}],\"max_tokens\":8192,\"stream\":true,\"thinking\":{\"type\":\"adaptive\",\"display\":\"summarized\",\"block_binding\":{\"prefix_mismatch_behavior\":\"drop_block\"}},\"output_config\":{\"effort\":\"low\"}}"
@@ -1428,7 +1411,6 @@
 				"anthropic-dangerous-direct-browser-access": "true",
 				"anthropic-version": "2023-06-01",
 				"content-type": "application/json",
-				"user-agent": "pi/1.5.0 (darwin; node/v26.13.0; arm64)",
 				"x-api-key": "sk-ant-api03-test"
 			},
 			"body": "{\"model\":\"claude-test\",\"messages\":[{\"role\":\"user\",\"content\":\"one\"},{\"role\":\"user\",\"content\":\"two\"},{\"role\":\"system\",\"content\":[{\"type\":\"text\",\"text\":\"You are helpful.\"},{\"type\":\"tool_removal\",\"tool\":{\"type\":\"tool_reference\",\"name\":\"Read\"}},{\"type\":\"tool_addition\",\"tool\":{\"type\":\"tool_definition\",\"definition\":{\"name\":\"Grep\",\"description\":\"Grep tool\",\"eager_input_streaming\":true,\"input_schema\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"},\"limit\":{\"type\":\"number\",\"minimum\":1}},\"required\":[\"path\"]}}},\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"max_tokens\":8192,\"stream\":true,\"system\":[{\"type\":\"text\",\"text\":\"You are helpful.\",\"cache_control\":{\"type\":\"ephemeral\"}}],\"tools\":[{\"name\":\"Read\",\"description\":\"Read tool\",\"eager_input_streaming\":true,\"input_schema\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"},\"limit\":{\"type\":\"number\",\"minimum\":1}},\"required\":[\"path\"]},\"cache_control\":{\"type\":\"ephemeral\"}},{\"name\":\"__pi_deferred_placeholder__\",\"description\":\"Reserved placeholder. Never available. Never call this.\",\"input_schema\":{\"type\":\"object\",\"properties\":{},\"required\":[]},\"defer_loading\":true}]}"
@@ -1532,7 +1514,6 @@
 				"anthropic-dangerous-direct-browser-access": "true",
 				"anthropic-version": "2023-06-01",
 				"content-type": "application/json",
-				"user-agent": "pi/1.5.0 (darwin; node/v26.13.0; arm64)",
 				"x-api-key": "sk-ant-api03-test"
 			},
 			"body": "{\"model\":\"claude-test\",\"messages\":[{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"strict\",\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"max_tokens\":8192,\"stream\":true,\"system\":[{\"type\":\"text\",\"text\":\"You are helpful.\",\"cache_control\":{\"type\":\"ephemeral\"}}],\"tools\":[{\"name\":\"Read\",\"description\":\"Read tool\",\"eager_input_streaming\":true,\"input_schema\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"},\"limit\":{\"type\":\"number\",\"minimum\":1}},\"required\":[\"path\"]}},{\"name\":\"Write\",\"description\":\"write\",\"eager_input_streaming\":true,\"strict\":true,\"input_schema\":{\"type\":\"object\",\"properties\":{\"path\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]}},\"required\":[\"path\"],\"additionalProperties\":false},\"cache_control\":{\"type\":\"ephemeral\"}}]}"
@@ -1705,7 +1686,6 @@
 				"anthropic-dangerous-direct-browser-access": "true",
 				"anthropic-version": "2023-06-01",
 				"content-type": "application/json",
-				"user-agent": "pi/1.5.0 (darwin; node/v26.13.0; arm64)",
 				"x-api-key": "sk-ant-api03-test"
 			},
 			"body": "{\"model\":\"claude-test\",\"messages\":[{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"pick\",\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"max_tokens\":8192,\"stream\":true,\"system\":[{\"type\":\"text\",\"text\":\"You are helpful.\",\"cache_control\":{\"type\":\"ephemeral\"}}],\"tools\":[{\"name\":\"Read\",\"description\":\"Read tool\",\"eager_input_streaming\":true,\"input_schema\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"},\"limit\":{\"type\":\"number\",\"minimum\":1}},\"required\":[\"path\"]},\"cache_control\":{\"type\":\"ephemeral\"}}],\"metadata\":{\"user_id\":\"u-1\"},\"tool_choice\":{\"type\":\"tool\",\"name\":\"Read\"},\"fallbacks\":[{\"model\":\"claude-fallback\"}]}"
@@ -1765,7 +1745,6 @@
 				"anthropic-dangerous-direct-browser-access": "true",
 				"anthropic-version": "2023-06-01",
 				"content-type": "application/json",
-				"user-agent": "pi/1.5.0 (darwin; node/v26.13.0; arm64)",
 				"x-api-key": "sk-ant-api03-test",
 				"x-extra": "1"
 			},
@@ -1824,7 +1803,6 @@
 				"anthropic-dangerous-direct-browser-access": "true",
 				"anthropic-version": "2023-06-01",
 				"content-type": "application/json",
-				"user-agent": "pi/1.5.0 (darwin; node/v26.13.0; arm64)",
 				"x-api-key": "sk-ant-api03-test"
 			},
 			"body": "{\"model\":\"claude-test\",\"messages\":[{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"beta\",\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"max_tokens\":8192,\"stream\":true,\"thinking\":{\"type\":\"enabled\",\"budget_tokens\":1024,\"display\":\"summarized\"}}"
@@ -1881,7 +1859,6 @@
 				"anthropic-dangerous-direct-browser-access": "true",
 				"anthropic-version": "2023-06-01",
 				"content-type": "application/json",
-				"user-agent": "pi/1.5.0 (darwin; node/v26.13.0; arm64)",
 				"x-api-key": "sk-ant-api03-test"
 			},
 			"body": "{\"model\":\"claude-test\",\"messages\":[{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"simple\",\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"max_tokens\":8192,\"stream\":true,\"thinking\":{\"type\":\"disabled\"},\"tool_choice\":{\"type\":\"auto\"}}"
@@ -1940,7 +1917,6 @@
 				"anthropic-dangerous-direct-browser-access": "true",
 				"anthropic-version": "2023-06-01",
 				"content-type": "application/json",
-				"user-agent": "pi/1.5.0 (darwin; node/v26.13.0; arm64)",
 				"x-api-key": "sk-ant-api03-test"
 			},
 			"body": "{\"model\":\"claude-test\",\"messages\":[{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"simple\",\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"max_tokens\":8192,\"stream\":true,\"thinking\":{\"type\":\"enabled\",\"budget_tokens\":7168,\"display\":\"summarized\"}}"
@@ -2004,7 +1980,6 @@
 				"anthropic-dangerous-direct-browser-access": "true",
 				"anthropic-version": "2023-06-01",
 				"content-type": "application/json",
-				"user-agent": "pi/1.5.0 (darwin; node/v26.13.0; arm64)",
 				"x-api-key": "sk-ant-api03-test"
 			},
 			"body": "{\"model\":\"claude-test\",\"messages\":[{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"simple\",\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"max_tokens\":8192,\"stream\":true,\"thinking\":{\"type\":\"adaptive\",\"display\":\"summarized\"},\"output_config\":{\"effort\":\"xhigh\"}}"
