@@ -421,6 +421,15 @@ impl AssistantStreamSender {
         .await
     }
 
+    /// Forward a pre-built wire event — used by `AssistantStream::forward`
+    /// (the lazy `Models` dispatch path).
+    pub(crate) async fn push_event(
+        &mut self,
+        event: AssistantMessageEvent,
+    ) -> Result<(), StreamClosed> {
+        self.emit(event).await
+    }
+
     fn is_open(&self, index: usize, kind: BlockKind) -> bool {
         self.open.iter().any(|(i, k)| *i == index && *k == kind)
     }
