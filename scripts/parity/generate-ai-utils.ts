@@ -887,6 +887,90 @@ for (const input of PROMPT_CACHE_INPUTS) {
   );
 }
 
+type OpenRouterCostModule = {
+  applyOpenRouterReportedCost: (usage: Usage, reported: unknown) => void;
+  isOpenRouterModel: (model: { provider: string; baseUrl: string }) => boolean;
+};
+function isOpenRouterCostModule(value: unknown): value is OpenRouterCostModule {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "applyOpenRouterReportedCost" in value &&
+    typeof value.applyOpenRouterReportedCost === "function" &&
+    "isOpenRouterModel" in value &&
+    typeof value.isOpenRouterModel === "function"
+  );
+}
+const openRouterCostModule: unknown = await import(
+  import.meta.resolve("@earendil-works/pi-ai/utils/openrouter-cost")
+);
+if (!isOpenRouterCostModule(openRouterCostModule)) {
+  throw new Error("openrouter-cost dist module lacks the expected exports");
+}
+
+const openRouterCases: Case[] = [];
+const catalogUsage = (): Usage =>
+  usage({
+    input: 100,
+    output: 20,
+    totalTokens: 120,
+    cost: { input: 0.0003, output: 0.0003, cacheRead: 0, cacheWrite: 0, total: 0.0006 },
+  });
+const byok = (details: unknown) => ({ cost: 0.001, is_byok: true, cost_details: details });
+const parts = (prompt: unknown, completions: unknown) => ({
+  upstream_inference_cost: null,
+  upstream_inference_prompt_cost: prompt,
+  upstream_inference_completions_cost: completions,
+});
+for (const [name, reported] of [
+  ["cost-null", { cost: null, is_byok: false }],
+  ["cost-negative", { cost: -1, is_byok: false }],
+  ["cost-string", { cost: "0.1", is_byok: false }],
+  ["cost-missing", { is_byok: false }],
+  ["cost-zero", { cost: 0, is_byok: false }],
+  ["byok-false", { cost: 0.0042, is_byok: false, cost_details: null }],
+  ["byok-missing", { cost: 0.0042 }],
+  ["byok-string", { cost: 0.0042, is_byok: "false" }],
+  ["byok-details-null", byok(null)],
+  ["byok-details-missing", { cost: 0.001, is_byok: true }],
+  ["byok-upstream-number", byok({ upstream_inference_cost: 0.004 })],
+  ["byok-upstream-zero", byok({ upstream_inference_cost: 0 })],
+  ["byok-upstream-negative", byok({ upstream_inference_cost: -0.004 })],
+  [
+    "byok-upstream-missing",
+    byok({ upstream_inference_prompt_cost: 0.002, upstream_inference_completions_cost: 0.003 }),
+  ],
+  ["byok-upstream-null-parts", byok(parts(0.002, 0.003))],
+  [
+    "byok-upstream-null-part-missing",
+    byok({ upstream_inference_cost: null, upstream_inference_prompt_cost: 0.002 }),
+  ],
+  ["byok-upstream-null-part-negative", byok(parts(0.002, -0.003))],
+] as const) {
+  const target = catalogUsage();
+  openRouterCostModule.applyOpenRouterReportedCost(target, reported);
+  push(
+    openRouterCases,
+    name,
+    "applyOpenRouterReportedCost",
+    { usage: catalogUsage(), reported },
+    target,
+  );
+}
+for (const [name, provider, baseUrl] of [
+  ["provider-openrouter", "openrouter", "https://example.com/v1"],
+  ["url-openrouter", "custom", "https://openrouter.ai/api/v1"],
+  ["neither", "openai", "https://api.openai.com/v1"],
+] as const) {
+  push(
+    openRouterCases,
+    name,
+    "isOpenRouterModel",
+    { provider, baseUrl },
+    openRouterCostModule.isOpenRouterModel({ provider, baseUrl }),
+  );
+}
+
 const generator = {
   script: "scripts/parity/generate-ai-utils.ts",
   node: process.version,
@@ -899,6 +983,7 @@ for (const [file, cases] of [
   ["vectors/ai/cost.json", costCases],
   ["vectors/ai/simple-options.json", simpleCases],
   ["vectors/ai/hash.json", hashCases],
+  ["vectors/ai/openrouter-cost.json", openRouterCases],
 ] as const) {
   writeFileSync(file, `${JSON.stringify({ generator, cases }, null, 2)}\n`);
   console.log(`${file}: ${cases.length} cases`);

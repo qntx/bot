@@ -5,8 +5,8 @@
 //! pi decodes SSE itself and delivers a record left pending at end of
 //! stream, which is [`EndOfStream::Flush`].
 //!
-//! Not yet ported: `OpenRouter` billed-cost fields in `message_delta` usage,
-//! `input_transformations` diagnostics and `onProviderStreamEvent`.
+//! Not yet ported: `input_transformations` diagnostics and
+//! `onProviderStreamEvent`.
 
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -19,25 +19,25 @@ use tokio_util::sync::CancellationToken;
 use super::convert::from_claude_code_name;
 use super::{AnthropicOptions, build_request, is_oauth_token};
 use crate::api::constrained_sampling::is_strict_tool_limit_error_message;
-use crate::cost::calculate_cost;
-use crate::http::client::{HttpClient, HttpError, RequestPolicy, SendError};
+use crate::api::stream_support::{
+    STREAM_CAPACITY, closed, finish, header_pairs, initial_message, notify_response,
+    request_policy, send,
+};
+use crate::cost::{apply_openrouter_reported_cost, calculate_cost, is_openrouter_model};
+use crate::http::client::{HttpClient, HttpError, SendError};
 use crate::http::retry::jitter;
 use crate::http::sse::{EndOfStream, SseEvent, SseEventStream};
 use crate::json::repair::parse_json_with_repair;
-use crate::options::{ResponseMetadata, SimpleStreamOptions, StreamOptions};
+use crate::options::{SimpleStreamOptions, StreamOptions};
 use crate::provider::ChatApi;
 use crate::stream::accumulator::wall_ms;
-use crate::stream::{AssistantStream, AssistantStreamSender, DoneReason, ErrorReason, Metadata};
+use crate::stream::{AssistantStream, AssistantStreamSender, DoneReason, Metadata};
 use crate::transcript::{TranscriptContext, get_current_tools};
 use crate::types::content::{StopReason, TextContent, ThinkingContent, ToolCall};
 use crate::types::diagnostic::{AssistantMessageDiagnostic, DiagnosticErrorInfo};
-use crate::types::message::AssistantMessage;
 use crate::types::model::Model;
 use crate::types::tool::Tool;
 use crate::types::usage::Usage;
-
-/// Bounded capacity of the adapter's event channel.
-const STREAM_CAPACITY: usize = 64;
 
 /// SSE event names pi forwards; everything else (pings) is skipped.
 const ANTHROPIC_MESSAGE_EVENTS: [&str; 6] = [
@@ -110,60 +110,6 @@ impl ChatApi for AnthropicMessagesApi {
     }
 }
 
-/// The `output` literal upstream starts every response from.
-fn initial_message(model: &Model) -> AssistantMessage {
-    AssistantMessage {
-        content: Vec::new(),
-        api: model.api.clone(),
-        provider: model.provider.clone(),
-        model: model.id.clone(),
-        usage: Usage::default(),
-        stop_reason: StopReason::Pending,
-        timestamp: wall_ms(),
-        provider_thinking_level: None,
-        response_id: None,
-        response_model: None,
-        raw_stop_reason: None,
-        error_message: None,
-        diagnostics: None,
-        deferred: None,
-        end_turn: None,
-        duration_ms: None,
-        thinking_level: None,
-    }
-}
-
-/// The request policy from upstream's `timeoutMs`, `maxRetries` and
-/// `maxRetryDelayMs` options; absent ones keep the SDK defaults.
-fn request_policy(options: &StreamOptions) -> RequestPolicy {
-    let defaults = RequestPolicy::default();
-    RequestPolicy {
-        timeout: options
-            .timeout_ms
-            .map_or(defaults.timeout, std::time::Duration::from_millis),
-        max_retries: options.max_retries.unwrap_or(defaults.max_retries),
-        max_retry_delay_ms: options.max_retry_delay_ms,
-    }
-}
-
-/// Emit the terminal event for `outcome` (upstream's `done` or the `catch`
-/// branch: aborted when the signal fired, error otherwise).
-async fn finish(sender: AssistantStreamSender, outcome: Result<DoneReason, String>, aborted: bool) {
-    let sent = match outcome {
-        Ok(reason) => sender.done(reason).await,
-        Err(message) => {
-            let reason = if aborted {
-                ErrorReason::Aborted
-            } else {
-                ErrorReason::Error
-            };
-            sender.error(reason, message).await
-        }
-    };
-    // A closed stream means the consumer dropped it; nothing is left to notify.
-    sent.ok();
-}
-
 /// Send the request and fold the response events; the error string is the
 /// message upstream's `catch` records.
 async fn run(
@@ -181,23 +127,19 @@ async fn run(
     let oauth = is_oauth_token(base.api_key.as_deref().unwrap_or_default());
     let mut disable_preferred_strict_tools = false;
     let response = loop {
+        // `signal.throwIfAborted()` throws the signal's default reason.
         if signal.is_cancelled() {
-            return Err(String::from("Request was aborted"));
+            return Err(String::from("This operation was aborted"));
         }
         let request = build_request(model, context, options, disable_preferred_strict_tools)?;
         if let Some(level) = &request.provider_thinking_level {
             send(sender, Metadata::ProviderThinkingLevel(level.clone())).await?;
         }
-        let header_pairs: Vec<(&str, &str)> = request
-            .headers
-            .iter()
-            .filter_map(|(name, value)| value.as_str().map(|v| (name.as_str(), v)))
-            .collect();
         let sent = http
             .post_json(
                 &request.url,
                 &Bytes::from(request.body.clone()),
-                &header_pairs,
+                &header_pairs(&request.headers),
                 &request_policy(base),
                 signal,
                 &jitter,
@@ -205,6 +147,8 @@ async fn run(
             .await;
         match sent {
             Ok(response) => break response,
+            // `retryProviderRequest` replaces any failure of an aborted request.
+            Err(_) if signal.is_cancelled() => return Err(String::from("Request aborted")),
             Err(SendError::Provider(error))
                 if !disable_preferred_strict_tools
                     && request.has_preferred_strict_tools
@@ -221,16 +165,10 @@ async fn run(
             }
             Err(SendError::Provider(error)) => return Err(sdk_error_message(&error)),
             Err(SendError::Transport(message)) => return Err(message),
-            Err(SendError::Aborted) => return Err(String::from("Request was aborted")),
+            Err(SendError::Aborted) => return Err(String::from("Request aborted")),
         }
     };
-    if let Some(on_response) = &base.on_response {
-        let metadata = ResponseMetadata {
-            status: response.status().as_u16(),
-            headers: headers_to_record(response.headers()),
-        };
-        on_response(&metadata, model).await;
-    }
+    notify_response(base, &response, model).await;
     sender.start().await.map_err(|_| closed())?;
 
     let tools = get_current_tools(context.messages());
@@ -239,6 +177,7 @@ async fn run(
     let mut gate = Gate::default();
     loop {
         let next = tokio::select! {
+            biased;
             () = signal.cancelled() => return Err(String::from("Request was aborted")),
             next = events.next() => next,
         };
@@ -331,24 +270,6 @@ fn strict_fallback_diagnostic(message: String) -> AssistantMessageDiagnostic {
         }),
         details: Some(details),
     }
-}
-
-/// The consumer is gone; the producer stops.
-fn closed() -> String {
-    String::from("stream consumer closed")
-}
-
-/// `headersToRecord`: response headers with lowercase names.
-fn headers_to_record(headers: &reqwest::header::HeaderMap) -> Map<String, Value> {
-    headers
-        .iter()
-        .filter_map(|(name, value)| {
-            value
-                .to_str()
-                .ok()
-                .map(|v| (name.as_str().to_owned(), Value::from(v)))
-        })
-        .collect()
 }
 
 /// `iterateAnthropicEvents`: SSE records to Anthropic events.
@@ -475,7 +396,7 @@ impl<'a> EventState<'a> {
         self.usage.cache_read = token(usage, "cache_read_input_tokens").unwrap_or(0);
         self.usage.cache_write = token(usage, "cache_creation_input_tokens").unwrap_or(0);
         self.usage.cache_write1h = Some(cache_write_1h(usage).unwrap_or(0));
-        self.update_usage(sender).await
+        self.update_usage(None, sender).await
     }
 
     async fn block_start(
@@ -631,7 +552,8 @@ impl<'a> EventState<'a> {
                 self.error_message = error_message;
             }
         }
-        if let Some(usage) = event.get("usage").filter(|u| u.is_object()) {
+        let usage = event.get("usage").filter(|u| u.is_object());
+        if let Some(usage) = usage {
             if let Some(n) = token(usage, "input_tokens") {
                 self.usage.input = n;
             }
@@ -654,14 +576,22 @@ impl<'a> EventState<'a> {
                 self.usage.reasoning = Some(n);
             }
         }
-        self.update_usage(sender).await
+        self.update_usage(usage, sender).await
     }
 
-    /// Recompute the total and cost, then publish the usage.
-    async fn update_usage(&mut self, sender: &AssistantStreamSender) -> Result<(), String> {
+    /// Recompute the total and cost, take `OpenRouter`'s billed cost from a
+    /// `message_delta` usage that reports one, then publish the usage.
+    async fn update_usage(
+        &mut self,
+        reported: Option<&Value>,
+        sender: &AssistantStreamSender,
+    ) -> Result<(), String> {
         self.usage.total_tokens =
             self.usage.input + self.usage.output + self.usage.cache_read + self.usage.cache_write;
         calculate_cost(&self.usage_model, &mut self.usage);
+        if let Some(reported) = reported.filter(|_| is_openrouter_model(self.model)) {
+            apply_openrouter_reported_cost(&mut self.usage, reported);
+        }
         send(sender, Metadata::Usage(self.usage.clone())).await
     }
 
@@ -681,11 +611,6 @@ impl<'a> EventState<'a> {
             StopReason::Deferred => Ok(DoneReason::Deferred),
         }
     }
-}
-
-/// Publish one metadata update.
-async fn send(sender: &AssistantStreamSender, metadata: Metadata) -> Result<(), String> {
-    sender.metadata(metadata).await.map_err(|_| closed())
 }
 
 /// `mapStopReason`: Anthropic stop reason to pi's, with the error text for

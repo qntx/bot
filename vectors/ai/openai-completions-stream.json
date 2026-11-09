@@ -1,0 +1,5589 @@
+{
+  "generator": {
+    "script": "scripts/parity/generate-openai-completions-stream.ts",
+    "node": "v26.13.0"
+  },
+  "cases": [
+    {
+      "name": "text",
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"role\":\"assistant\",\"content\":\"Hel\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"lo\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}]}\n\ndata: [DONE]\n\n",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "text_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "text_delta",
+          "contentIndex": 0,
+          "delta": "Hel"
+        },
+        {
+          "type": "text_delta",
+          "contentIndex": 0,
+          "delta": "lo"
+        },
+        {
+          "type": "text_end",
+          "contentIndex": 0,
+          "content": "Hello"
+        },
+        {
+          "type": "done",
+          "reason": "stop"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "Hello"
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "stop",
+        "responseId": "chatcmpl-1",
+        "rawStopReason": "stop"
+      }
+    },
+    {
+      "name": "text-usage",
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"hi\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[],\"usage\":{\"prompt_tokens\":100,\"completion_tokens\":20,\"total_tokens\":120}}\n\ndata: [DONE]\n\n",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "text_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "text_delta",
+          "contentIndex": 0,
+          "delta": "hi"
+        },
+        {
+          "type": "text_end",
+          "contentIndex": 0,
+          "content": "hi"
+        },
+        {
+          "type": "done",
+          "reason": "stop"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "hi"
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 100,
+          "output": 20,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "reasoning": 0,
+          "totalTokens": 120,
+          "cost": {
+            "input": 0.00009999999999999999,
+            "output": 0.000039999999999999996,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0.00014,
+            "totalFromProvider": false
+          }
+        },
+        "stopReason": "stop",
+        "responseId": "chatcmpl-1",
+        "rawStopReason": "stop"
+      }
+    },
+    {
+      "name": "empty-content-skipped",
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"content\":null},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}]}\n\ndata: [DONE]\n\n",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "done",
+          "reason": "stop"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "stop",
+        "responseId": "chatcmpl-1",
+        "rawStopReason": "stop"
+      }
+    },
+    {
+      "name": "reasoning-content",
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"reasoning_content\":\"think\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"ok\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}]}\n\ndata: [DONE]\n\n",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "thinking_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "thinking_delta",
+          "contentIndex": 0,
+          "delta": "think"
+        },
+        {
+          "type": "text_start",
+          "contentIndex": 1
+        },
+        {
+          "type": "text_delta",
+          "contentIndex": 1,
+          "delta": "ok"
+        },
+        {
+          "type": "thinking_end",
+          "contentIndex": 0,
+          "content": "think"
+        },
+        {
+          "type": "text_end",
+          "contentIndex": 1,
+          "content": "ok"
+        },
+        {
+          "type": "done",
+          "reason": "stop"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "thinking",
+            "thinking": "think",
+            "thinkingSignature": "reasoning_content"
+          },
+          {
+            "type": "text",
+            "text": "ok"
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "stop",
+        "responseId": "chatcmpl-1",
+        "rawStopReason": "stop"
+      }
+    },
+    {
+      "name": "reasoning",
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"reasoning\":\"think\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}]}\n\ndata: [DONE]\n\n",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "thinking_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "thinking_delta",
+          "contentIndex": 0,
+          "delta": "think"
+        },
+        {
+          "type": "thinking_end",
+          "contentIndex": 0,
+          "content": "think"
+        },
+        {
+          "type": "done",
+          "reason": "stop"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "thinking",
+            "thinking": "think",
+            "thinkingSignature": "reasoning"
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "stop",
+        "responseId": "chatcmpl-1",
+        "rawStopReason": "stop"
+      }
+    },
+    {
+      "name": "reasoning-text",
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"reasoning_text\":\"think\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}]}\n\ndata: [DONE]\n\n",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "thinking_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "thinking_delta",
+          "contentIndex": 0,
+          "delta": "think"
+        },
+        {
+          "type": "thinking_end",
+          "contentIndex": 0,
+          "content": "think"
+        },
+        {
+          "type": "done",
+          "reason": "stop"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "thinking",
+            "thinking": "think",
+            "thinkingSignature": "reasoning_text"
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "stop",
+        "responseId": "chatcmpl-1",
+        "rawStopReason": "stop"
+      }
+    },
+    {
+      "name": "reasoning-duplicate-fields",
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"reasoning_content\":\"same\",\"reasoning\":\"same\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}]}\n\ndata: [DONE]\n\n",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "thinking_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "thinking_delta",
+          "contentIndex": 0,
+          "delta": "same"
+        },
+        {
+          "type": "thinking_end",
+          "contentIndex": 0,
+          "content": "same"
+        },
+        {
+          "type": "done",
+          "reason": "stop"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "thinking",
+            "thinking": "same",
+            "thinkingSignature": "reasoning_content"
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "stop",
+        "responseId": "chatcmpl-1",
+        "rawStopReason": "stop"
+      }
+    },
+    {
+      "name": "reasoning-opencode-go",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "opencode-go",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"reasoning\":\"think\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}]}\n\ndata: [DONE]\n\n",
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "thinking_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "thinking_delta",
+          "contentIndex": 0,
+          "delta": "think"
+        },
+        {
+          "type": "thinking_end",
+          "contentIndex": 0,
+          "content": "think"
+        },
+        {
+          "type": "done",
+          "reason": "stop"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "thinking",
+            "thinking": "think",
+            "thinkingSignature": "reasoning_content"
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "opencode-go",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "stop",
+        "responseId": "chatcmpl-1",
+        "rawStopReason": "stop"
+      }
+    },
+    {
+      "name": "reasoning-and-content-one-delta",
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"reasoning_content\":\"think\",\"content\":\"answer\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}]}\n\ndata: [DONE]\n\n",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "thinking_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "thinking_delta",
+          "contentIndex": 0,
+          "delta": "think"
+        },
+        {
+          "type": "text_start",
+          "contentIndex": 1
+        },
+        {
+          "type": "text_delta",
+          "contentIndex": 1,
+          "delta": "answer"
+        },
+        {
+          "type": "thinking_end",
+          "contentIndex": 0,
+          "content": "think"
+        },
+        {
+          "type": "text_end",
+          "contentIndex": 1,
+          "content": "answer"
+        },
+        {
+          "type": "done",
+          "reason": "stop"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "thinking",
+            "thinking": "think",
+            "thinkingSignature": "reasoning_content"
+          },
+          {
+            "type": "text",
+            "text": "answer"
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "stop",
+        "responseId": "chatcmpl-1",
+        "rawStopReason": "stop"
+      }
+    },
+    {
+      "name": "reasoning-details-merge",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openrouter",
+        "baseUrl": "https://openrouter.ai/api/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"reasoning\":\"a\",\"reasoning_details\":[{\"type\":\"reasoning.text\",\"text\":\"a\",\"format\":\"unknown\",\"index\":0}]},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"reasoning\":\"b\",\"reasoning_details\":[{\"type\":\"reasoning.text\",\"text\":\"b\",\"signature\":\"sig\",\"id\":\"r1\"}]},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"reasoning_details\":[{\"type\":\"reasoning.encrypted\",\"data\":\"enc1\",\"id\":\"e1\"},{\"type\":\"reasoning.encrypted\",\"data\":\"enc2\",\"id\":\"e2\"},{\"type\":\"reasoning.summary\",\"summary\":\"s1\"},{\"type\":\"reasoning.summary\",\"summary\":\"s2\",\"format\":\"f\",\"index\":3}]},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"ok\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}]}\n\ndata: [DONE]\n\n",
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "thinking_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "thinking_delta",
+          "contentIndex": 0,
+          "delta": "a"
+        },
+        {
+          "type": "thinking_delta",
+          "contentIndex": 0,
+          "delta": "b"
+        },
+        {
+          "type": "text_start",
+          "contentIndex": 1
+        },
+        {
+          "type": "text_delta",
+          "contentIndex": 1,
+          "delta": "ok"
+        },
+        {
+          "type": "thinking_end",
+          "contentIndex": 0,
+          "content": "ab"
+        },
+        {
+          "type": "text_end",
+          "contentIndex": 1,
+          "content": "ok"
+        },
+        {
+          "type": "done",
+          "reason": "stop"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "thinking",
+            "thinking": "ab",
+            "thinkingSignature": "[{\"type\":\"reasoning.text\",\"text\":\"ab\",\"format\":\"unknown\",\"index\":0,\"signature\":\"sig\",\"id\":\"r1\"},{\"type\":\"reasoning.encrypted\",\"data\":\"enc1\",\"id\":\"e1\"},{\"type\":\"reasoning.encrypted\",\"data\":\"enc2\",\"id\":\"e2\"},{\"type\":\"reasoning.summary\",\"summary\":\"s1s2\",\"format\":\"f\",\"index\":3}]"
+          },
+          {
+            "type": "text",
+            "text": "ok"
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openrouter",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "stop",
+        "responseId": "chatcmpl-1",
+        "rawStopReason": "stop"
+      }
+    },
+    {
+      "name": "reasoning-details-null-fields",
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"reasoning_details\":[{\"type\":\"reasoning.text\",\"text\":\"a\",\"id\":null,\"signature\":null,\"format\":\"\"}]},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"reasoning_details\":[{\"type\":\"reasoning.text\",\"text\":\"b\"}]},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"reasoning_details\":[{\"type\":\"reasoning.text\",\"text\":\"c\",\"id\":\"r2\",\"signature\":\"s\",\"format\":\"g\"}]},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}]}\n\ndata: [DONE]\n\n",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "thinking_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "thinking_end",
+          "contentIndex": 0,
+          "content": ""
+        },
+        {
+          "type": "done",
+          "reason": "stop"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "thinking",
+            "thinking": "",
+            "thinkingSignature": "[{\"type\":\"reasoning.text\",\"text\":\"abc\",\"id\":\"r2\",\"signature\":\"s\",\"format\":\"g\"}]"
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "stop",
+        "responseId": "chatcmpl-1",
+        "rawStopReason": "stop"
+      }
+    },
+    {
+      "name": "reasoning-details-invalid-skipped",
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"reasoning_details\":[{\"type\":\"reasoning.text\",\"text\":1},{\"type\":\"reasoning.unknown\",\"text\":\"x\"},{\"type\":\"reasoning.summary\",\"summary\":\"s\",\"id\":5},\"not-an-object\",[1]]},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"ok\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}]}\n\ndata: [DONE]\n\n",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "text_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "text_delta",
+          "contentIndex": 0,
+          "delta": "ok"
+        },
+        {
+          "type": "text_end",
+          "contentIndex": 0,
+          "content": "ok"
+        },
+        {
+          "type": "done",
+          "reason": "stop"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "ok"
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "stop",
+        "responseId": "chatcmpl-1",
+        "rawStopReason": "stop"
+      }
+    },
+    {
+      "name": "reasoning-details-only",
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"reasoning_details\":[{\"type\":\"reasoning.encrypted\",\"data\":\"enc\"}]},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"ok\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}]}\n\ndata: [DONE]\n\n",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "thinking_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "text_start",
+          "contentIndex": 1
+        },
+        {
+          "type": "text_delta",
+          "contentIndex": 1,
+          "delta": "ok"
+        },
+        {
+          "type": "thinking_end",
+          "contentIndex": 0,
+          "content": ""
+        },
+        {
+          "type": "text_end",
+          "contentIndex": 1,
+          "content": "ok"
+        },
+        {
+          "type": "done",
+          "reason": "stop"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "thinking",
+            "thinking": "",
+            "thinkingSignature": "[{\"type\":\"reasoning.encrypted\",\"data\":\"enc\"}]"
+          },
+          {
+            "type": "text",
+            "text": "ok"
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "stop",
+        "responseId": "chatcmpl-1",
+        "rawStopReason": "stop"
+      }
+    },
+    {
+      "name": "text-tool-text-single-text-block",
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"Reading. \"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"tool_calls\":[{\"index\":0,\"id\":\"call_1\",\"type\":\"function\",\"function\":{\"name\":\"read\",\"arguments\":\"\"}}]},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"tool_calls\":[{\"index\":0,\"function\":{\"arguments\":\"{\\\"path\\\":\"}}]},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"More.\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"tool_calls\":[{\"index\":0,\"function\":{\"arguments\":\"\\\"a\\\"}\"}}]},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"tool_calls\"}]}\n\ndata: [DONE]\n\n",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "text_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "text_delta",
+          "contentIndex": 0,
+          "delta": "Reading. "
+        },
+        {
+          "type": "toolcall_start",
+          "contentIndex": 1
+        },
+        {
+          "type": "toolcall_delta",
+          "contentIndex": 1,
+          "delta": ""
+        },
+        {
+          "type": "toolcall_delta",
+          "contentIndex": 1,
+          "delta": "{\"path\":"
+        },
+        {
+          "type": "text_delta",
+          "contentIndex": 0,
+          "delta": "More."
+        },
+        {
+          "type": "toolcall_delta",
+          "contentIndex": 1,
+          "delta": "\"a\"}"
+        },
+        {
+          "type": "text_end",
+          "contentIndex": 0,
+          "content": "Reading. More."
+        },
+        {
+          "type": "toolcall_end",
+          "contentIndex": 1,
+          "toolCall": {
+            "type": "toolCall",
+            "id": "call_1",
+            "name": "read",
+            "arguments": {
+              "path": "a"
+            }
+          }
+        },
+        {
+          "type": "done",
+          "reason": "toolUse"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "Reading. More."
+          },
+          {
+            "type": "toolCall",
+            "id": "call_1",
+            "name": "read",
+            "arguments": {
+              "path": "a"
+            }
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "toolUse",
+        "responseId": "chatcmpl-1",
+        "rawStopReason": "tool_calls"
+      }
+    },
+    {
+      "name": "parallel-tool-calls",
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"tool_calls\":[{\"index\":0,\"id\":\"call_1\",\"type\":\"function\",\"function\":{\"name\":\"read\",\"arguments\":\"{\\\"path\\\":\\\"a\\\"}\"}}]},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"tool_calls\":[{\"index\":1,\"id\":\"call_2\",\"type\":\"function\",\"function\":{\"name\":\"read\",\"arguments\":\"{\\\"pa\"}}]},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"tool_calls\":[{\"index\":1,\"function\":{\"arguments\":\"th\\\":\\\"b\\\"}\"}}]},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"tool_calls\"}]}\n\ndata: [DONE]\n\n",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "toolcall_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "toolcall_delta",
+          "contentIndex": 0,
+          "delta": "{\"path\":\"a\"}"
+        },
+        {
+          "type": "toolcall_start",
+          "contentIndex": 1
+        },
+        {
+          "type": "toolcall_delta",
+          "contentIndex": 1,
+          "delta": "{\"pa"
+        },
+        {
+          "type": "toolcall_delta",
+          "contentIndex": 1,
+          "delta": "th\":\"b\"}"
+        },
+        {
+          "type": "toolcall_end",
+          "contentIndex": 0,
+          "toolCall": {
+            "type": "toolCall",
+            "id": "call_1",
+            "name": "read",
+            "arguments": {
+              "path": "a"
+            }
+          }
+        },
+        {
+          "type": "toolcall_end",
+          "contentIndex": 1,
+          "toolCall": {
+            "type": "toolCall",
+            "id": "call_2",
+            "name": "read",
+            "arguments": {
+              "path": "b"
+            }
+          }
+        },
+        {
+          "type": "done",
+          "reason": "toolUse"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "toolCall",
+            "id": "call_1",
+            "name": "read",
+            "arguments": {
+              "path": "a"
+            }
+          },
+          {
+            "type": "toolCall",
+            "id": "call_2",
+            "name": "read",
+            "arguments": {
+              "path": "b"
+            }
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "toolUse",
+        "responseId": "chatcmpl-1",
+        "rawStopReason": "tool_calls"
+      }
+    },
+    {
+      "name": "tool-call-by-id",
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"tool_calls\":[{\"id\":\"call_1\",\"type\":\"function\",\"function\":{\"name\":\"read\",\"arguments\":\"{\\\"path\\\"\"}}]},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"tool_calls\":[{\"id\":\"call_1\",\"function\":{\"arguments\":\":\\\"a\\\"}\"}}]},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"tool_calls\"}]}\n\ndata: [DONE]\n\n",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "toolcall_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "toolcall_delta",
+          "contentIndex": 0,
+          "delta": "{\"path\""
+        },
+        {
+          "type": "toolcall_delta",
+          "contentIndex": 0,
+          "delta": ":\"a\"}"
+        },
+        {
+          "type": "toolcall_end",
+          "contentIndex": 0,
+          "toolCall": {
+            "type": "toolCall",
+            "id": "call_1",
+            "name": "read",
+            "arguments": {
+              "path": "a"
+            }
+          }
+        },
+        {
+          "type": "done",
+          "reason": "toolUse"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "toolCall",
+            "id": "call_1",
+            "name": "read",
+            "arguments": {
+              "path": "a"
+            }
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "toolUse",
+        "responseId": "chatcmpl-1",
+        "rawStopReason": "tool_calls"
+      }
+    },
+    {
+      "name": "tool-call-late-id-and-name",
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"tool_calls\":[{\"index\":0,\"function\":{\"arguments\":\"{\\\"path\\\":\"}}]},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"tool_calls\":[{\"index\":0,\"id\":\"call_9\",\"function\":{\"name\":\"read\",\"arguments\":\"\\\"a\\\"}\"}}]},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"tool_calls\"}]}\n\ndata: [DONE]\n\n",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "toolcall_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "toolcall_delta",
+          "contentIndex": 0,
+          "delta": "{\"path\":"
+        },
+        {
+          "type": "toolcall_delta",
+          "contentIndex": 0,
+          "delta": "\"a\"}"
+        },
+        {
+          "type": "toolcall_end",
+          "contentIndex": 0,
+          "toolCall": {
+            "type": "toolCall",
+            "id": "call_9",
+            "name": "read",
+            "arguments": {
+              "path": "a"
+            }
+          }
+        },
+        {
+          "type": "done",
+          "reason": "toolUse"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "toolCall",
+            "id": "call_9",
+            "name": "read",
+            "arguments": {
+              "path": "a"
+            }
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "toolUse",
+        "responseId": "chatcmpl-1",
+        "rawStopReason": "tool_calls"
+      }
+    },
+    {
+      "name": "tool-call-empty-arguments",
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"tool_calls\":[{\"index\":0,\"id\":\"call_1\",\"type\":\"function\",\"function\":{\"name\":\"now\"}}]},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"tool_calls\"}]}\n\ndata: [DONE]\n\n",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "toolcall_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "toolcall_delta",
+          "contentIndex": 0,
+          "delta": ""
+        },
+        {
+          "type": "toolcall_end",
+          "contentIndex": 0,
+          "toolCall": {
+            "type": "toolCall",
+            "id": "call_1",
+            "name": "now",
+            "arguments": {}
+          }
+        },
+        {
+          "type": "done",
+          "reason": "toolUse"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "toolCall",
+            "id": "call_1",
+            "name": "now",
+            "arguments": {}
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "toolUse",
+        "responseId": "chatcmpl-1",
+        "rawStopReason": "tool_calls"
+      }
+    },
+    {
+      "name": "tool-call-malformed-arguments",
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"tool_calls\":[{\"index\":0,\"id\":\"call_1\",\"function\":{\"name\":\"read\",\"arguments\":\"{\\\"path\\\": \"}}]},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"tool_calls\"}]}\n\ndata: [DONE]\n\n",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "toolcall_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "toolcall_delta",
+          "contentIndex": 0,
+          "delta": "{\"path\": "
+        },
+        {
+          "type": "toolcall_end",
+          "contentIndex": 0,
+          "toolCall": {
+            "type": "toolCall",
+            "id": "call_1",
+            "name": "read",
+            "arguments": {},
+            "argumentsError": "Unexpected end of JSON input\n\nReceived arguments:\n{\"path\": "
+          }
+        },
+        {
+          "type": "done",
+          "reason": "toolUse"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "toolCall",
+            "id": "call_1",
+            "name": "read",
+            "arguments": {},
+            "argumentsError": "Unexpected end of JSON input\n\nReceived arguments:\n{\"path\": "
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "toolUse",
+        "responseId": "chatcmpl-1",
+        "rawStopReason": "tool_calls"
+      }
+    },
+    {
+      "name": "grammar-tool-input",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096,
+        "compat": {
+          "supportsOpenAIGrammarTools": true
+        }
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are helpful.",
+            "toolsAdded": [
+              {
+                "name": "patch",
+                "description": "patch tool",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "patch": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "patch"
+                  ]
+                },
+                "constrainedSampling": {
+                  "type": "grammar",
+                  "variants": {
+                    "openai_lark": "start: WORD"
+                  }
+                }
+              }
+            ],
+            "timestamp": 0
+          },
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"tool_calls\":[{\"index\":0,\"id\":\"call_1\",\"type\":\"custom\",\"custom\":{\"name\":\"patch\"}}]},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"tool_calls\":[{\"index\":0,\"custom\":{\"input\":\"line \\\"1\\\"\\n\"}}]},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"tool_calls\":[{\"index\":0,\"custom\":{\"input\":\"line 2\"}}]},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"tool_calls\"}]}\n\ndata: [DONE]\n\n",
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "toolcall_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "toolcall_delta",
+          "contentIndex": 0,
+          "delta": ""
+        },
+        {
+          "type": "toolcall_delta",
+          "contentIndex": 0,
+          "delta": "{\"patch\":\"line \\\"1\\\"\\n"
+        },
+        {
+          "type": "toolcall_delta",
+          "contentIndex": 0,
+          "delta": "line 2"
+        },
+        {
+          "type": "toolcall_delta",
+          "contentIndex": 0,
+          "delta": "\"}"
+        },
+        {
+          "type": "toolcall_end",
+          "contentIndex": 0,
+          "toolCall": {
+            "type": "toolCall",
+            "id": "call_1",
+            "name": "patch",
+            "arguments": {
+              "patch": "line \"1\"\nline 2"
+            }
+          }
+        },
+        {
+          "type": "done",
+          "reason": "toolUse"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "toolCall",
+            "id": "call_1",
+            "name": "patch",
+            "arguments": {
+              "patch": "line \"1\"\nline 2"
+            }
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "toolUse",
+        "responseId": "chatcmpl-1",
+        "rawStopReason": "tool_calls"
+      }
+    },
+    {
+      "name": "grammar-tool-no-input",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096,
+        "compat": {
+          "supportsOpenAIGrammarTools": true
+        }
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are helpful.",
+            "toolsAdded": [
+              {
+                "name": "patch",
+                "description": "patch tool",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "patch": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "patch"
+                  ]
+                },
+                "constrainedSampling": {
+                  "type": "grammar",
+                  "variants": {
+                    "openai_lark": "start: WORD"
+                  }
+                }
+              }
+            ],
+            "timestamp": 0
+          },
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"tool_calls\":[{\"index\":0,\"id\":\"call_1\",\"type\":\"custom\",\"custom\":{\"name\":\"patch\"}}]},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"tool_calls\"}]}\n\ndata: [DONE]\n\n",
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "toolcall_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "toolcall_delta",
+          "contentIndex": 0,
+          "delta": ""
+        },
+        {
+          "type": "toolcall_delta",
+          "contentIndex": 0,
+          "delta": "{\"patch\":\"\"}"
+        },
+        {
+          "type": "toolcall_end",
+          "contentIndex": 0,
+          "toolCall": {
+            "type": "toolCall",
+            "id": "call_1",
+            "name": "patch",
+            "arguments": {
+              "patch": ""
+            }
+          }
+        },
+        {
+          "type": "done",
+          "reason": "toolUse"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "toolCall",
+            "id": "call_1",
+            "name": "patch",
+            "arguments": {
+              "patch": ""
+            }
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "toolUse",
+        "responseId": "chatcmpl-1",
+        "rawStopReason": "tool_calls"
+      }
+    },
+    {
+      "name": "grammar-tool-unknown-name",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096,
+        "compat": {
+          "supportsOpenAIGrammarTools": true
+        }
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are helpful.",
+            "toolsAdded": [
+              {
+                "name": "patch",
+                "description": "patch tool",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "patch": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "patch"
+                  ]
+                },
+                "constrainedSampling": {
+                  "type": "grammar",
+                  "variants": {
+                    "openai_lark": "start: WORD"
+                  }
+                }
+              }
+            ],
+            "timestamp": 0
+          },
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"tool_calls\":[{\"index\":0,\"id\":\"call_1\",\"type\":\"custom\",\"custom\":{\"name\":\"invented\",\"input\":\"x\"}}]},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"tool_calls\"}]}\n\ndata: [DONE]\n\n",
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "toolcall_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "toolcall_delta",
+          "contentIndex": 0,
+          "delta": "{\"input\":\"x"
+        },
+        {
+          "type": "toolcall_delta",
+          "contentIndex": 0,
+          "delta": "\"}"
+        },
+        {
+          "type": "toolcall_end",
+          "contentIndex": 0,
+          "toolCall": {
+            "type": "toolCall",
+            "id": "call_1",
+            "name": "invented",
+            "arguments": {
+              "input": "x"
+            }
+          }
+        },
+        {
+          "type": "done",
+          "reason": "toolUse"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "toolCall",
+            "id": "call_1",
+            "name": "invented",
+            "arguments": {
+              "input": "x"
+            }
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "toolUse",
+        "responseId": "chatcmpl-1",
+        "rawStopReason": "tool_calls"
+      }
+    },
+    {
+      "name": "grammar-tool-json-to-custom-switch",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096,
+        "compat": {
+          "supportsOpenAIGrammarTools": true
+        }
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are helpful.",
+            "toolsAdded": [
+              {
+                "name": "patch",
+                "description": "patch tool",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "patch": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "patch"
+                  ]
+                },
+                "constrainedSampling": {
+                  "type": "grammar",
+                  "variants": {
+                    "openai_lark": "start: WORD"
+                  }
+                }
+              }
+            ],
+            "timestamp": 0
+          },
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"tool_calls\":[{\"index\":0,\"id\":\"call_1\"}]},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"tool_calls\":[{\"index\":0,\"custom\":{\"name\":\"patch\",\"input\":\"abc\"}}]},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"tool_calls\"}]}\n\ndata: [DONE]\n\n",
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "toolcall_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "toolcall_delta",
+          "contentIndex": 0,
+          "delta": ""
+        },
+        {
+          "type": "toolcall_delta",
+          "contentIndex": 0,
+          "delta": "{\"patch\":\"abc"
+        },
+        {
+          "type": "toolcall_delta",
+          "contentIndex": 0,
+          "delta": "\"}"
+        },
+        {
+          "type": "toolcall_end",
+          "contentIndex": 0,
+          "toolCall": {
+            "type": "toolCall",
+            "id": "call_1",
+            "name": "patch",
+            "arguments": {
+              "patch": "abc"
+            }
+          }
+        },
+        {
+          "type": "done",
+          "reason": "toolUse"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "toolCall",
+            "id": "call_1",
+            "name": "patch",
+            "arguments": {
+              "patch": "abc"
+            }
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "toolUse",
+        "responseId": "chatcmpl-1",
+        "rawStopReason": "tool_calls"
+      }
+    },
+    {
+      "name": "grammar-tool-error-mid-input",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096,
+        "compat": {
+          "supportsOpenAIGrammarTools": true
+        }
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are helpful.",
+            "toolsAdded": [
+              {
+                "name": "patch",
+                "description": "patch tool",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "patch": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "patch"
+                  ]
+                },
+                "constrainedSampling": {
+                  "type": "grammar",
+                  "variants": {
+                    "openai_lark": "start: WORD"
+                  }
+                }
+              }
+            ],
+            "timestamp": 0
+          },
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"tool_calls\":[{\"index\":0,\"id\":\"call_1\",\"type\":\"custom\",\"custom\":{\"name\":\"patch\",\"input\":\"ab\"}}]},\"finish_reason\":null}]}\n\ndata: {\"error\":{\"message\":\"boom\"}}\n\n",
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "toolcall_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "toolcall_delta",
+          "contentIndex": 0,
+          "delta": "{\"patch\":\"ab"
+        },
+        {
+          "type": "error",
+          "reason": "error"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "toolCall",
+            "id": "call_1",
+            "name": "patch",
+            "arguments": {
+              "patch": "ab"
+            }
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "responseId": "chatcmpl-1",
+        "errorMessage": "boom"
+      }
+    },
+    {
+      "name": "usage-openai-cached",
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"hi\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[],\"usage\":{\"prompt_tokens\":100,\"completion_tokens\":20,\"prompt_tokens_details\":{\"cached_tokens\":60},\"completion_tokens_details\":{\"reasoning_tokens\":5}}}\n\ndata: [DONE]\n\n",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "text_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "text_delta",
+          "contentIndex": 0,
+          "delta": "hi"
+        },
+        {
+          "type": "text_end",
+          "contentIndex": 0,
+          "content": "hi"
+        },
+        {
+          "type": "done",
+          "reason": "stop"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "hi"
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 40,
+          "output": 20,
+          "cacheRead": 60,
+          "cacheWrite": 0,
+          "reasoning": 5,
+          "totalTokens": 120,
+          "cost": {
+            "input": 0.000039999999999999996,
+            "output": 0.000039999999999999996,
+            "cacheRead": 0.000029999999999999997,
+            "cacheWrite": 0,
+            "total": 0.00010999999999999999,
+            "totalFromProvider": false
+          }
+        },
+        "stopReason": "stop",
+        "responseId": "chatcmpl-1",
+        "rawStopReason": "stop"
+      }
+    },
+    {
+      "name": "usage-deepseek-cache-hit",
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"hi\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}],\"usage\":{\"prompt_tokens\":100,\"completion_tokens\":20,\"prompt_cache_hit_tokens\":30}}\n\ndata: [DONE]\n\n",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "text_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "text_delta",
+          "contentIndex": 0,
+          "delta": "hi"
+        },
+        {
+          "type": "text_end",
+          "contentIndex": 0,
+          "content": "hi"
+        },
+        {
+          "type": "done",
+          "reason": "stop"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "hi"
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 70,
+          "output": 20,
+          "cacheRead": 30,
+          "cacheWrite": 0,
+          "reasoning": 0,
+          "totalTokens": 120,
+          "cost": {
+            "input": 0.00007,
+            "output": 0.000039999999999999996,
+            "cacheRead": 0.000014999999999999999,
+            "cacheWrite": 0,
+            "total": 0.000125,
+            "totalFromProvider": false
+          }
+        },
+        "stopReason": "stop",
+        "responseId": "chatcmpl-1",
+        "rawStopReason": "stop"
+      }
+    },
+    {
+      "name": "usage-kimi-top-level-cached",
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"hi\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}],\"usage\":{\"prompt_tokens\":100,\"completion_tokens\":20,\"cached_tokens\":40}}\n\ndata: [DONE]\n\n",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "text_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "text_delta",
+          "contentIndex": 0,
+          "delta": "hi"
+        },
+        {
+          "type": "text_end",
+          "contentIndex": 0,
+          "content": "hi"
+        },
+        {
+          "type": "done",
+          "reason": "stop"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "hi"
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 60,
+          "output": 20,
+          "cacheRead": 40,
+          "cacheWrite": 0,
+          "reasoning": 0,
+          "totalTokens": 120,
+          "cost": {
+            "input": 0.000059999999999999995,
+            "output": 0.000039999999999999996,
+            "cacheRead": 0.000019999999999999998,
+            "cacheWrite": 0,
+            "total": 0.00011999999999999999,
+            "totalFromProvider": false
+          }
+        },
+        "stopReason": "stop",
+        "responseId": "chatcmpl-1",
+        "rawStopReason": "stop"
+      }
+    },
+    {
+      "name": "usage-cache-write",
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"hi\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}],\"usage\":{\"prompt_tokens\":100,\"completion_tokens\":20,\"prompt_tokens_details\":{\"cached_tokens\":10,\"cache_write_tokens\":200}}}\n\ndata: [DONE]\n\n",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "text_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "text_delta",
+          "contentIndex": 0,
+          "delta": "hi"
+        },
+        {
+          "type": "text_end",
+          "contentIndex": 0,
+          "content": "hi"
+        },
+        {
+          "type": "done",
+          "reason": "stop"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "hi"
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 20,
+          "cacheRead": 10,
+          "cacheWrite": 200,
+          "reasoning": 0,
+          "totalTokens": 230,
+          "cost": {
+            "input": 0,
+            "output": 0.000039999999999999996,
+            "cacheRead": 0.0000049999999999999996,
+            "cacheWrite": 0.0003,
+            "total": 0.000345,
+            "totalFromProvider": false
+          }
+        },
+        "stopReason": "stop",
+        "responseId": "chatcmpl-1",
+        "rawStopReason": "stop"
+      }
+    },
+    {
+      "name": "usage-null-cached-falls-through",
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"hi\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}],\"usage\":{\"prompt_tokens\":100,\"completion_tokens\":20,\"prompt_tokens_details\":{\"cached_tokens\":null},\"cached_tokens\":7}}\n\ndata: [DONE]\n\n",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "text_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "text_delta",
+          "contentIndex": 0,
+          "delta": "hi"
+        },
+        {
+          "type": "text_end",
+          "contentIndex": 0,
+          "content": "hi"
+        },
+        {
+          "type": "done",
+          "reason": "stop"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "hi"
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 93,
+          "output": 20,
+          "cacheRead": 7,
+          "cacheWrite": 0,
+          "reasoning": 0,
+          "totalTokens": 120,
+          "cost": {
+            "input": 0.000093,
+            "output": 0.000039999999999999996,
+            "cacheRead": 0.0000035,
+            "cacheWrite": 0,
+            "total": 0.00013649999999999998,
+            "totalFromProvider": false
+          }
+        },
+        "stopReason": "stop",
+        "responseId": "chatcmpl-1",
+        "rawStopReason": "stop"
+      }
+    },
+    {
+      "name": "usage-moonshot-choice",
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"hi\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\",\"usage\":{\"prompt_tokens\":50,\"completion_tokens\":5}}]}\n\ndata: [DONE]\n\n",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "text_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "text_delta",
+          "contentIndex": 0,
+          "delta": "hi"
+        },
+        {
+          "type": "text_end",
+          "contentIndex": 0,
+          "content": "hi"
+        },
+        {
+          "type": "done",
+          "reason": "stop"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "hi"
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 50,
+          "output": 5,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "reasoning": 0,
+          "totalTokens": 55,
+          "cost": {
+            "input": 0.000049999999999999996,
+            "output": 0.000009999999999999999,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0.000059999999999999995,
+            "totalFromProvider": false
+          }
+        },
+        "stopReason": "stop",
+        "responseId": "chatcmpl-1",
+        "rawStopReason": "stop"
+      }
+    },
+    {
+      "name": "openrouter-billed-cost",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openrouter",
+        "baseUrl": "https://openrouter.ai/api/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"hi\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[],\"usage\":{\"prompt_tokens\":100,\"completion_tokens\":20,\"total_tokens\":120,\"cost\":0.0042,\"is_byok\":false}}\n\ndata: [DONE]\n\n",
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "text_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "text_delta",
+          "contentIndex": 0,
+          "delta": "hi"
+        },
+        {
+          "type": "text_end",
+          "contentIndex": 0,
+          "content": "hi"
+        },
+        {
+          "type": "done",
+          "reason": "stop"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "hi"
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openrouter",
+        "model": "m",
+        "usage": {
+          "input": 100,
+          "output": 20,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "reasoning": 0,
+          "totalTokens": 120,
+          "cost": {
+            "input": 0.00009999999999999999,
+            "output": 0.000039999999999999996,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0.0042,
+            "totalFromProvider": true
+          }
+        },
+        "stopReason": "stop",
+        "responseId": "chatcmpl-1",
+        "rawStopReason": "stop"
+      }
+    },
+    {
+      "name": "openrouter-byok-cost",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openrouter",
+        "baseUrl": "https://openrouter.ai/api/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"hi\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[],\"usage\":{\"prompt_tokens\":100,\"completion_tokens\":20,\"total_tokens\":120,\"cost\":0.0001,\"is_byok\":true,\"cost_details\":{\"upstream_inference_cost\":0.003}}}\n\ndata: [DONE]\n\n",
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "text_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "text_delta",
+          "contentIndex": 0,
+          "delta": "hi"
+        },
+        {
+          "type": "text_end",
+          "contentIndex": 0,
+          "content": "hi"
+        },
+        {
+          "type": "done",
+          "reason": "stop"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "hi"
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openrouter",
+        "model": "m",
+        "usage": {
+          "input": 100,
+          "output": 20,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "reasoning": 0,
+          "totalTokens": 120,
+          "cost": {
+            "input": 0.00009999999999999999,
+            "output": 0.000039999999999999996,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0.0031,
+            "totalFromProvider": true
+          }
+        },
+        "stopReason": "stop",
+        "responseId": "chatcmpl-1",
+        "rawStopReason": "stop"
+      }
+    },
+    {
+      "name": "billed-cost-ignored-off-openrouter",
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"hi\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[],\"usage\":{\"prompt_tokens\":100,\"completion_tokens\":20,\"total_tokens\":120,\"cost\":0.0042,\"is_byok\":false}}\n\ndata: [DONE]\n\n",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "text_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "text_delta",
+          "contentIndex": 0,
+          "delta": "hi"
+        },
+        {
+          "type": "text_end",
+          "contentIndex": 0,
+          "content": "hi"
+        },
+        {
+          "type": "done",
+          "reason": "stop"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "hi"
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 100,
+          "output": 20,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "reasoning": 0,
+          "totalTokens": 120,
+          "cost": {
+            "input": 0.00009999999999999999,
+            "output": 0.000039999999999999996,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0.00014,
+            "totalFromProvider": false
+          }
+        },
+        "stopReason": "stop",
+        "responseId": "chatcmpl-1",
+        "rawStopReason": "stop"
+      }
+    },
+    {
+      "name": "response-model-differs",
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m-2026\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"hi\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m-other\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"!\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}]}\n\ndata: [DONE]\n\n",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "text_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "text_delta",
+          "contentIndex": 0,
+          "delta": "hi"
+        },
+        {
+          "type": "text_delta",
+          "contentIndex": 0,
+          "delta": "!"
+        },
+        {
+          "type": "text_end",
+          "contentIndex": 0,
+          "content": "hi!"
+        },
+        {
+          "type": "done",
+          "reason": "stop"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "hi!"
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "stop",
+        "responseId": "chatcmpl-1",
+        "responseModel": "m-2026",
+        "rawStopReason": "stop"
+      }
+    },
+    {
+      "name": "response-id-later-chunk",
+      "sse": "data: {\"id\":\"\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"hi\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"late\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"!\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}]}\n\ndata: [DONE]\n\n",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "text_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "text_delta",
+          "contentIndex": 0,
+          "delta": "hi"
+        },
+        {
+          "type": "text_delta",
+          "contentIndex": 0,
+          "delta": "!"
+        },
+        {
+          "type": "text_end",
+          "contentIndex": 0,
+          "content": "hi!"
+        },
+        {
+          "type": "done",
+          "reason": "stop"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "hi!"
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "stop",
+        "responseId": "late",
+        "rawStopReason": "stop"
+      }
+    },
+    {
+      "name": "finish-end",
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"hi\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"end\"}]}\n\ndata: [DONE]\n\n",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "text_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "text_delta",
+          "contentIndex": 0,
+          "delta": "hi"
+        },
+        {
+          "type": "text_end",
+          "contentIndex": 0,
+          "content": "hi"
+        },
+        {
+          "type": "done",
+          "reason": "stop"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "hi"
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "stop",
+        "responseId": "chatcmpl-1",
+        "rawStopReason": "end"
+      }
+    },
+    {
+      "name": "finish-length",
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"hi\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"length\"}]}\n\ndata: [DONE]\n\n",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "text_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "text_delta",
+          "contentIndex": 0,
+          "delta": "hi"
+        },
+        {
+          "type": "text_end",
+          "contentIndex": 0,
+          "content": "hi"
+        },
+        {
+          "type": "done",
+          "reason": "length"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "hi"
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "length",
+        "responseId": "chatcmpl-1",
+        "rawStopReason": "length"
+      }
+    },
+    {
+      "name": "finish-function-call",
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"tool_calls\":[{\"index\":0,\"id\":\"call_1\",\"function\":{\"name\":\"read\",\"arguments\":\"{}\"}}]},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"function_call\"}]}\n\ndata: [DONE]\n\n",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "toolcall_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "toolcall_delta",
+          "contentIndex": 0,
+          "delta": "{}"
+        },
+        {
+          "type": "toolcall_end",
+          "contentIndex": 0,
+          "toolCall": {
+            "type": "toolCall",
+            "id": "call_1",
+            "name": "read",
+            "arguments": {}
+          }
+        },
+        {
+          "type": "done",
+          "reason": "toolUse"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "toolCall",
+            "id": "call_1",
+            "name": "read",
+            "arguments": {}
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "toolUse",
+        "responseId": "chatcmpl-1",
+        "rawStopReason": "function_call"
+      }
+    },
+    {
+      "name": "finish-content-filter",
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"hi\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"content_filter\"}]}\n\ndata: [DONE]\n\n",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "text_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "text_delta",
+          "contentIndex": 0,
+          "delta": "hi"
+        },
+        {
+          "type": "text_end",
+          "contentIndex": 0,
+          "content": "hi"
+        },
+        {
+          "type": "error",
+          "reason": "error"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "hi"
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "responseId": "chatcmpl-1",
+        "rawStopReason": "content_filter",
+        "errorMessage": "Provider finish_reason: content_filter"
+      }
+    },
+    {
+      "name": "finish-network-error",
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"hi\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"network_error\"}]}\n\ndata: [DONE]\n\n",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "text_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "text_delta",
+          "contentIndex": 0,
+          "delta": "hi"
+        },
+        {
+          "type": "text_end",
+          "contentIndex": 0,
+          "content": "hi"
+        },
+        {
+          "type": "error",
+          "reason": "error"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "hi"
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "responseId": "chatcmpl-1",
+        "rawStopReason": "network_error",
+        "errorMessage": "Provider finish_reason: network_error"
+      }
+    },
+    {
+      "name": "finish-unknown",
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"hi\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"weird\"}]}\n\ndata: [DONE]\n\n",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "text_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "text_delta",
+          "contentIndex": 0,
+          "delta": "hi"
+        },
+        {
+          "type": "text_end",
+          "contentIndex": 0,
+          "content": "hi"
+        },
+        {
+          "type": "error",
+          "reason": "error"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "hi"
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "responseId": "chatcmpl-1",
+        "rawStopReason": "weird",
+        "errorMessage": "Provider finish_reason: weird"
+      }
+    },
+    {
+      "name": "finish-missing",
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"hi\"},\"finish_reason\":null}]}\n\ndata: [DONE]\n\n",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "text_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "text_delta",
+          "contentIndex": 0,
+          "delta": "hi"
+        },
+        {
+          "type": "text_end",
+          "contentIndex": 0,
+          "content": "hi"
+        },
+        {
+          "type": "error",
+          "reason": "error"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "hi"
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "responseId": "chatcmpl-1",
+        "errorMessage": "Stream ended without finish_reason"
+      }
+    },
+    {
+      "name": "finish-unsupported-stop",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096,
+        "compat": {
+          "supportsFinishReason": false
+        }
+      },
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"hi\"},\"finish_reason\":null}]}\n\ndata: [DONE]\n\n",
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "text_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "text_delta",
+          "contentIndex": 0,
+          "delta": "hi"
+        },
+        {
+          "type": "text_end",
+          "contentIndex": 0,
+          "content": "hi"
+        },
+        {
+          "type": "done",
+          "reason": "stop"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "hi"
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "stop",
+        "responseId": "chatcmpl-1"
+      }
+    },
+    {
+      "name": "finish-unsupported-tool-use",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096,
+        "compat": {
+          "supportsFinishReason": false
+        }
+      },
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"tool_calls\":[{\"index\":0,\"id\":\"call_1\",\"function\":{\"name\":\"read\",\"arguments\":\"{}\"}}]},\"finish_reason\":null}]}\n\ndata: [DONE]\n\n",
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "toolcall_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "toolcall_delta",
+          "contentIndex": 0,
+          "delta": "{}"
+        },
+        {
+          "type": "toolcall_end",
+          "contentIndex": 0,
+          "toolCall": {
+            "type": "toolCall",
+            "id": "call_1",
+            "name": "read",
+            "arguments": {}
+          }
+        },
+        {
+          "type": "done",
+          "reason": "toolUse"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "toolCall",
+            "id": "call_1",
+            "name": "read",
+            "arguments": {}
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "toolUse",
+        "responseId": "chatcmpl-1"
+      }
+    },
+    {
+      "name": "events-after-done-ignored",
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"hi\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}]}\n\ndata: [DONE]\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"late\"},\"finish_reason\":null}]}\n\n",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "text_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "text_delta",
+          "contentIndex": 0,
+          "delta": "hi"
+        },
+        {
+          "type": "text_end",
+          "contentIndex": 0,
+          "content": "hi"
+        },
+        {
+          "type": "done",
+          "reason": "stop"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "hi"
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "stop",
+        "responseId": "chatcmpl-1",
+        "rawStopReason": "stop"
+      }
+    },
+    {
+      "name": "no-done-sentinel",
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"hi\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}]}\n\n",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "text_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "text_delta",
+          "contentIndex": 0,
+          "delta": "hi"
+        },
+        {
+          "type": "text_end",
+          "contentIndex": 0,
+          "content": "hi"
+        },
+        {
+          "type": "done",
+          "reason": "stop"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "hi"
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "stop",
+        "responseId": "chatcmpl-1",
+        "rawStopReason": "stop"
+      }
+    },
+    {
+      "name": "trailing-record-without-blank-line",
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"hi\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}]}",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "text_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "text_delta",
+          "contentIndex": 0,
+          "delta": "hi"
+        },
+        {
+          "type": "text_end",
+          "contentIndex": 0,
+          "content": "hi"
+        },
+        {
+          "type": "done",
+          "reason": "stop"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "hi"
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "stop",
+        "responseId": "chatcmpl-1",
+        "rawStopReason": "stop"
+      }
+    },
+    {
+      "name": "malformed-json-chunk",
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"hi\"},\"finish_reason\":null}]}\n\ndata: {not json\n\n",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "text_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "text_delta",
+          "contentIndex": 0,
+          "delta": "hi"
+        },
+        {
+          "type": "error",
+          "reason": "error"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "hi"
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "responseId": "chatcmpl-1",
+        "errorMessage": "Error reading response: malformed server-sent event JSON."
+      }
+    },
+    {
+      "name": "stream-error-object",
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"partial\"},\"finish_reason\":null}]}\n\ndata: {\"error\":{\"message\":\"Upstream failed\",\"code\":502,\"metadata\":{\"raw\":\"provider said no\"}}}\n\n",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "text_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "text_delta",
+          "contentIndex": 0,
+          "delta": "partial"
+        },
+        {
+          "type": "error",
+          "reason": "error"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "partial"
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "responseId": "chatcmpl-1",
+        "errorMessage": "Upstream failed\nprovider said no"
+      }
+    },
+    {
+      "name": "stream-error-event",
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"reasoning_content\":\"hm\"},\"finish_reason\":null}]}\n\nevent: error\ndata: {\"error\":{\"type\":\"server_error\",\"message\":\"Overloaded\"}}\n\n",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "thinking_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "thinking_delta",
+          "contentIndex": 0,
+          "delta": "hm"
+        },
+        {
+          "type": "error",
+          "reason": "error"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "thinking",
+            "thinking": "hm",
+            "thinkingSignature": "reasoning_content"
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "responseId": "chatcmpl-1",
+        "errorMessage": "Overloaded"
+      }
+    },
+    {
+      "name": "stream-error-thinking-details",
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"reasoning_details\":[{\"type\":\"reasoning.encrypted\",\"data\":\"enc\",\"id\":\"e1\"}]},\"finish_reason\":null}]}\n\ndata: {\"error\":{\"message\":\"boom\"}}\n\n",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "thinking_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "error",
+          "reason": "error"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "thinking",
+            "thinking": "",
+            "thinkingSignature": "[{\"type\":\"reasoning.encrypted\",\"data\":\"enc\",\"id\":\"e1\"}]"
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "responseId": "chatcmpl-1",
+        "errorMessage": "boom"
+      }
+    },
+    {
+      "name": "chunk-not-object-skipped",
+      "sse": "data: [1,2]\n\ndata: \"text\"\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"hi\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}]}\n\ndata: [DONE]\n\n",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "text_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "text_delta",
+          "contentIndex": 0,
+          "delta": "hi"
+        },
+        {
+          "type": "text_end",
+          "contentIndex": 0,
+          "content": "hi"
+        },
+        {
+          "type": "done",
+          "reason": "stop"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "hi"
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "stop",
+        "responseId": "chatcmpl-1",
+        "rawStopReason": "stop"
+      }
+    },
+    {
+      "name": "chunk-without-choices",
+      "sse": "data: {\"id\":\"c\"}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"hi\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}]}\n\ndata: [DONE]\n\n",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "text_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "text_delta",
+          "contentIndex": 0,
+          "delta": "hi"
+        },
+        {
+          "type": "text_end",
+          "contentIndex": 0,
+          "content": "hi"
+        },
+        {
+          "type": "done",
+          "reason": "stop"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "hi"
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "stop",
+        "responseId": "c",
+        "rawStopReason": "stop"
+      }
+    },
+    {
+      "name": "http-400-json",
+      "status": 400,
+      "body": "{\"error\":{\"message\":\"Invalid request\",\"type\":\"invalid_request_error\",\"param\":null,\"code\":null}}",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "error",
+          "reason": "error"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "errorMessage": "400: {\"message\":\"Invalid request\",\"type\":\"invalid_request_error\",\"param\":null,\"code\":null}"
+      }
+    },
+    {
+      "name": "http-401-message-only",
+      "status": 401,
+      "body": "{\"error\":{\"message\":\"Incorrect API key\"}}",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "error",
+          "reason": "error"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "errorMessage": "401: {\"message\":\"Incorrect API key\"}"
+      }
+    },
+    {
+      "name": "http-429-openrouter-raw",
+      "status": 429,
+      "body": "{\"error\":{\"message\":\"Rate limited\",\"code\":429,\"metadata\":{\"raw\":\"upstream \\\"quota\\\" hit\"}}}",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "error",
+          "reason": "error"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "errorMessage": "429: {\"message\":\"Rate limited\",\"code\":429,\"metadata\":{\"raw\":\"upstream \\\"quota\\\" hit\"}}\nupstream \"quota\" hit"
+      }
+    },
+    {
+      "name": "http-500-error-string",
+      "status": 500,
+      "body": "{\"error\":\"internal\"}",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "error",
+          "reason": "error"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "errorMessage": "500 \"internal\""
+      }
+    },
+    {
+      "name": "http-502-no-error-field",
+      "status": 502,
+      "body": "{\"message\":\"bad gateway\"}",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "error",
+          "reason": "error"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "errorMessage": "502: {\"message\":\"bad gateway\"}"
+      }
+    },
+    {
+      "name": "http-503-text",
+      "status": 503,
+      "body": "Service Unavailable",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "error",
+          "reason": "error"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "errorMessage": "503 Service Unavailable"
+      }
+    },
+    {
+      "name": "http-504-empty",
+      "status": 504,
+      "body": "",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "error",
+          "reason": "error"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "errorMessage": "504 status code (no body)"
+      }
+    },
+    {
+      "name": "simple-reasoning",
+      "simple": true,
+      "options": {
+        "reasoning": "high"
+      },
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"reasoning_content\":\"t\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"a\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}]}\n\ndata: [DONE]\n\n",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "thinking_start",
+          "contentIndex": 0
+        },
+        {
+          "type": "thinking_delta",
+          "contentIndex": 0,
+          "delta": "t"
+        },
+        {
+          "type": "text_start",
+          "contentIndex": 1
+        },
+        {
+          "type": "text_delta",
+          "contentIndex": 1,
+          "delta": "a"
+        },
+        {
+          "type": "thinking_end",
+          "contentIndex": 0,
+          "content": "t"
+        },
+        {
+          "type": "text_end",
+          "contentIndex": 1,
+          "content": "a"
+        },
+        {
+          "type": "done",
+          "reason": "stop"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "thinking",
+            "thinking": "t",
+            "thinkingSignature": "reasoning_content"
+          },
+          {
+            "type": "text",
+            "text": "a"
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "stop",
+        "responseId": "chatcmpl-1",
+        "rawStopReason": "stop"
+      }
+    },
+    {
+      "name": "abort-before-request",
+      "abort": "before",
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"hi\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}]}\n\ndata: [DONE]\n\n",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "error",
+          "reason": "aborted"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "aborted",
+        "errorMessage": "Request aborted"
+      }
+    },
+    {
+      "name": "abort-on-response",
+      "abort": "on-response",
+      "sse": "data: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"hi\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"chatcmpl-1\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}]}\n\ndata: [DONE]\n\n",
+      "model": {
+        "id": "m",
+        "name": "M",
+        "api": "openai-completions",
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1",
+        "input": [
+          "text"
+        ],
+        "cost": {
+          "input": 1,
+          "output": 2,
+          "cacheRead": 0.5,
+          "cacheWrite": 1.5
+        },
+        "reasoning": true,
+        "contextWindow": 128000,
+        "maxTokens": 4096
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hi",
+            "timestamp": 0
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "start"
+        },
+        {
+          "type": "error",
+          "reason": "aborted"
+        }
+      ],
+      "message": {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "openai",
+        "model": "m",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "aborted",
+        "errorMessage": "Request was aborted"
+      }
+    }
+  ]
+}

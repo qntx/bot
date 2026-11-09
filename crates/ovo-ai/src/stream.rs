@@ -514,12 +514,14 @@ mod prop_tests {
     clippy::excessive_nesting,
     reason = "test code asserts freely"
 )]
-mod violation_tests {
+mod sender_tests {
     use futures::StreamExt;
     use serde_json::json;
 
     use crate::stream::*;
-    use crate::types::content::StopReason;
+    use crate::types::content::{
+        AssistantContentBlock, StopReason, TextContent, ThinkingContent, ToolCall,
+    };
     use crate::types::message::AssistantMessage;
 
     fn base() -> AssistantMessage {
@@ -591,6 +593,97 @@ mod violation_tests {
             assert!(saw_error);
             drop(tx);
             assert_eq!(stream.result().await.stop_reason, StopReason::Error);
+        });
+    }
+
+    /// `patch` sets an open block's fields without an event; they survive an
+    /// `error` terminal.
+    #[test]
+    fn patch_sets_open_block_fields() {
+        futures::executor::block_on(async {
+            let (mut tx, mut stream) = AssistantStream::channel(base(), 16);
+            tx.start().await.ok();
+            let index = tx.thinking_start().await.unwrap_or_default();
+            tx.thinking_delta(index, "hm").await.ok();
+            let block = ThinkingContent {
+                thinking: String::from("hm"),
+                thinking_signature: Some(String::from("reasoning_content")),
+                redacted: None,
+            };
+            tx.patch(index, AssistantContentBlock::Thinking(block.clone()))
+                .await
+                .ok();
+            tx.error(ErrorReason::Error, String::from("boom"))
+                .await
+                .ok();
+            let events: Vec<_> = stream.by_ref().collect().await;
+            assert_eq!(events.len(), 4, "{events:?}");
+            let message = stream.result().await;
+            assert_eq!(
+                message.content,
+                vec![AssistantContentBlock::Thinking(block)]
+            );
+        });
+    }
+
+    /// Patching a tool call restarts its argument fold from the patched
+    /// arguments.
+    #[test]
+    fn patch_reseeds_tool_call_arguments() {
+        futures::executor::block_on(async {
+            let (mut tx, mut stream) = AssistantStream::channel(base(), 16);
+            tx.start().await.ok();
+            let mut call = ToolCall {
+                id: String::from("c1"),
+                name: String::from("read"),
+                arguments: serde_json::Map::new(),
+                thought_signature: None,
+                namespace: None,
+                arguments_error: None,
+            };
+            let index = tx.toolcall_start(call.clone()).await.unwrap_or_default();
+            tx.toolcall_delta(index, r#"{"stale":"#).await.ok();
+            call.name = String::from("grep");
+            tx.patch(index, AssistantContentBlock::ToolCall(call))
+                .await
+                .ok();
+            tx.toolcall_delta(index, r#"{"a":1}"#).await.ok();
+            tx.toolcall_end(index).await.ok();
+            tx.done(DoneReason::ToolUse).await.ok();
+            while stream.next().await.is_some() {}
+            let message = stream.result().await;
+            let Some(AssistantContentBlock::ToolCall(ended)) = message.content.first() else {
+                panic!("no tool call: {:?}", message.content);
+            };
+            assert_eq!(ended.name, "grep");
+            assert_eq!(
+                serde_json::Value::Object(ended.arguments.clone()),
+                json!({ "a": 1 })
+            );
+        });
+    }
+
+    /// Patching a closed block is a protocol violation.
+    #[test]
+    fn patch_of_closed_block_terminates_with_error() {
+        futures::executor::block_on(async {
+            let (mut tx, mut stream) = AssistantStream::channel(base(), 16);
+            tx.skip_violation_asserts();
+            tx.start().await.ok();
+            let index = tx.text_start().await.unwrap_or_default();
+            let block = TextContent {
+                text: String::new(),
+                text_signature: None,
+            };
+            tx.text_end(index, block.clone()).await.ok();
+            tx.patch(index, AssistantContentBlock::Text(block))
+                .await
+                .ok();
+            tx.done(DoneReason::Stop).await.ok();
+            while stream.next().await.is_some() {}
+            let message = stream.result().await;
+            assert_eq!(message.stop_reason, StopReason::Error);
+            assert!(message.error_message.unwrap_or_default().contains("patch"));
         });
     }
 }

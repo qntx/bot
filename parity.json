@@ -178,7 +178,10 @@
     },
     {
       "id": "AI-API-ANTHROPIC",
-      "upstream": ["packages/ai/src/api/anthropic-messages.ts"],
+      "upstream": [
+        "packages/ai/src/api/anthropic-messages.ts",
+        "packages/ai/src/utils/openrouter-cost.ts"
+      ],
       "vectors": ["vectors/ai/anthropic-request.json", "vectors/ai/anthropic-stream.json"],
       "rust": ["crates/ovo-ai/tests/it/anthropic.rs", "crates/ovo-ai/tests/it/anthropic_stream.rs"],
       "classes": ["sdk-headers", "key-order", "wall-clock"]
@@ -188,6 +191,13 @@
       "upstream": ["packages/ai/src/api/constrained-sampling.ts"],
       "vectors": ["vectors/ai/constrained-sampling.json"],
       "rust": ["crates/ovo-ai/tests/it/constrained_sampling.rs"],
+      "classes": []
+    },
+    {
+      "id": "AI-OPENROUTER-COST",
+      "upstream": ["packages/ai/src/utils/openrouter-cost.ts"],
+      "vectors": ["vectors/ai/openrouter-cost.json"],
+      "rust": ["crates/ovo-ai/tests/it/ai_utils.rs"],
       "classes": []
     },
     {
@@ -208,6 +218,18 @@
       "vectors": ["vectors/ai/openai-completions-request.json"],
       "rust": ["crates/ovo-ai/tests/it/openai_completions.rs"],
       "classes": ["sdk-headers"]
+    },
+    {
+      "id": "AI-API-OPENAI-COMPLETIONS-STREAM",
+      "upstream": [
+        "packages/ai/src/api/openai-completions.ts",
+        "packages/ai/src/utils/openrouter-cost.ts",
+        "packages/ai/src/utils/error-body.ts",
+        "packages/ai/src/utils/provider-retry.ts"
+      ],
+      "vectors": ["vectors/ai/openai-completions-stream.json"],
+      "rust": ["crates/ovo-ai/tests/it/openai_completions_stream.rs"],
+      "classes": ["engine-error-text", "wall-clock"]
     }
   ],
   "classes": {

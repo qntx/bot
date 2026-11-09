@@ -17,6 +17,18 @@ pub(crate) struct FoldToolCall {
     pub(crate) stream: ToolCallArgumentsStream,
 }
 
+impl FoldToolCall {
+    /// A fold for `call` whose parser already holds its initial arguments.
+    fn seeded(call: ToolCall) -> Result<Self, StreamClosed> {
+        let mut stream = ToolCallArgumentsStream::new();
+        let initial = crate::json::to_string(&call.arguments).map_err(|_| StreamClosed)?;
+        if initial != "{}" {
+            stream.append(&initial);
+        }
+        Ok(Self { call, stream })
+    }
+}
+
 #[derive(Debug)]
 /// A field mutation of the live message (no wire event).
 pub enum Metadata {
@@ -258,13 +270,31 @@ impl AssistantStreamSender {
         let index = self.block_start(BlockKind::ToolCall).await?;
         self.patch_block(index, AssistantContentBlock::ToolCall(call.clone()))
             .await?;
-        let mut stream = ToolCallArgumentsStream::new();
-        let initial = crate::json::to_string(&call.arguments).map_err(|_| StreamClosed)?;
-        if initial != "{}" {
-            stream.append(&initial);
-        }
-        self.tool_calls.insert(index, FoldToolCall { call, stream });
+        self.tool_calls.insert(index, FoldToolCall::seeded(call)?);
         Ok(index)
+    }
+
+    /// Set the authoritative fields of the open block at `index` without a
+    /// wire event, like upstream assigning to a live `output` block. A tool
+    /// call's argument fold restarts from the patched arguments.
+    /// # Errors
+    /// Returns `Err(StreamClosed)` when the consumer is gone.
+    pub async fn patch(
+        &mut self,
+        index: usize,
+        block: AssistantContentBlock,
+    ) -> Result<(), StreamClosed> {
+        let kind = match &block {
+            AssistantContentBlock::Text(_) => BlockKind::Text,
+            AssistantContentBlock::Thinking(_) => BlockKind::Thinking,
+            AssistantContentBlock::ToolCall(_) => BlockKind::ToolCall,
+        };
+        self.check(self.is_open(index, kind), "patch for a non-open block");
+        if let AssistantContentBlock::ToolCall(call) = &block {
+            self.tool_calls
+                .insert(index, FoldToolCall::seeded(call.clone())?);
+        }
+        self.patch_block(index, block).await
     }
 
     /// Append argument text to the open tool call at `index`.
@@ -283,6 +313,40 @@ impl AssistantStreamSender {
             delta: delta.to_owned(),
         })
         .await
+    }
+
+    /// Set the id and name of the open tool call at `index`, keeping the
+    /// arguments streamed so far (upstream assigning `block.id`/`block.name`).
+    /// # Errors
+    /// Returns `Err(StreamClosed)` when the consumer is gone.
+    pub async fn toolcall_identity(
+        &mut self,
+        index: usize,
+        id: &str,
+        name: &str,
+    ) -> Result<(), StreamClosed> {
+        self.check(
+            self.is_open(index, BlockKind::ToolCall),
+            "toolcall_identity for a non-open tool call",
+        );
+        let Some(open) = self.tool_calls.get_mut(&index) else {
+            return Ok(());
+        };
+        id.clone_into(&mut open.call.id);
+        name.clone_into(&mut open.call.name);
+        let call = ToolCall {
+            arguments: serde_json::Map::new(),
+            ..open.call.clone()
+        };
+        let text = open.stream.text().to_owned();
+        // The patch empties the consumer's fold; the reset replays the
+        // argument text streamed so far into it.
+        self.patch_block(index, AssistantContentBlock::ToolCall(call))
+            .await?;
+        self.sender
+            .send(Item::ToolcallReset { index, text })
+            .await
+            .map_err(|_| StreamClosed)
     }
 
     /// Send authoritative block fields (no wire event); the consumer folds
