@@ -9,6 +9,7 @@
 //! model catalogs) goes through, so the emitted bytes match `JSON.stringify`
 //! exactly.
 
+pub mod api;
 pub mod auth;
 pub mod cost;
 pub mod estimate;

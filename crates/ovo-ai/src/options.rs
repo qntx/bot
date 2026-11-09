@@ -108,6 +108,8 @@ pub enum Transport {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum CacheRetention {
+    /// `none`.
+    None,
     /// `short`.
     Short,
     /// `long`.

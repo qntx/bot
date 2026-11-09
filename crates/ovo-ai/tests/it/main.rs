@@ -22,6 +22,7 @@
 )]
 
 mod ai_utils;
+pub mod anthropic;
 mod auth;
 mod http_client;
 mod http_policy;
