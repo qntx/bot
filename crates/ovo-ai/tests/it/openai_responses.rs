@@ -23,6 +23,34 @@ fn vectors() -> Vec<Value> {
 const ENGINE_ERRORS: [&str; 1] = ["assistant-thinking-invalid-signature"];
 
 /// parity: AI-API-OPENAI-RESPONSES
+/// `payloadPatch`/`payloadUndefined` — the deterministic `onPayload`
+/// the vectors' generator applies before the request is sent.
+fn patched_body(
+    case: &Value,
+    params: &serde_json::Map<String, Value>,
+    body: &[u8],
+    merge_stream: bool,
+) -> Vec<u8> {
+    if case["payloadUndefined"].as_bool() == Some(true) || case["payloadPatch"].is_null() {
+        return body.to_vec();
+    }
+    let mut params = params.clone();
+    if let Some(keys) = case["payloadPatch"]["delete"].as_array() {
+        for key in keys {
+            params.remove(key.as_str().unwrap_or_default());
+        }
+    }
+    if let Some(set) = case["payloadPatch"]["set"].as_object() {
+        for (key, value) in set {
+            params.insert(key.clone(), value.clone());
+        }
+    }
+    if merge_stream {
+        params.insert("stream".into(), Value::Bool(true));
+    }
+    ovo_ai::json::to_vec(&Value::Object(params)).unwrap_or_else(|e| panic!("patched body: {e}"))
+}
+
 #[test]
 fn openai_responses_request() {
     for case in vectors() {
@@ -57,7 +85,7 @@ fn openai_responses_request() {
             "{name}: url"
         );
         assert_eq!(
-            String::from_utf8_lossy(&request.body),
+            String::from_utf8_lossy(&patched_body(&case, &request.params, &request.body, false)),
             case["request"]["body"].as_str().unwrap_or_default(),
             "{name}: body"
         );

@@ -1984,5 +1984,122 @@
 			},
 			"body": "{\"model\":\"claude-test\",\"messages\":[{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"simple\",\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"max_tokens\":8192,\"stream\":true,\"thinking\":{\"type\":\"adaptive\",\"display\":\"summarized\"},\"output_config\":{\"effort\":\"xhigh\"}}"
 		}
+	},
+	{
+		"name": "onPayload-patch",
+		"model": {
+			"id": "claude-test",
+			"name": "Test",
+			"api": "anthropic-messages",
+			"provider": "anthropic",
+			"baseUrl": "https://api.anthropic.com",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": true,
+			"contextWindow": 200000,
+			"maxTokens": 8192
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "user",
+					"content": "hello",
+					"timestamp": 0
+				}
+			],
+			"tools": []
+		},
+		"options": {
+			"apiKey": "sk-ant-api03-test",
+			"env": {},
+			"headers": {},
+			"identity": null,
+			"sessionId": null,
+			"signal": null,
+			"maxRetries": 0
+		},
+		"payloadPatch": {
+			"set": {
+				"x-ovo-probe": "anthropic"
+			},
+			"delete": [
+				"metadata"
+			]
+		},
+		"request": {
+			"url": "https://api.anthropic.com/v1/messages?beta=true",
+			"method": "POST",
+			"headers": {
+				"accept": "application/json",
+				"anthropic-dangerous-direct-browser-access": "true",
+				"anthropic-version": "2023-06-01",
+				"content-type": "application/json",
+				"x-api-key": "sk-ant-api03-test"
+			},
+			"body": "{\"model\":\"claude-test\",\"messages\":[{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"hello\",\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"max_tokens\":8192,\"stream\":true,\"x-ovo-probe\":\"anthropic\"}"
+		}
+	},
+	{
+		"name": "onPayload-undefined",
+		"model": {
+			"id": "claude-test",
+			"name": "Test",
+			"api": "anthropic-messages",
+			"provider": "anthropic",
+			"baseUrl": "https://api.anthropic.com",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": true,
+			"contextWindow": 200000,
+			"maxTokens": 8192
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "user",
+					"content": "hello",
+					"timestamp": 0
+				}
+			],
+			"tools": []
+		},
+		"options": {
+			"apiKey": "sk-ant-api03-test",
+			"env": {},
+			"headers": {},
+			"identity": null,
+			"sessionId": null,
+			"signal": null,
+			"maxRetries": 0
+		},
+		"payloadUndefined": true,
+		"request": {
+			"url": "https://api.anthropic.com/v1/messages?beta=true",
+			"method": "POST",
+			"headers": {
+				"accept": "application/json",
+				"anthropic-dangerous-direct-browser-access": "true",
+				"anthropic-version": "2023-06-01",
+				"content-type": "application/json",
+				"x-api-key": "sk-ant-api03-test"
+			},
+			"body": "{\"model\":\"claude-test\",\"messages\":[{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"hello\",\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"max_tokens\":8192,\"stream\":true}"
+		}
 	}
 ]

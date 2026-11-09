@@ -290,11 +290,15 @@ for (const testCase of CASES) {
   if (testCase.abort === "before") {
     controller.abort();
   }
+  const providerEvents: Array<Record<string, unknown>> = [];
   const stream = streamAnthropic(model, CONTEXT, {
     apiKey: "sk-ant-api03-test",
     maxRetries: 0,
     fetch,
     signal: controller.signal,
+    onProviderStreamEvent: (data: Record<string, unknown>) => {
+      providerEvents.push(data);
+    },
   });
   const events: Array<Record<string, unknown>> = [];
   // Cases run one at a time so each records only its own events.
@@ -304,7 +308,7 @@ for (const testCase of CASES) {
   }
   // oxlint-disable-next-line no-await-in-loop -- sequential by design
   const { timestamp: _timestamp, durationMs: _durationMs, ...message } = await stream.result();
-  results.push({ ...testCase, events, message });
+  results.push({ ...testCase, events, providerEvents, message });
 }
 
 const document = {

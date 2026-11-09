@@ -2,7 +2,6 @@
 //! (upstream `openai-responses-shared.ts`) over the `OpenAI` SDK's event
 //! iteration, and the adapter's `stream` (`openai-responses.ts`).
 //!
-//! Not yet ported: `onPayload` and `onProviderStreamEvent`.
 
 use std::collections::{BTreeMap, HashMap};
 use std::sync::Arc;
@@ -117,10 +116,18 @@ async fn run(
     }
     let base = &options.base;
     let request = build_request(model, context, options)?;
+    let body = crate::api::stream_support::on_payload_body(
+        base,
+        &Value::Object(request.params.clone()),
+        &request.body,
+        model,
+        crate::api::stream_support::PayloadMerge::Replace,
+    )
+    .await?;
     let sent = http
         .post_json(
             &request.url,
-            &Bytes::from(request.body),
+            &Bytes::from(body),
             &header_pairs(&request.headers),
             &request_policy(base),
             signal,
@@ -143,7 +150,7 @@ async fn run(
         &request.grammar_tool_input_properties,
         options.service_tier,
     );
-    process(&mut state, response, signal, sender).await?;
+    process(&mut state, response, signal, sender, base).await?;
     if signal.is_cancelled() {
         return Err(String::from("Request was aborted"));
     }
@@ -166,6 +173,7 @@ async fn process(
     response: reqwest::Response,
     signal: &CancellationToken,
     sender: &mut AssistantStreamSender,
+    base: &StreamOptions,
 ) -> Result<(), String> {
     let mut events = SseEventStream::new(response.bytes_stream(), EndOfStream::Flush);
     loop {
@@ -182,6 +190,7 @@ async fn process(
             SdkRecord::Skip => continue,
             SdkRecord::Data(event) => event,
         };
+        crate::api::stream_support::on_provider_stream_event(base, &event, state.model).await;
         state.apply(&event, sender).await?;
     }
     if !state.saw_terminal {

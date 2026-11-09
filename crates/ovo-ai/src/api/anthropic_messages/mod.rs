@@ -329,6 +329,9 @@ pub struct AnthropicRequest {
     pub headers: Map<String, Value>,
     /// The JSON body, byte-identical to upstream's `buildParams` output.
     pub body: Vec<u8>,
+    /// The request params before serialization — `onPayload` sees and
+    /// may replace these.
+    pub params: Map<String, Value>,
     /// Whether a strict tool is only strict because it prefers it, so a
     /// strict-limit rejection can be retried without strict mode.
     pub has_preferred_strict_tools: bool,
@@ -467,16 +470,39 @@ pub fn build_request(
     );
     insert_request_controls(&mut params, options, &compat);
 
-    let body = crate::json::to_vec(&Value::Object(params)).map_err(|error| error.to_string())?;
-    Ok(AnthropicRequest {
-        url: format!(
-            "{}/v1/messages?beta=true",
-            model.base_url.trim_end_matches('/')
-        ),
-        headers: request_headers(model, base, &betas.join(",")),
-        body,
+    assemble_request(
+        model,
+        base,
+        &betas.join(","),
+        params,
         has_preferred_strict_tools,
-        provider_thinking_level: effort_messages.then_some(active_effort),
+        effort_messages.then_some(active_effort),
+    )
+}
+
+/// Serialize `params` and finish the request — `url`/`headers`/`body`.
+fn assemble_request(
+    model: &Model,
+    base: &StreamOptions,
+    betas: &str,
+    params: Map<String, Value>,
+    has_preferred_strict_tools: bool,
+    provider_thinking_level: Option<String>,
+) -> Result<AnthropicRequest, String> {
+    let body =
+        crate::json::to_vec(&Value::Object(params.clone())).map_err(|error| error.to_string())?;
+    let url = format!(
+        "{}/v1/messages?beta=true",
+        model.base_url.trim_end_matches('/')
+    );
+    let headers = request_headers(model, base, betas);
+    Ok(AnthropicRequest {
+        url,
+        headers,
+        body,
+        params,
+        has_preferred_strict_tools,
+        provider_thinking_level,
     })
 }
 

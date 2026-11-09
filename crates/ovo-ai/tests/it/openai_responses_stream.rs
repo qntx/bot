@@ -120,7 +120,22 @@ async fn openai_responses_stream_replays_upstream_events() {
         let context: Context = serde_json::from_value(case["context"].clone())
             .unwrap_or_else(|e| panic!("{name}: context: {e}"));
         let context = normalize_context(&context);
-        let options = stream_options(case);
+        let mut options = stream_options(case);
+
+        let provider_events = Arc::new(std::sync::Mutex::new(Vec::<Value>::new()));
+        {
+            let captured = Arc::clone(&provider_events);
+            options.on_provider_stream_event = Some(Arc::new(move |data, _model| {
+                let captured = Arc::clone(&captured);
+                let data = data.clone();
+                Box::pin(async move {
+                    captured
+                        .lock()
+                        .unwrap_or_else(std::sync::PoisonError::into_inner)
+                        .push(data);
+                })
+            }));
+        }
         let mut stream = if case["simple"].as_bool() == Some(true) {
             let mut simple = SimpleStreamOptions::default();
             simple.base = options;
@@ -169,6 +184,18 @@ async fn openai_responses_stream_replays_upstream_events() {
             js_value_eq(&events, &want_events),
             "{name}: events\n  got:  {events}\n  want: {want_events}"
         );
+        let provider_events = {
+            let captured = provider_events
+                .lock()
+                .unwrap_or_else(std::sync::PoisonError::into_inner);
+            Value::Array(captured.clone())
+        };
+        assert!(
+            js_value_eq(&provider_events, &case["providerEvents"]),
+            "{name}: providerEvents\n  got:  {provider_events}\n  want: {}",
+            case["providerEvents"]
+        );
+
         assert!(
             js_value_eq(&message, &want_message),
             "{name}: message\n  got:  {message}\n  want: {want_message}"

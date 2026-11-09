@@ -4,7 +4,6 @@
 //! The SDK delivers a record left pending at end of stream, which is
 //! [`EndOfStream::Flush`]; `[DONE]` ends the iteration.
 //!
-//! Not yet ported: `onPayload` and `onProviderStreamEvent`.
 
 use std::collections::{BTreeMap, HashMap};
 use std::sync::Arc;
@@ -107,10 +106,18 @@ async fn run(
 ) -> Result<DoneReason, String> {
     let base = &options.base;
     let request = build_request(model, context, options)?;
+    let body = crate::api::stream_support::on_payload_body(
+        base,
+        &Value::Object(request.params.clone()),
+        &request.body,
+        model,
+        crate::api::stream_support::PayloadMerge::Replace,
+    )
+    .await?;
     let sent = http
         .post_json(
             &request.url,
-            &Bytes::from(request.body),
+            &Bytes::from(body),
             &header_pairs(&request.headers),
             &request_policy(base),
             signal,
@@ -130,7 +137,7 @@ async fn run(
 
     let compat = OpenAiCompletionsCompat::of(model);
     let mut state = ChunkState::new(model, &request.grammar_tool_input_properties);
-    let outcome = fold(&mut state, response, signal, sender, &compat).await;
+    let outcome = fold(&mut state, response, signal, sender, &compat, base).await;
     if outcome.is_err() {
         state.close_thinking_on_error(sender).await?;
     }
@@ -144,6 +151,7 @@ async fn fold(
     signal: &CancellationToken,
     sender: &mut AssistantStreamSender,
     compat: &OpenAiCompletionsCompat,
+    base: &StreamOptions,
 ) -> Result<DoneReason, String> {
     let mut events = SseEventStream::new(response.bytes_stream(), EndOfStream::Flush);
     loop {
@@ -160,6 +168,7 @@ async fn fold(
             SdkRecord::Skip => continue,
             SdkRecord::Data(data) => data,
         };
+        crate::api::stream_support::on_provider_stream_event(base, &data, state.model).await;
         state.apply(&data, sender).await?;
     }
     state.finish_blocks(sender).await?;

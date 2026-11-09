@@ -627,10 +627,9 @@
     ],
     "packages/ai/test/openai-completions-empty-tools.test.ts": ["AI-API-OPENAI-COMPLETIONS"],
     "packages/ai/test/openai-completions-prompt-cache.test.ts": ["AI-API-OPENAI-COMPLETIONS"],
-    "packages/ai/test/openai-completions-provider-stream-event.test.ts": {
-      "milestone": "M1",
-      "capability": "AI-API-OPENAI-COMPLETIONS-STREAM"
-    },
+    "packages/ai/test/openai-completions-provider-stream-event.test.ts": [
+      "AI-API-OPENAI-COMPLETIONS-STREAM"
+    ],
     "packages/ai/test/openai-completions-raw-stop-reason.test.ts": [
       "AI-API-OPENAI-COMPLETIONS-STREAM"
     ],
