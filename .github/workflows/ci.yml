@@ -50,7 +50,8 @@ jobs:
       - uses: oven-sh/setup-bun@v2
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          # Vectors record the generating Node version; this pins it.
+          node-version-file: .node-version
       - run: bun install --frozen-lockfile
       - run: bun run vectors:generate
       - run: git diff --exit-code vectors/
