@@ -62,7 +62,7 @@ pub fn is_model_type(model: &AnyModel, kind: ModelType) -> bool {
 /// `assertChatModel`: chat models only.
 ///
 /// # Errors
-/// [`ModelsErrorCode::Provider`].
+/// [`crate::models_error::ModelsErrorCode::Provider`].
 pub fn assert_chat_model(model: &AnyModel) -> Result<(), ModelsError> {
     if is_model_type(model, ModelType::Chat) {
         return Ok(());
@@ -77,7 +77,7 @@ pub fn assert_chat_model(model: &AnyModel) -> Result<(), ModelsError> {
 /// `assertImageModel`.
 ///
 /// # Errors
-/// [`ModelsErrorCode::Provider`].
+/// [`crate::models_error::ModelsErrorCode::Provider`].
 pub fn assert_image_model(model: &AnyModel) -> Result<(), ModelsError> {
     if is_model_type(model, ModelType::Image) {
         return Ok(());
@@ -92,7 +92,7 @@ pub fn assert_image_model(model: &AnyModel) -> Result<(), ModelsError> {
 /// `assertClassifierModel`.
 ///
 /// # Errors
-/// [`ModelsErrorCode::Provider`].
+/// [`crate::models_error::ModelsErrorCode::Provider`].
 pub fn assert_classifier_model(model: &AnyModel) -> Result<(), ModelsError> {
     if is_model_type(model, ModelType::Classifier) {
         return Ok(());
@@ -155,7 +155,7 @@ pub trait Provider: Send + Sync + 'static {
     fn auth(&self) -> &ProviderAuth;
     /// `getModels()` — current chat catalog; never fails.
     fn get_models(&self) -> Vec<Model>;
-    /// `getAllModels()` — every type; defaults to [`get_models`] when
+    /// `getAllModels()` — every type; defaults to [`Self::get_models`] when
     /// the provider only has chat models.
     fn get_all_models(&self) -> Vec<AnyModel> {
         self.get_models()
@@ -259,7 +259,7 @@ pub trait ChatApi: Send + Sync + 'static {
         options: StreamOptions,
     ) -> AssistantStream;
     /// `streamSimple(model, context, options)` — defaults to
-    /// [`stream`] with the base options (upstream adapters override).
+    /// [`Self::stream`] with the base options (upstream adapters override).
     fn stream_simple(
         &self,
         model: &Model,
