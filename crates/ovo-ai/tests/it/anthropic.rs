@@ -111,6 +111,8 @@ fn anthropic_request() {
                     | "x-api-key"
                     | "authorization"
                     | "x-app"
+                    | "x-session-id"
+                    | "x-session-affinity"
             ) || (is_oauth && key == "user-agent");
             if !compared {
                 continue;
@@ -139,6 +141,7 @@ fn stream_options(options: &Value) -> ovo_ai::options::StreamOptions {
         "none" => ovo_ai::options::CacheRetention::None,
         _ => ovo_ai::options::CacheRetention::Short,
     });
+    base.session_id = options["sessionId"].as_str().map(str::to_owned);
     base.metadata = options["metadata"].as_object().cloned();
     base.headers = options["headers"].as_object().cloned();
     base

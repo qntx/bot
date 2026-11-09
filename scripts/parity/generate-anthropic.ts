@@ -539,6 +539,30 @@ const CASES: RequestCase[] = [
   },
   ...THINKING_CASES,
   {
+    name: "session-affinity-openrouter-default",
+    model: { ...BASE_MODEL, provider: "openrouter", baseUrl: "https://openrouter.ai/api/v1" },
+    context: ctx([user("hello")]),
+    options: { ...BASE_OPTIONS, sessionId: "sess-1" },
+  },
+  {
+    name: "session-affinity-explicit",
+    model: withCompat({ sendSessionAffinityHeaders: true }),
+    context: ctx([user("hello")]),
+    options: { ...BASE_OPTIONS, sessionId: "sess-1" },
+  },
+  {
+    name: "session-affinity-off",
+    model: withCompat({ sendSessionAffinityHeaders: false }),
+    context: ctx([user("hello")]),
+    options: { ...BASE_OPTIONS, sessionId: "sess-1" },
+  },
+  {
+    name: "session-affinity-cache-retention-none",
+    model: withCompat({ sendSessionAffinityHeaders: true }),
+    context: ctx([user("hello")]),
+    options: { ...BASE_OPTIONS, sessionId: "sess-1", cacheRetention: "none" },
+  },
+  {
     name: "onPayload-patch",
     model: BASE_MODEL,
     context: ctx([user("hello")]),

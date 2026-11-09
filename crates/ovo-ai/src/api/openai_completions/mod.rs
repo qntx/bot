@@ -7,8 +7,6 @@
 //!
 //! The streaming side is
 //! [`stream`](crate::api::openai_completions::stream).
-//!
-//! Not yet ported: `onPayload`.
 
 use std::collections::BTreeMap;
 
