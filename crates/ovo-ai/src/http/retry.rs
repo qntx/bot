@@ -204,3 +204,18 @@ pub fn openai_retry_decision(
         delay_ms: default_backoff_ms(max_retries - retries_remaining, rand),
     }
 }
+
+/// Uniform `[0, 1)` jitter source for retry backoff (`Math.random` in
+/// upstream); not cryptographic.
+#[must_use]
+pub fn jitter() -> f64 {
+    use std::hash::{BuildHasher, RandomState};
+    let bits = RandomState::new().hash_one(std::time::Instant::now());
+    // The top 53 bits make an exactly representable fraction.
+    #[expect(
+        clippy::cast_precision_loss,
+        reason = "53-bit integer fits f64 exactly"
+    )]
+    let fraction = (bits >> 11) as f64 / (1u64 << 53) as f64;
+    fraction
+}

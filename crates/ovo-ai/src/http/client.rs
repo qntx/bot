@@ -57,6 +57,8 @@ mod imp {
         pub message: String,
         /// HTTP status when a response arrived.
         pub status: Option<f64>,
+        /// The raw response body, for SDK-family specific error rendering.
+        pub body: Option<String>,
     }
 
     impl std::fmt::Display for HttpError {
@@ -314,6 +316,7 @@ mod imp {
             return HttpError {
                 message: String::from("request failed"),
                 status: None,
+                body: None,
             };
         };
         let status = response.status().as_u16();
@@ -323,6 +326,7 @@ mod imp {
         HttpError {
             message: format_provider_error(&norm, None),
             status: Some(f64::from(status)),
+            body: Some(body),
         }
     }
 }

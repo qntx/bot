@@ -22,7 +22,9 @@
 )]
 
 mod ai_utils;
-pub mod anthropic;
+mod anthropic;
+#[cfg(feature = "http")]
+mod anthropic_stream;
 mod auth;
 mod http_client;
 mod http_policy;
