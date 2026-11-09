@@ -26,3 +26,24 @@ pub struct DeferredHandle {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub data: Option<Value>,
 }
+
+impl DeferredHandle {
+    /// `new` — a handle with the identity fields; optional fields default.
+    #[must_use]
+    pub fn new(
+        provider: impl Into<String>,
+        model_id: impl Into<String>,
+        api: impl Into<String>,
+        id: impl Into<String>,
+    ) -> Self {
+        Self {
+            provider: provider.into(),
+            model_id: model_id.into(),
+            api: api.into(),
+            id: id.into(),
+            expires_at: None,
+            poll_after_ms: None,
+            data: None,
+        }
+    }
+}

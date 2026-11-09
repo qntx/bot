@@ -1,23 +1,11 @@
 //! `SimpleStreamOptions`/`StreamOptions` and `buildBaseOptions`
 //! (`api/simple-options.ts`).
 //!
-//! Data only — `onPayload`/`onResponse`/`onProviderStreamEvent`/
-//! `signal`/`fetch` arrive with the adapters and the transport
-//! (M1-08 B/C).
-
-use serde_json::{Map, Value};
-
-/// The future a `transformHeaders` callback returns.
-pub type TransformHeadersFuture = std::pin::Pin<Box<dyn Future<Output = ProviderHeaders> + Send>>;
-
-/// `transformHeaders` — a Models-layer header transform.
-///
-/// Runs last over the merged request headers. `Arc`-wrapped so
-/// options stay `Clone`; `Debug` is opaque.
-pub type TransformHeaders = Arc<dyn Fn(ProviderHeaders) -> TransformHeadersFuture + Send + Sync>;
+//! `onPayload` and `onProviderStreamEvent` arrive with the adapters.
 
 use std::sync::Arc;
 
+use serde_json::{Map, Value};
 use tokio_util::sync::CancellationToken;
 
 use crate::http::headers::ProviderHeaders;
@@ -25,6 +13,33 @@ use crate::identity::ClientIdentity;
 use crate::simple_options::{clamp_max_tokens_to_context, resolve_sampling_params};
 use crate::transcript::TranscriptContext;
 use crate::types::model::{Model, ModelThinkingLevel, ThinkingLevel};
+
+/// The future a `transformHeaders` callback returns.
+pub type TransformHeadersFuture = std::pin::Pin<Box<dyn Future<Output = ProviderHeaders> + Send>>;
+/// The future `onResponse` returns.
+pub type OnResponseFuture = std::pin::Pin<Box<dyn Future<Output = ()> + Send>>;
+
+/// `onResponse`: request-side callback invoked after each provider response.
+///
+/// It receives `{status, headers}` and the request model. The HTTP adapters
+/// call it on every response; faux calls it on stream, fetch and cancel like
+/// upstream.
+pub type OnResponse = Arc<dyn Fn(&ResponseMetadata, &Model) -> OnResponseFuture + Send + Sync>;
+
+/// `{status, headers}` — the response metadata `onResponse` sees.
+#[derive(Clone, Debug, Default)]
+pub struct ResponseMetadata {
+    /// HTTP status.
+    pub status: u16,
+    /// Response headers.
+    pub headers: ProviderHeaders,
+}
+
+/// `transformHeaders` — a Models-layer header transform.
+///
+/// Runs last over the merged request headers. `Arc`-wrapped so
+/// options stay `Clone`; `Debug` is opaque.
+pub type TransformHeaders = Arc<dyn Fn(ProviderHeaders) -> TransformHeadersFuture + Send + Sync>;
 
 /// `ProviderEnv = Record<string, string>`.
 pub type ProviderEnv = Map<String, Value>;
@@ -68,6 +83,11 @@ pub struct StreamOptions {
     /// `transformHeaders` (Models-layer `ModelsRequestTransforms`) —
     /// runs last over the merged request headers.
     pub transform_headers: Option<TransformHeaders>,
+    /// `onResponse` — response-side callback (`stream`/fetch/cancel).
+    pub on_response: Option<OnResponse>,
+    /// `options.deferred.pendingFetches` — how many fetches a
+    /// scripted deferred provider tolerates before resolving.
+    pub deferred_pending_fetches: Option<usize>,
 }
 
 /// `Transport`.
@@ -192,6 +212,8 @@ pub fn build_base_options(
         session_id: base.session_id,
         signal: base.signal,
         transform_headers: base.transform_headers,
+        on_response: base.on_response,
+        deferred_pending_fetches: base.deferred_pending_fetches,
     }
 }
 
@@ -219,6 +241,8 @@ pub struct RequestOptions {
     pub signal: Option<CancellationToken>,
     /// `transformHeaders` — Models-layer transform.
     pub transform_headers: Option<TransformHeaders>,
+    /// `onResponse` — response-side callback (`stream`/fetch/cancel).
+    pub on_response: Option<OnResponse>,
 }
 
 /// `DeferredFetchOptions`.
