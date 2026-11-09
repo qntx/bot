@@ -1484,6 +1484,7 @@ fn request_options(options: &StreamOptions) -> RequestOptions {
         session_id: options.session_id.clone(),
         signal: options.signal.clone(),
         transform_headers: options.transform_headers.clone(),
+        on_response: options.on_response.clone(),
     }
 }
 

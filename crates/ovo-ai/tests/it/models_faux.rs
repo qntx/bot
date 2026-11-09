@@ -14,6 +14,8 @@ use ovo_ai::models::{
     get_supported_thinking_levels, has_api, merge_headers, models_are_equal,
 };
 
+use ovo_ai::auth::AuthResolutionOverrides;
+use ovo_ai::options::StreamOptions;
 use ovo_ai::types::content::StopReason;
 use ovo_ai::types::context::Context;
 
@@ -115,4 +117,98 @@ async fn refresh_static_provider_no_op() {
     let result = models.refresh(ModelsRefreshOptions::default()).await;
     assert!(!result.aborted);
     assert!(result.errors.is_empty());
+}
+
+/// `models-runtime`'s "streamDeferred → fetchDeferred" — a
+/// `FauxResponseStep::Deferred` emits `done:deferred` with a handle;
+/// `fetch_deferred` replays the eventual message.
+#[tokio::test]
+async fn stream_deferred_then_fetch() {
+    let faux = faux_provider(FauxOptions::default());
+    let models = create_models(CreateModelsOptions::default());
+    models.set_provider(Arc::clone(&faux.provider));
+    faux.set_responses(vec![FauxResponseStep::Deferred {
+        id: String::from("d-1"),
+        then: Box::new(faux_assistant_message(vec![faux_text("later")])),
+    }]);
+    let model = models
+        .get_model("faux", "faux-1")
+        .unwrap_or_else(|| panic!("model"));
+    let stream = models.stream_deferred(&model, &text_context("hi"), None);
+    let result = stream.result().await;
+    assert_eq!(result.stop_reason, StopReason::Deferred, "{result:?}");
+    let handle = ovo_ai::types::deferred::DeferredHandle::new("faux", "faux-1", "faux", "d-1");
+    let fetched = models.fetch_deferred(&handle, None);
+    let fetched = fetched.result().await;
+    assert_eq!(fetched.stop_reason, StopReason::Stop, "{fetched:?}");
+}
+
+/// `faux-provider`'s `onResponse` — the callback fires on stream.
+#[tokio::test]
+async fn stream_invokes_on_response() {
+    let calls = Arc::new(std::sync::Mutex::new(Vec::<u16>::new()));
+    let faux = faux_provider(FauxOptions::default());
+    let models = create_models(CreateModelsOptions::default());
+    models.set_provider(Arc::clone(&faux.provider));
+    faux.set_responses(vec![FauxResponseStep::Message(Box::new(
+        faux_assistant_message(vec![faux_text("hi")]),
+    ))]);
+    let model = models
+        .get_model("faux", "faux-1")
+        .unwrap_or_else(|| panic!("model"));
+    let calls2 = Arc::clone(&calls);
+    let mut options = StreamOptions::default();
+    options.on_response = Some(Arc::new(move |meta, _model| {
+        let recorded = Arc::clone(&calls2);
+        let status = meta.status;
+        Box::pin(async move {
+            recorded
+                .lock()
+                .unwrap_or_else(std::sync::PoisonError::into_inner)
+                .push(status);
+        })
+    }));
+    let stream = models.stream(&model, &text_context("x"), Some(options));
+    let _ = stream.result().await;
+    assert_eq!(
+        *calls
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner),
+        vec![200]
+    );
+}
+
+/// `models-entry`'s `withClientIdentity` — request identity merges.
+#[tokio::test]
+async fn with_client_identity_carries() {
+    let faux = faux_provider(FauxOptions::default());
+    let models = create_models(CreateModelsOptions::default());
+    models.set_provider(Arc::clone(&faux.provider));
+    let identity = ovo_ai::identity::ClientIdentity {
+        user_agent: None,
+        version: Some(String::from("1.0")),
+        attribution: None,
+    };
+    let wrapped = ovo_ai::models::with_client_identity(&models, identity);
+    assert!(wrapped.get_provider("faux").is_some());
+}
+
+/// `models-runtime`'s `getAuth` — ambient env key resolves.
+#[tokio::test]
+async fn get_auth_resolves_env_key() {
+    let faux = faux_provider(FauxOptions::default());
+    let mut env = std::collections::HashMap::new();
+    env.insert(String::from("FAUX_API_KEY"), String::from("k-1"));
+    let models = create_models(CreateModelsOptions {
+        env: Some(Arc::new(ovo_ai::auth::env::MapEnv::new(env))),
+        ..CreateModelsOptions::default()
+    });
+    models.set_provider(Arc::clone(&faux.provider));
+    let auth = models
+        .get_auth(
+            ovo_ai::models::ProviderOrModel::Id("faux"),
+            &AuthResolutionOverrides::default(),
+        )
+        .await;
+    assert!(auth.is_ok(), "{auth:?}");
 }

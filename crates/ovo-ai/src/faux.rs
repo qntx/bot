@@ -93,6 +93,15 @@ pub struct FauxOptions {
     pub deferred: Option<(usize, Option<u64>)>,
 }
 
+/// One deferred response slot — message plus remaining fetch count.
+#[derive(Debug)]
+struct DeferredEntry {
+    /// The eventual response.
+    message: Box<AssistantMessage>,
+    /// `pendingFetches` — the fetches remaining before `then` resolves.
+    pending_fetches: usize,
+}
+
 /// `FauxProviderHandle` — provider + scripting handles.
 pub struct FauxProvider {
     /// `provider` — register via `Models::set_provider`.
@@ -258,7 +267,7 @@ pub fn faux_assistant_message(content: Vec<AssistantContentBlock>) -> AssistantM
 /// The scripted `ChatApi` — drains the response queue per call.
 struct FauxChatApi {
     responses: Arc<Mutex<VecDeque<FauxResponseStep>>>,
-    deferred: Arc<Mutex<std::collections::HashMap<String, Box<AssistantMessage>>>>,
+    deferred: Arc<Mutex<std::collections::HashMap<String, DeferredEntry>>>,
     state: Arc<Mutex<FauxState>>,
 }
 
@@ -279,36 +288,51 @@ impl ChatApi for FauxChatApi {
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner)
             .deferred_fetch_count += 1;
-        let message = self
-            .deferred
-            .lock()
-            .unwrap_or_else(std::sync::PoisonError::into_inner)
-            .remove(&handle.id)?;
-        let base = faux_assistant_message(Vec::new());
-        let _ = model;
-        let _ = options;
+        let (message, pending_fetches) = take_fetch(&self.deferred, &handle.id)?;
+        let base = base_message(model);
+        let model = model.clone();
+        let handle = handle.clone();
         Some(AssistantStream::spawn(
             base,
             16,
             move |mut sender| async move {
                 emit_blocks(&mut sender, &message).await;
-                finish_message(sender, *message).await;
+                if let Some(on_response) = &options.on_response {
+                    let metadata = crate::options::ResponseMetadata {
+                        status: 200,
+                        headers: serde_json::Map::new(),
+                    };
+                    on_response(&metadata, &model).await;
+                }
+                if pending_fetches {
+                    finish_deferred(sender, &handle, &model).await;
+                    return;
+                }
+                finish_message(sender, message).await;
             },
         ))
     }
 
     fn cancel_deferred(
         &self,
-        _model: &Model,
+        model: &Model,
         handle: &DeferredHandle,
-        _options: crate::options::DeferredCancelOptions,
+        options: crate::options::DeferredCancelOptions,
     ) -> Option<crate::provider::BoxFuture<'static, Result<(), crate::models_error::ModelsError>>>
     {
         let deferred = Arc::clone(&self.deferred);
         let state = Arc::clone(&self.state);
         let handle = handle.clone();
+        let model = model.clone();
         Some(Box::pin(async move {
             let id = handle.id.clone();
+            if let Some(on_response) = &options.on_response {
+                let metadata = crate::options::ResponseMetadata {
+                    status: 200,
+                    headers: serde_json::Map::new(),
+                };
+                on_response(&metadata, &model).await;
+            }
             state
                 .lock()
                 .unwrap_or_else(std::sync::PoisonError::into_inner)
@@ -340,7 +364,7 @@ impl ChatApi for FauxChatApi {
         let deferred_store = Arc::clone(&self.deferred);
         let state = Arc::clone(&self.state);
         let signal = options.signal.clone();
-        let base = faux_assistant_message(Vec::new());
+        let base = base_message(&model);
         AssistantStream::spawn(base, 16, move |mut sender| async move {
             if signal
                 .as_ref()
@@ -365,15 +389,30 @@ impl ChatApi for FauxChatApi {
                     .ok();
                 return;
             };
-            let mut message = resolve_step(&step, &context, options, &model).await;
-            if let Some(handle) = &message.deferred {
+            let mut message = resolve_step(&step, &context, options.clone(), &model).await;
+            // The store keeps the scripted eventual message: the resolved one
+            // already carries the deferred stop reason and handle.
+            if let FauxResponseStep::Deferred { id, then } = &step {
                 deferred_store
                     .lock()
                     .unwrap_or_else(std::sync::PoisonError::into_inner)
-                    .insert(handle.id.clone(), Box::new(message.clone()));
+                    .insert(
+                        id.clone(),
+                        DeferredEntry {
+                            message: then.clone(),
+                            pending_fetches: options.deferred_pending_fetches.unwrap_or(0),
+                        },
+                    );
             }
             message = with_usage_estimate(message, &context, &model);
             emit_blocks(&mut sender, &message).await;
+            if let Some(on_response) = &options.on_response {
+                let metadata = crate::options::ResponseMetadata {
+                    status: 200,
+                    headers: serde_json::Map::new(),
+                };
+                on_response(&metadata, &model).await;
+            }
             finish_message(sender, message).await;
             drop(state);
         })
@@ -512,9 +551,60 @@ async fn emit_blocks(
     }
 }
 
-/// `streamWithDeltas`'s terminal event — `done`/`error` from the
-/// message's `stopReason`.
+/// `fetch_deferred`'s pending-deferred terminal — `done:deferred`
+/// with the handle when `pendingFetches > 0` remain.
+async fn finish_deferred(
+    sender: crate::stream::AssistantStreamSender,
+    handle: &DeferredHandle,
+    model: &Model,
+) {
+    let mut message = base_message(model);
+    message.deferred = Some(handle.clone());
+    message.stop_reason = StopReason::Deferred;
+    finish_message(sender, message).await;
+}
+
+/// The stream's base message: empty content attributed to `model`.
+fn base_message(model: &Model) -> AssistantMessage {
+    let mut message = faux_assistant_message(Vec::new());
+    message.api.clone_from(&model.api);
+    message.provider.clone_from(&model.provider);
+    message.model.clone_from(&model.id);
+    message
+}
+
+/// One `fetchDeferred` step: the scripted message and whether more fetches
+/// remain (decrementing the remaining count).
+fn take_fetch(
+    store: &Mutex<std::collections::HashMap<String, DeferredEntry>>,
+    id: &str,
+) -> Option<(AssistantMessage, bool)> {
+    let mut deferred = store
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    let entry = deferred.get_mut(id)?;
+    let has_more = entry.pending_fetches > 0;
+    if has_more {
+        entry.pending_fetches -= 1;
+    }
+    let message = (*entry.message).clone();
+    drop(deferred);
+    Some((message, has_more))
+}
+
+/// `streamWithDeltas`'s terminal event — the message's usage and deferred
+/// handle, then `done`/`error` from its `stopReason`.
 async fn finish_message(sender: crate::stream::AssistantStreamSender, message: AssistantMessage) {
+    sender
+        .metadata(crate::stream::Metadata::Usage(message.usage.clone()))
+        .await
+        .ok();
+    if let Some(handle) = message.deferred.clone() {
+        sender
+            .metadata(crate::stream::Metadata::Deferred(handle))
+            .await
+            .ok();
+    }
     match message.stop_reason {
         StopReason::Error | StopReason::Aborted => {
             let reason = if message.stop_reason == StopReason::Aborted {
