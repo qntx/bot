@@ -22,6 +22,7 @@
 )]
 
 mod ai_utils;
+mod auth;
 mod http_client;
 mod http_policy;
 mod http_sse;

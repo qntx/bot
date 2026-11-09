@@ -15,7 +15,7 @@ serde.workspace       = true
 serde_json            = { workspace = true, features = ["preserve_order", "float_roundtrip"] }
 ryu-js.workspace      = true
 thiserror.workspace   = true
-tokio                 = { workspace = true, features = ["sync", "rt", "time", "macros"] }
+tokio                 = { workspace = true, features = ["sync", "rt", "time", "macros", "process"] }
 tokio-util            = { workspace = true }
 url                   = { workspace = true }
 bytes                 = { workspace = true }
@@ -24,8 +24,10 @@ futures.workspace     = true
 regex.workspace       = true
 jsonschema.workspace  = true
 referencing.workspace = true
+secrecy               = "0.10.3"
 
 [dev-dependencies]
+tempfile           = "3"
 wiremock           = "0.6.5"
 tokio              = { workspace = true, features = ["test-util", "macros", "rt"] }
 proptest.workspace = true

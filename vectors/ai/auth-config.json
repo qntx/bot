@@ -1,0 +1,410 @@
+[
+  {
+    "name": "_A",
+    "config": "$A",
+    "env": {
+      "A": "va",
+      "B": "vb",
+      "KEY": "vkey",
+      "N1": "1",
+      "N2": "2"
+    },
+    "expected": {
+      "is_command": false,
+      "env_var_name": "A",
+      "env_var_names": [
+        "A"
+      ],
+      "missing": [],
+      "configured": true,
+      "resolved": "va"
+    }
+  },
+  {
+    "name": "_A_",
+    "config": "${A}",
+    "env": {
+      "A": "va",
+      "B": "vb",
+      "KEY": "vkey",
+      "N1": "1",
+      "N2": "2"
+    },
+    "expected": {
+      "is_command": false,
+      "env_var_name": "A",
+      "env_var_names": [
+        "A"
+      ],
+      "missing": [],
+      "configured": true,
+      "resolved": "va"
+    }
+  },
+  {
+    "name": "pre_A_post",
+    "config": "pre$A post",
+    "env": {
+      "A": "va",
+      "B": "vb",
+      "KEY": "vkey",
+      "N1": "1",
+      "N2": "2"
+    },
+    "expected": {
+      "is_command": false,
+      "env_var_name": null,
+      "env_var_names": [
+        "A"
+      ],
+      "missing": [],
+      "configured": true,
+      "resolved": "preva post"
+    }
+  },
+  {
+    "name": "_A_B",
+    "config": "$A$B",
+    "env": {
+      "A": "va",
+      "B": "vb",
+      "KEY": "vkey",
+      "N1": "1",
+      "N2": "2"
+    },
+    "expected": {
+      "is_command": false,
+      "env_var_name": null,
+      "env_var_names": [
+        "A",
+        "B"
+      ],
+      "missing": [],
+      "configured": true,
+      "resolved": "vavb"
+    }
+  },
+  {
+    "name": "_A_B_",
+    "config": "${A}-${B}",
+    "env": {
+      "A": "va",
+      "B": "vb",
+      "KEY": "vkey",
+      "N1": "1",
+      "N2": "2"
+    },
+    "expected": {
+      "is_command": false,
+      "env_var_name": null,
+      "env_var_names": [
+        "A",
+        "B"
+      ],
+      "missing": [],
+      "configured": true,
+      "resolved": "va-vb"
+    }
+  },
+  {
+    "name": "_",
+    "config": "$$",
+    "env": {
+      "A": "va",
+      "B": "vb",
+      "KEY": "vkey",
+      "N1": "1",
+      "N2": "2"
+    },
+    "expected": {
+      "is_command": false,
+      "env_var_name": null,
+      "env_var_names": [],
+      "missing": [],
+      "configured": true,
+      "resolved": "$"
+    }
+  },
+  {
+    "name": "_",
+    "config": "$!",
+    "env": {
+      "A": "va",
+      "B": "vb",
+      "KEY": "vkey",
+      "N1": "1",
+      "N2": "2"
+    },
+    "expected": {
+      "is_command": false,
+      "env_var_name": null,
+      "env_var_names": [],
+      "missing": [],
+      "configured": true,
+      "resolved": "!"
+    }
+  },
+  {
+    "name": "_A",
+    "config": "$$A",
+    "env": {
+      "A": "va",
+      "B": "vb",
+      "KEY": "vkey",
+      "N1": "1",
+      "N2": "2"
+    },
+    "expected": {
+      "is_command": false,
+      "env_var_name": null,
+      "env_var_names": [],
+      "missing": [],
+      "configured": true,
+      "resolved": "$A"
+    }
+  },
+  {
+    "name": "literal",
+    "config": "literal",
+    "env": {
+      "A": "va",
+      "B": "vb",
+      "KEY": "vkey",
+      "N1": "1",
+      "N2": "2"
+    },
+    "expected": {
+      "is_command": false,
+      "env_var_name": null,
+      "env_var_names": [],
+      "missing": [],
+      "configured": true,
+      "resolved": "literal"
+    }
+  },
+  {
+    "name": "_MISSING",
+    "config": "$MISSING",
+    "env": {
+      "A": "va",
+      "B": "vb",
+      "KEY": "vkey",
+      "N1": "1",
+      "N2": "2"
+    },
+    "expected": {
+      "is_command": false,
+      "env_var_name": "MISSING",
+      "env_var_names": [
+        "MISSING"
+      ],
+      "missing": [
+        "MISSING"
+      ],
+      "configured": false,
+      "resolved": null
+    }
+  },
+  {
+    "name": "pre_MISSING_post",
+    "config": "pre$MISSING post",
+    "env": {
+      "A": "va",
+      "B": "vb",
+      "KEY": "vkey",
+      "N1": "1",
+      "N2": "2"
+    },
+    "expected": {
+      "is_command": false,
+      "env_var_name": null,
+      "env_var_names": [
+        "MISSING"
+      ],
+      "missing": [
+        "MISSING"
+      ],
+      "configured": false,
+      "resolved": null
+    }
+  },
+  {
+    "name": "_",
+    "config": "${}",
+    "env": {
+      "A": "va",
+      "B": "vb",
+      "KEY": "vkey",
+      "N1": "1",
+      "N2": "2"
+    },
+    "expected": {
+      "is_command": false,
+      "env_var_name": null,
+      "env_var_names": [],
+      "missing": [],
+      "configured": true,
+      "resolved": "${}"
+    }
+  },
+  {
+    "name": "_1BAD_",
+    "config": "${1BAD}",
+    "env": {
+      "A": "va",
+      "B": "vb",
+      "KEY": "vkey",
+      "N1": "1",
+      "N2": "2"
+    },
+    "expected": {
+      "is_command": false,
+      "env_var_name": null,
+      "env_var_names": [],
+      "missing": [],
+      "configured": true,
+      "resolved": "${1BAD}"
+    }
+  },
+  {
+    "name": "_OK_",
+    "config": "${_OK}",
+    "env": {
+      "A": "va",
+      "B": "vb",
+      "KEY": "vkey",
+      "N1": "1",
+      "N2": "2"
+    },
+    "expected": {
+      "is_command": false,
+      "env_var_name": "_OK",
+      "env_var_names": [
+        "_OK"
+      ],
+      "missing": [
+        "_OK"
+      ],
+      "configured": false,
+      "resolved": null
+    }
+  },
+  {
+    "name": "_A_extra",
+    "config": "$A_extra",
+    "env": {
+      "A": "va",
+      "B": "vb",
+      "KEY": "vkey",
+      "N1": "1",
+      "N2": "2"
+    },
+    "expected": {
+      "is_command": false,
+      "env_var_name": "A_extra",
+      "env_var_names": [
+        "A_extra"
+      ],
+      "missing": [
+        "A_extra"
+      ],
+      "configured": false,
+      "resolved": null
+    }
+  },
+  {
+    "name": "_",
+    "config": "$",
+    "env": {
+      "A": "va",
+      "B": "vb",
+      "KEY": "vkey",
+      "N1": "1",
+      "N2": "2"
+    },
+    "expected": {
+      "is_command": false,
+      "env_var_name": null,
+      "env_var_names": [],
+      "missing": [],
+      "configured": true,
+      "resolved": "$"
+    }
+  },
+  {
+    "name": "_",
+    "config": "$-",
+    "env": {
+      "A": "va",
+      "B": "vb",
+      "KEY": "vkey",
+      "N1": "1",
+      "N2": "2"
+    },
+    "expected": {
+      "is_command": false,
+      "env_var_name": null,
+      "env_var_names": [],
+      "missing": [],
+      "configured": true,
+      "resolved": "$-"
+    }
+  },
+  {
+    "name": "x_",
+    "config": "x$",
+    "env": {
+      "A": "va",
+      "B": "vb",
+      "KEY": "vkey",
+      "N1": "1",
+      "N2": "2"
+    },
+    "expected": {
+      "is_command": false,
+      "env_var_name": null,
+      "env_var_names": [],
+      "missing": [],
+      "configured": true,
+      "resolved": "x$"
+    }
+  },
+  {
+    "name": "_echo_hi",
+    "config": "!echo hi",
+    "env": {
+      "A": "va",
+      "B": "vb",
+      "KEY": "vkey",
+      "N1": "1",
+      "N2": "2"
+    },
+    "expected": {
+      "is_command": true,
+      "env_var_name": null,
+      "env_var_names": [],
+      "missing": [],
+      "configured": true,
+      "resolved": "<command>"
+    }
+  },
+  {
+    "name": "_",
+    "config": "!!",
+    "env": {
+      "A": "va",
+      "B": "vb",
+      "KEY": "vkey",
+      "N1": "1",
+      "N2": "2"
+    },
+    "expected": {
+      "is_command": true,
+      "env_var_name": null,
+      "env_var_names": [],
+      "missing": [],
+      "configured": true,
+      "resolved": "<command>"
+    }
+  }
+]

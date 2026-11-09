@@ -154,6 +154,27 @@
       "vectors": ["vectors/ai/sse.json"],
       "rust": ["crates/ovo-ai/tests/it/http_sse.rs"],
       "classes": []
+    },
+    {
+      "id": "AI-AUTH-APIKEY",
+      "upstream": [
+        "packages/ai/src/env-api-keys.ts",
+        "packages/coding-agent/src/core/resolve-config-value.ts"
+      ],
+      "vectors": ["vectors/ai/auth-apikey.json", "vectors/ai/auth-config.json"],
+      "rust": ["crates/ovo-ai/tests/it/auth.rs"],
+      "classes": []
+    },
+    {
+      "id": "AI-AUTH-STORE",
+      "upstream": [
+        "packages/ai/src/auth/",
+        "packages/coding-agent/src/core/auth-storage.ts",
+        "packages/coding-agent/src/core/runtime-credentials.ts"
+      ],
+      "vectors": ["vectors/ai/auth-store.json"],
+      "rust": ["crates/ovo-ai/tests/it/auth.rs"],
+      "classes": []
     }
   ],
   "classes": {
