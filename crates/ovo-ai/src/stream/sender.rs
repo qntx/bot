@@ -89,6 +89,8 @@ pub struct AssistantStreamSender {
     started: bool,
     terminated: bool,
     next_index: usize,
+    /// The kind of every started block, by content index.
+    kinds: Vec<BlockKind>,
     open: Vec<(usize, BlockKind)>,
     tool_calls: std::collections::HashMap<usize, FoldToolCall>,
     violation: Option<String>,
@@ -112,6 +114,7 @@ impl AssistantStreamSender {
             started: false,
             terminated: false,
             next_index: 0,
+            kinds: Vec::new(),
             open: Vec::new(),
             tool_calls: std::collections::HashMap::new(),
             violation: None,
@@ -174,6 +177,7 @@ impl AssistantStreamSender {
     async fn block_start(&mut self, kind: BlockKind) -> Result<usize, StreamClosed> {
         let index = self.next_index;
         self.next_index += 1;
+        self.kinds.push(kind);
         self.open.push((index, kind));
         let event = match kind {
             BlockKind::Text => AssistantMessageEvent::TextStart {
@@ -274,9 +278,10 @@ impl AssistantStreamSender {
         Ok(index)
     }
 
-    /// Set the authoritative fields of the open block at `index` without a
-    /// wire event, like upstream assigning to a live `output` block. A tool
-    /// call's argument fold restarts from the patched arguments.
+    /// Set the authoritative fields of the block at `index` without a wire
+    /// event, like upstream assigning to a live `output` block: a text or
+    /// thinking block may already be closed, a tool call must be open and
+    /// its argument fold restarts from the patched arguments.
     /// # Errors
     /// Returns `Err(StreamClosed)` when the consumer is gone.
     pub async fn patch(
@@ -289,7 +294,15 @@ impl AssistantStreamSender {
             AssistantContentBlock::Thinking(_) => BlockKind::Thinking,
             AssistantContentBlock::ToolCall(_) => BlockKind::ToolCall,
         };
-        self.check(self.is_open(index, kind), "patch for a non-open block");
+        let valid = if kind == BlockKind::ToolCall {
+            self.is_open(index, kind)
+        } else {
+            self.kinds.get(index) == Some(&kind)
+        };
+        self.check(
+            valid,
+            "patch for a block that is not a started block of its kind",
+        );
         if let AssistantContentBlock::ToolCall(call) = &block {
             self.tool_calls
                 .insert(index, FoldToolCall::seeded(call.clone())?);
@@ -315,36 +328,62 @@ impl AssistantStreamSender {
         .await
     }
 
-    /// Set the id and name of the open tool call at `index`, keeping the
-    /// arguments streamed so far (upstream assigning `block.id`/`block.name`).
+    /// Set the open tool call's id, name, thought signature and namespace
+    /// from `fields` (its arguments are ignored), keeping the arguments
+    /// streamed so far: upstream assigning those fields on the live block.
     /// # Errors
     /// Returns `Err(StreamClosed)` when the consumer is gone.
-    pub async fn toolcall_identity(
+    pub async fn toolcall_fields(
         &mut self,
         index: usize,
-        id: &str,
-        name: &str,
+        fields: ToolCall,
     ) -> Result<(), StreamClosed> {
         self.check(
             self.is_open(index, BlockKind::ToolCall),
-            "toolcall_identity for a non-open tool call",
+            "toolcall_fields for a non-open tool call",
         );
         let Some(open) = self.tool_calls.get_mut(&index) else {
             return Ok(());
         };
-        id.clone_into(&mut open.call.id);
-        name.clone_into(&mut open.call.name);
-        let call = ToolCall {
-            arguments: serde_json::Map::new(),
-            ..open.call.clone()
+        open.call = ToolCall {
+            arguments: std::mem::take(&mut open.call.arguments),
+            ..fields
         };
+        let call = open.call.clone();
         let text = open.stream.text().to_owned();
-        // The patch empties the consumer's fold; the reset replays the
-        // argument text streamed so far into it.
+        // The patch reseeds the consumer's fold; the reset restores the
+        // argument text streamed so far.
         self.patch_block(index, AssistantContentBlock::ToolCall(call))
             .await?;
         self.sender
             .send(Item::ToolcallReset { index, text })
+            .await
+            .map_err(|_| StreamClosed)
+    }
+
+    /// Replace the open tool call's argument text with `text` without a
+    /// wire event, like upstream assigning `block.arguments` from a parser
+    /// it fed directly.
+    /// # Errors
+    /// Returns `Err(StreamClosed)` when the consumer is gone.
+    pub async fn toolcall_arguments(
+        &mut self,
+        index: usize,
+        text: &str,
+    ) -> Result<(), StreamClosed> {
+        self.check(
+            self.is_open(index, BlockKind::ToolCall),
+            "toolcall_arguments for a non-open tool call",
+        );
+        if let Some(open) = self.tool_calls.get_mut(&index) {
+            open.stream = ToolCallArgumentsStream::new();
+            open.stream.append(text);
+        }
+        self.sender
+            .send(Item::ToolcallReset {
+                index,
+                text: text.to_owned(),
+            })
             .await
             .map_err(|_| StreamClosed)
     }

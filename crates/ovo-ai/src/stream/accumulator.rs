@@ -16,7 +16,7 @@ use std::time::{Instant, SystemTime, UNIX_EPOCH};
 
 use serde_json::{Map, Value};
 
-use crate::json::streaming::{JsonChange, Replaced, ToolCallArgumentsStream};
+use crate::json::streaming::{JsonChange, ToolCallArgumentsStream};
 use crate::stream::event::AssistantMessageEvent;
 use crate::stream::sender::Metadata;
 use crate::types::content::{
@@ -285,25 +285,18 @@ impl AssistantMessageAccumulator {
         }
     }
 
-    /// Internal: provider sent its complete argument text and it did not
-    /// continue the previous text (a `Restarted` replace): reset the fold's
-    /// parser and the block's arguments, mirroring upstream's
-    /// `block.arguments = arguments` assignment on restart.
+    /// Internal: the tool call's argument text is now `text` (a provider
+    /// restart, or an assignment without an event): the fold restarts from
+    /// it, mirroring upstream's `block.arguments = ...` assignment.
     pub(crate) fn toolcall_reset(&mut self, index: usize, text: &str) {
         let Some(open) = self.tool_calls.get_mut(&index) else {
             return;
         };
+        open.stream = ToolCallArgumentsStream::new();
+        let changes = open.stream.append(text);
         if let Some(AssistantContentBlock::ToolCall(call)) = self.message.content.get_mut(index) {
             call.arguments.clear();
-        }
-        match open.stream.replace(text) {
-            Replaced::Continued { changes, .. } | Replaced::Restarted { changes } => {
-                if let Some(AssistantContentBlock::ToolCall(call)) =
-                    self.message.content.get_mut(index)
-                {
-                    apply_argument_changes(&mut call.arguments, &changes);
-                }
-            }
+            apply_argument_changes(&mut call.arguments, &changes);
         }
     }
 }

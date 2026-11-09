@@ -663,20 +663,44 @@ mod sender_tests {
         });
     }
 
-    /// Patching a closed block is a protocol violation.
+    /// A closed text block may be patched: upstream amends finished blocks.
     #[test]
-    fn patch_of_closed_block_terminates_with_error() {
+    fn patch_of_closed_block() {
         futures::executor::block_on(async {
             let (mut tx, mut stream) = AssistantStream::channel(base(), 16);
             tx.skip_violation_asserts();
             tx.start().await.ok();
             let index = tx.text_start().await.unwrap_or_default();
-            let block = TextContent {
-                text: String::new(),
+            let mut block = TextContent {
+                text: String::from("hi"),
                 text_signature: None,
             };
             tx.text_end(index, block.clone()).await.ok();
-            tx.patch(index, AssistantContentBlock::Text(block))
+            block.text_signature = Some(String::from("sig"));
+            tx.patch(index, AssistantContentBlock::Text(block.clone()))
+                .await
+                .ok();
+            tx.done(DoneReason::Stop).await.ok();
+            while stream.next().await.is_some() {}
+            let message = stream.result().await;
+            assert_eq!(message.content, vec![AssistantContentBlock::Text(block)]);
+        });
+    }
+
+    /// A patch of the wrong kind is a protocol violation.
+    #[test]
+    fn patch_of_other_kind_terminates_with_error() {
+        futures::executor::block_on(async {
+            let (mut tx, mut stream) = AssistantStream::channel(base(), 16);
+            tx.skip_violation_asserts();
+            tx.start().await.ok();
+            let index = tx.text_start().await.unwrap_or_default();
+            let thinking = ThinkingContent {
+                thinking: String::new(),
+                thinking_signature: None,
+                redacted: None,
+            };
+            tx.patch(index, AssistantContentBlock::Thinking(thinking))
                 .await
                 .ok();
             tx.done(DoneReason::Stop).await.ok();
@@ -684,6 +708,52 @@ mod sender_tests {
             let message = stream.result().await;
             assert_eq!(message.stop_reason, StopReason::Error);
             assert!(message.error_message.unwrap_or_default().contains("patch"));
+        });
+    }
+
+    /// `toolcall_arguments` replaces the argument text without an event and
+    /// later deltas continue it; `toolcall_fields` keeps it.
+    #[test]
+    fn toolcall_arguments_and_fields() {
+        futures::executor::block_on(async {
+            let (mut tx, mut stream) = AssistantStream::channel(base(), 16);
+            tx.start().await.ok();
+            let call = ToolCall {
+                id: String::new(),
+                name: String::from("read"),
+                arguments: serde_json::Map::new(),
+                thought_signature: None,
+                namespace: None,
+                arguments_error: None,
+            };
+            let index = tx.toolcall_start(call.clone()).await.unwrap_or_default();
+            tx.toolcall_arguments(index, r#"{"path":"#).await.ok();
+            tx.toolcall_fields(
+                index,
+                ToolCall {
+                    id: String::from("c1"),
+                    namespace: Some(String::from("ns")),
+                    ..call
+                },
+            )
+            .await
+            .ok();
+            tx.toolcall_delta(index, r#""a"}"#).await.ok();
+            tx.toolcall_end(index).await.ok();
+            tx.done(DoneReason::ToolUse).await.ok();
+            let events: Vec<_> = stream.by_ref().collect().await;
+            // start, toolcall_start, one delta, toolcall_end, done
+            assert_eq!(events.len(), 5, "{events:?}");
+            let message = stream.result().await;
+            let Some(AssistantContentBlock::ToolCall(ended)) = message.content.first() else {
+                panic!("no tool call: {:?}", message.content);
+            };
+            assert_eq!(ended.id, "c1");
+            assert_eq!(ended.namespace.as_deref(), Some("ns"));
+            assert_eq!(
+                serde_json::Value::Object(ended.arguments.clone()),
+                json!({ "path": "a" })
+            );
         });
     }
 }

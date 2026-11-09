@@ -4,7 +4,8 @@
 //! `buildParams` and `createClient`: the request body in upstream key order
 //! (serialized with `ovo_ai::json`, byte-identical) and the headers in the
 //! `OpenAI` SDK's merge order. [`convert`](crate::api::openai_responses::convert)
-//! holds the input and tool conversion other Responses transports share.
+//! holds the input and tool conversion other Responses transports share;
+//! [`stream`](crate::api::openai_responses::stream) is the streaming side.
 //!
 //! Not yet ported: `onPayload`.
 
@@ -27,6 +28,8 @@ use crate::transcript::{
 use crate::types::model::{Model, ModelThinkingLevel, ThinkingLevel, ThinkingLevelMapValue};
 
 pub mod convert;
+#[cfg(feature = "http")]
+pub mod stream;
 
 use convert::{ConvertOptions, ToolOptions, convert_messages, convert_tools, tool_support};
 

@@ -22,7 +22,7 @@
     "bundle": "bun run --cwd apps/desktop tauri build",
     "release": "bumpp",
     "prepare": "vp config",
-    "vectors": "node scripts/parity/generate-js-json.ts && node scripts/parity/generate-types.ts && node scripts/parity/generate-streaming-json.ts && node scripts/parity/generate-stream.ts && node scripts/parity/generate-transcript.ts && node scripts/parity/generate-ai-utils.ts && node scripts/parity/generate-schema.ts && node scripts/parity/generate-http-policy.ts && node scripts/parity/generate-sse.ts && node scripts/parity/generate-auth.ts && node scripts/parity/generate-constrained-sampling.ts && node scripts/parity/generate-anthropic.ts && node scripts/parity/generate-anthropic-stream.ts && node scripts/parity/generate-openai-completions.ts && node scripts/parity/generate-openai-completions-stream.ts && node scripts/parity/generate-openai-responses.ts"
+    "vectors": "node scripts/parity/generate-js-json.ts && node scripts/parity/generate-types.ts && node scripts/parity/generate-streaming-json.ts && node scripts/parity/generate-stream.ts && node scripts/parity/generate-transcript.ts && node scripts/parity/generate-ai-utils.ts && node scripts/parity/generate-schema.ts && node scripts/parity/generate-http-policy.ts && node scripts/parity/generate-sse.ts && node scripts/parity/generate-auth.ts && node scripts/parity/generate-constrained-sampling.ts && node scripts/parity/generate-anthropic.ts && node scripts/parity/generate-anthropic-stream.ts && node scripts/parity/generate-openai-completions.ts && node scripts/parity/generate-openai-completions-stream.ts && node scripts/parity/generate-openai-responses.ts && node scripts/parity/generate-openai-responses-stream.ts"
   },
   "devDependencies": {
     "@earendil-works/pi-ai": "1.5.0",
