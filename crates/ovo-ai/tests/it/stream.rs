@@ -170,7 +170,7 @@ async fn send_delta(
     result.unwrap_or_default();
 }
 
-async fn send_metadata(tx: &ovo_ai::stream::AssistantStreamSender, name: &str, value: &Value) {
+async fn send_metadata(tx: &mut ovo_ai::stream::AssistantStreamSender, name: &str, value: &Value) {
     let field = value["field"].as_str().unwrap_or_default();
     let raw = value["value"].clone();
     let metadata = match field {
@@ -314,13 +314,16 @@ mod spawn_tests {
     async fn drop_aborts_producer() {
         let dropped = Arc::new(AtomicBool::new(false));
         let guard = Arc::clone(&dropped);
-        let stream = AssistantStream::spawn(base(), 8, move |mut sender| {
+        let stream = AssistantStream::spawn(base(), 8, move |mut sender| async move {
             let _guard = Guard(guard);
-            async move {
-                sender.start().await.expect("start");
-                futures::future::pending::<()>().await;
-            }
+            sender.start().await.expect("start");
+            futures::future::pending::<()>().await;
         });
+        tokio::task::yield_now().await;
+        assert!(
+            !dropped.load(Ordering::Relaxed),
+            "producer guard dropped before the stream"
+        );
         drop(stream);
         tokio::task::yield_now().await;
         assert!(

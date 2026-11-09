@@ -24,8 +24,9 @@ use crate::types::content::{
 };
 use crate::types::message::AssistantMessage;
 
-/// One open tool call's fold state: the call under construction and the
-/// incremental parser accumulating its argument text.
+/// One open tool call's fold state: the incremental parser accumulating
+/// its argument text. The call itself lives on the block — the parser is
+/// the only tool-call state the accumulator keeps.
 #[derive(Debug)]
 pub(crate) struct FoldToolCall {
     pub(crate) stream: ToolCallArgumentsStream,
@@ -282,6 +283,62 @@ impl AssistantMessageAccumulator {
         let changes = open.stream.append(delta);
         if let Some(AssistantContentBlock::ToolCall(call)) = self.message.content.get_mut(index) {
             apply_argument_changes(&mut call.arguments, &changes);
+        }
+    }
+
+    /// Internal `ToolcallEnd` item: finish the open fold at `index` and
+    /// build the public event's `tool_call` — arguments and
+    /// `argumentsError` from `finish()`, the rest from the live block.
+    pub(crate) fn toolcall_finish(&mut self, index: usize) -> Option<ToolCall> {
+        let finished = self.tool_calls.remove(&index)?.stream.finish();
+        let Some(AssistantContentBlock::ToolCall(call)) = self.message.content.get_mut(index)
+        else {
+            return None;
+        };
+        call.arguments = finished.arguments;
+        call.arguments_error = finished.arguments_error;
+        Some(call.clone())
+    }
+
+    /// Internal `ToolcallFields` item: set the open call's non-argument
+    /// fields on the live block; its parser keeps the text streamed so
+    /// far (upstream assigns fields on the live `output` block).
+    pub(crate) fn toolcall_fields(&mut self, index: usize, fields: ToolCall) {
+        if !self.tool_calls.contains_key(&index) {
+            return;
+        }
+        if let Some(AssistantContentBlock::ToolCall(call)) = self.message.content.get_mut(index) {
+            call.id = fields.id;
+            call.name = fields.name;
+            call.thought_signature = fields.thought_signature;
+            call.namespace = fields.namespace;
+        }
+    }
+
+    /// Internal `ToolcallReplace` item: feed `text` to the open fold —
+    /// `Continued` yields the delta for the public `toolcall_delta`
+    /// event, `Restarted` silently resets the parser and arguments
+    /// (upstream's `replace` handling).
+    pub(crate) fn toolcall_replace(&mut self, index: usize, text: &str) -> Option<String> {
+        let open = self.tool_calls.get_mut(&index)?;
+        match open.stream.replace(text) {
+            crate::json::streaming::Replaced::Continued { delta, changes } => {
+                if let Some(AssistantContentBlock::ToolCall(call)) =
+                    self.message.content.get_mut(index)
+                {
+                    apply_argument_changes(&mut call.arguments, &changes);
+                }
+                if delta.is_empty() { None } else { Some(delta) }
+            }
+            crate::json::streaming::Replaced::Restarted { changes } => {
+                if let Some(AssistantContentBlock::ToolCall(call)) =
+                    self.message.content.get_mut(index)
+                {
+                    call.arguments.clear();
+                    apply_argument_changes(&mut call.arguments, &changes);
+                }
+                None
+            }
         }
     }
 

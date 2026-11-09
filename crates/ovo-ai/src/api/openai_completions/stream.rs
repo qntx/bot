@@ -365,7 +365,7 @@ impl<'a> ChunkState<'a> {
     async fn response_fields(
         &mut self,
         chunk: &Value,
-        sender: &AssistantStreamSender,
+        sender: &mut AssistantStreamSender,
     ) -> Result<(), String> {
         if self.response_id.as_deref().is_none_or(str::is_empty)
             && let Some(id) = chunk.get("id").and_then(Value::as_str)

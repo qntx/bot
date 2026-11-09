@@ -779,7 +779,10 @@ async fn emit_tool_call(
 
 /// `createAbortedMessage(partial)` — usage metadata then
 /// `error:aborted` with `"Request was aborted"`.
-async fn abort_stream(sender: crate::stream::AssistantStreamSender, message: &AssistantMessage) {
+async fn abort_stream(
+    mut sender: crate::stream::AssistantStreamSender,
+    message: &AssistantMessage,
+) {
     sender
         .metadata(crate::stream::Metadata::Usage(message.usage.clone()))
         .await
@@ -932,7 +935,7 @@ impl ChatApi for FauxChatApi {
         let max_token_size = self.max_token_size;
         let tokens_per_second = self.tokens_per_second;
         let base = base_message(&model);
-        AssistantStream::spawn(base, 16, move |sender| async move {
+        AssistantStream::spawn(base, 16, move |mut sender| async move {
             if let Some(on_response) = &options.on_response {
                 let metadata = crate::options::ResponseMetadata {
                     status: 200,
@@ -1187,7 +1190,10 @@ fn take_fetch(
 
 /// `streamWithDeltas`'s terminal event — the message's usage and deferred
 /// handle, then `done`/`error` from its `stopReason`.
-async fn finish_message(sender: crate::stream::AssistantStreamSender, message: AssistantMessage) {
+async fn finish_message(
+    mut sender: crate::stream::AssistantStreamSender,
+    message: AssistantMessage,
+) {
     sender
         .metadata(crate::stream::Metadata::Usage(message.usage.clone()))
         .await

@@ -739,7 +739,7 @@ impl<'a> ResponsesState<'a> {
     async fn failed(
         &mut self,
         event: &Value,
-        sender: &AssistantStreamSender,
+        sender: &mut AssistantStreamSender,
     ) -> Result<String, String> {
         self.saw_terminal = true;
         let response = event.get("response").unwrap_or(&Value::Null);

@@ -393,7 +393,7 @@ impl<'a> EventState<'a> {
     async fn message_start(
         &mut self,
         event: &Value,
-        sender: &AssistantStreamSender,
+        sender: &mut AssistantStreamSender,
     ) -> Result<(), String> {
         let message = event.get("message").unwrap_or(&Value::Null);
         if let Some(Value::Array(items)) = message.get("input_transformations") {
@@ -557,7 +557,7 @@ impl<'a> EventState<'a> {
     async fn message_delta(
         &mut self,
         event: &Value,
-        sender: &AssistantStreamSender,
+        sender: &mut AssistantStreamSender,
     ) -> Result<(), String> {
         if let Some(Value::Array(items)) = event.get("input_transformations") {
             self.input_transformations = Some(items.clone());
@@ -607,7 +607,7 @@ impl<'a> EventState<'a> {
     async fn update_usage(
         &mut self,
         reported: Option<&Value>,
-        sender: &AssistantStreamSender,
+        sender: &mut AssistantStreamSender,
     ) -> Result<(), String> {
         self.usage.total_tokens =
             self.usage.input + self.usage.output + self.usage.cache_read + self.usage.cache_write;

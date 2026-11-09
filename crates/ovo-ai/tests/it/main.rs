@@ -44,6 +44,7 @@ mod openai_responses_stream;
 mod providers;
 mod schema;
 mod stream;
+mod stream_forward;
 mod streaming_json;
 mod support;
 mod transcript;
