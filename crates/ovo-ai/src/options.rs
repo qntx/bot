@@ -7,6 +7,19 @@
 
 use serde_json::{Map, Value};
 
+/// The future a `transformHeaders` callback returns.
+pub type TransformHeadersFuture = std::pin::Pin<Box<dyn Future<Output = ProviderHeaders> + Send>>;
+
+/// `transformHeaders` — a Models-layer header transform.
+///
+/// Runs last over the merged request headers. `Arc`-wrapped so
+/// options stay `Clone`; `Debug` is opaque.
+pub type TransformHeaders = Arc<dyn Fn(ProviderHeaders) -> TransformHeadersFuture + Send + Sync>;
+
+use std::sync::Arc;
+
+use tokio_util::sync::CancellationToken;
+
 use crate::http::headers::ProviderHeaders;
 use crate::identity::ClientIdentity;
 use crate::simple_options::{clamp_max_tokens_to_context, resolve_sampling_params};
@@ -17,7 +30,7 @@ use crate::types::model::{Model, ModelThinkingLevel, ThinkingLevel};
 pub type ProviderEnv = Map<String, Value>;
 
 /// `StreamOptions` — every data field upstream carries.
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Default)]
 #[non_exhaustive]
 pub struct StreamOptions {
     /// `temperature`.
@@ -50,6 +63,11 @@ pub struct StreamOptions {
     pub cache_retention: Option<CacheRetention>,
     /// `sessionId`.
     pub session_id: Option<String>,
+    /// `signal` — upstream `AbortSignal` (request cancellation).
+    pub signal: Option<CancellationToken>,
+    /// `transformHeaders` (Models-layer `ModelsRequestTransforms`) —
+    /// runs last over the merged request headers.
+    pub transform_headers: Option<TransformHeaders>,
 }
 
 /// `Transport`.
@@ -172,5 +190,62 @@ pub fn build_base_options(
         transport: base.transport,
         cache_retention: base.cache_retention,
         session_id: base.session_id,
+        signal: base.signal,
+        transform_headers: base.transform_headers,
+    }
+}
+
+/// `ProviderRequestOptions`-shaped fields shared by the deferred,
+/// images, and classifier request paths.
+///
+/// Upstream carries the same base
+/// (`apiKey`/`headers`/`env`/`identity`/`sessionId`/`signal`);
+/// type aliases keep the API surface distinct without duplicating
+/// the struct.
+#[derive(Clone, Default)]
+#[non_exhaustive]
+pub struct RequestOptions {
+    /// `apiKey` — explicit per-request key.
+    pub api_key: Option<String>,
+    /// `env` — provider-scoped environment overrides.
+    pub env: Option<ProviderEnv>,
+    /// `headers` — request header overlay (`null` suppresses).
+    pub headers: Option<ProviderHeaders>,
+    /// `identity` — `User-Agent` / attribution.
+    pub identity: Option<ClientIdentity>,
+    /// `sessionId`.
+    pub session_id: Option<String>,
+    /// `signal` — upstream `AbortSignal`.
+    pub signal: Option<CancellationToken>,
+    /// `transformHeaders` — Models-layer transform.
+    pub transform_headers: Option<TransformHeaders>,
+}
+
+/// `DeferredFetchOptions`.
+pub type DeferredFetchOptions = RequestOptions;
+/// `DeferredCancelOptions`.
+pub type DeferredCancelOptions = RequestOptions;
+/// `ImagesOptions`.
+pub type ImagesOptions = RequestOptions;
+/// `ClassifierOptions`.
+pub type ClassifierOptions = RequestOptions;
+
+impl std::fmt::Debug for StreamOptions {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("StreamOptions")
+            .field("api_key", &self.api_key)
+            .field("headers", &self.headers)
+            .field("session_id", &self.session_id)
+            .finish_non_exhaustive()
+    }
+}
+
+impl std::fmt::Debug for RequestOptions {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("RequestOptions")
+            .field("api_key", &self.api_key)
+            .field("headers", &self.headers)
+            .field("session_id", &self.session_id)
+            .finish_non_exhaustive()
     }
 }

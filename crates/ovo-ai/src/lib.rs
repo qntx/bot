@@ -12,12 +12,15 @@
 pub mod auth;
 pub mod cost;
 pub mod estimate;
+pub mod faux;
 pub mod http;
 pub mod identity;
 pub mod json;
+pub mod models;
 pub mod models_error;
 pub mod options;
 pub mod overflow;
+pub mod provider;
 pub mod retry;
 pub mod schema;
 pub mod simple_options;

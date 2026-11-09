@@ -7,7 +7,11 @@ use Future;
 use crate::auth::config_value::CommandRunner;
 use crate::auth::env::{Env, env_get};
 use crate::auth::store::CredentialStore;
-use crate::auth::types::{ApiKeyCredential, AuthError, AuthResult, Credential, ModelAuth};
+use std::sync::Arc;
+
+use crate::auth::types::{
+    ApiKeyCredential, AuthError, AuthResult, Credential, ModelAuth, OAuthCredential,
+};
 use crate::models_error::ModelsErrorCode;
 
 /// `ProcessCommandRunner` for `!command` values: `sh -c` on unix,
@@ -206,13 +210,97 @@ pub async fn resolve_provider_auth(
     }
 }
 
+/// `ApiKeyAuth.resolve` hook.
+///
+/// A stored key wins, else ambient sources (env vars, custom
+/// resolution). `envApiKeyAuth` builds the standard resolver;
+/// providers with custom auth (faux, IAM, ADC) supply their own.
+pub type ApiKeyResolve =
+    Arc<dyn Fn(Option<&ApiKeyCredential>, &dyn Env) -> Option<AuthResult> + Send + Sync>;
+
 /// `ApiKeyAuth`-shaped provider hook (`name` + `resolve`), the M1
 /// subset of upstream's `ApiKeyAuth` (`login`/`check` are app-side).
-#[derive(Debug)]
 pub struct ApiKeyAuth {
     /// Display name ("Anthropic API key").
     pub name: String,
-    /// Env vars checked in order (the provider's
-    /// [`api_key_env_vars`] list or a custom set).
-    pub env_vars: Vec<String>,
+    /// `resolve` — ambient/stored resolution.
+    pub resolve: ApiKeyResolve,
+}
+
+impl Clone for ApiKeyAuth {
+    fn clone(&self) -> Self {
+        Self {
+            name: self.name.clone(),
+            resolve: Arc::clone(&self.resolve),
+        }
+    }
+}
+
+impl std::fmt::Debug for ApiKeyAuth {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ApiKeyAuth")
+            .field("name", &self.name)
+            .finish_non_exhaustive()
+    }
+}
+
+impl ApiKeyAuth {
+    /// `envApiKeyAuth(name, envVars)` — stored key → env vars in order.
+    #[must_use]
+    pub fn env_api_key(name: &str, env_vars: &[&str]) -> Self {
+        let vars: Vec<String> = env_vars.iter().map(|s| (*s).to_owned()).collect();
+        Self {
+            name: name.to_owned(),
+            resolve: Arc::new(move |credential, env| {
+                resolve_api_key_env(
+                    &vars.iter().map(String::as_str).collect::<Vec<_>>(),
+                    credential,
+                    env,
+                )
+            }),
+        }
+    }
+
+    /// A custom resolver (faux's `resolve: async () => ({ auth: {} })`
+    /// and friends).
+    #[must_use]
+    pub fn custom(name: &str, resolve: ApiKeyResolve) -> Self {
+        Self {
+            name: name.to_owned(),
+            resolve,
+        }
+    }
+}
+
+/// The future `toAuth` returns.
+pub type OauthToAuthFuture = std::pin::Pin<Box<dyn std::future::Future<Output = ModelAuth> + Send>>;
+
+/// `toAuth(credential)` — request auth from a valid credential.
+pub type OauthToAuth = Arc<dyn Fn(&OAuthCredential) -> OauthToAuthFuture + Send + Sync>;
+
+/// `OAuthAuth` — the M1 stub: `name` plus `toAuth`/`refresh` hooks so
+/// the stored-OAuth branch in `resolve_provider_auth` is modeled.
+/// Flows land in M5.
+pub struct OAuthAuth {
+    /// Display name ("Anthropic (Claude Pro/Max)").
+    pub name: String,
+    /// `toAuth(credential)` — request auth from a valid credential.
+    pub to_auth: OauthToAuth,
+}
+
+impl Clone for OAuthAuth {
+    fn clone(&self) -> Self {
+        Self {
+            name: self.name.clone(),
+            to_auth: Arc::clone(&self.to_auth),
+        }
+    }
+}
+
+impl std::fmt::Debug for OAuthAuth {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("OAuthAuth")
+            .field("name", &self.name)
+            .finish_non_exhaustive()
+    }
 }

@@ -106,6 +106,20 @@ impl AssistantStream {
     }
 }
 
+impl AssistantStream {
+    /// `lazyStream`'s forwarding: drain `inner` into `sender` — events
+    /// pass through `Item::Event` verbatim, and the inner stream's
+    /// final message ends the outer one.
+    pub(crate) async fn forward(mut inner: Self, sender: &mut AssistantStreamSender) {
+        use futures::StreamExt as _;
+        while let Some(event) = inner.next().await {
+            if sender.push_event(event).await.is_err() {
+                break;
+            }
+        }
+    }
+}
+
 impl std::fmt::Debug for AssistantStream {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("AssistantStream").finish_non_exhaustive()

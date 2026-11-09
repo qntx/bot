@@ -1122,20 +1122,29 @@ mod prop_tests {
         }
         text.push_str("]}");
         assert!(text.len() >= 1_000_000, "text is {} bytes", text.len());
-        let start = std::time::Instant::now();
         let mut parser = StreamingJsonParser::new();
         let mut value = Value::Null;
         let mut buf = [0u8; 4];
+        let mut changes_total: usize = 0;
         for char in text.chars() {
             let piece = char.encode_utf8(&mut buf).to_owned();
             for change in parser.append(&piece) {
                 change.apply(&mut value);
+                changes_total += 1;
             }
         }
-        let elapsed = start.elapsed();
+        assert_eq!(
+            serde_json::from_str::<Value>(&text).ok(),
+            Some(value),
+            "char-at-a-time parse diverged",
+        );
+        // Deterministic linearity guard replacing the removed wall-clock
+        // assertion (flaky under parallel test load): a quadratic append
+        // path re-emits O(N) changes per char; a linear one stays within
+        // a small factor of the input size.
         assert!(
-            elapsed.as_secs() < 2,
-            "char-at-a-time append took {elapsed:?} for {} bytes",
+            changes_total <= 8 * text.len(),
+            "parser emitted {changes_total} changes for {} bytes",
             text.len()
         );
     }

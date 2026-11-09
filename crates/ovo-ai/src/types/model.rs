@@ -122,6 +122,23 @@ pub struct ThinkingLevelMap {
     pub max: Option<ThinkingLevelMapValue>,
 }
 
+impl ThinkingLevelMap {
+    /// The mapped value for an extended thinking level.
+    #[must_use]
+    pub fn value_for(&self, level: &str) -> Option<&ThinkingLevelMapValue> {
+        match level {
+            "off" => self.off.as_ref(),
+            "minimal" => self.minimal.as_ref(),
+            "low" => self.low.as_ref(),
+            "medium" => self.medium.as_ref(),
+            "high" => self.high.as_ref(),
+            "xhigh" => self.xhigh.as_ref(),
+            "max" => self.max.as_ref(),
+            _ => None,
+        }
+    }
+}
+
 /// Deserialize `T` then wrap in `Some`, so `Option<T>` fields can
 /// distinguish an absent key (the `default` gives `None`) from an explicit
 /// `null` (`Some(T)` where `T` decodes `null`).
