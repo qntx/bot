@@ -208,6 +208,22 @@
       "classes": []
     },
     {
+      "id": "AI-PROVIDERS-CORE",
+      "upstream": [
+        "packages/ai/src/providers/all.ts",
+        "packages/ai/src/providers/anthropic.ts",
+        "packages/ai/src/providers/deepseek.ts",
+        "packages/ai/src/providers/groq.ts",
+        "packages/ai/src/providers/openai.ts",
+        "packages/ai/src/providers/openrouter.ts",
+        "packages/ai/src/providers/xai.ts",
+        "packages/ai/src/auth/helpers.ts"
+      ],
+      "vectors": ["vectors/ai/providers.json"],
+      "rust": ["crates/ovo-ai/tests/it/providers.rs"],
+      "classes": []
+    },
+    {
       "id": "AI-SHORT-HASH",
       "upstream": ["packages/ai/src/utils/hash.ts", "packages/ai/src/api/openai-prompt-cache.ts"],
       "vectors": ["vectors/ai/hash.json"],
