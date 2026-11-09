@@ -54,6 +54,50 @@ pub enum ModelThinkingLevel {
     Max,
 }
 
+impl ThinkingLevel {
+    /// The wire name (`"minimal"` … `"max"`).
+    #[must_use]
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Minimal => "minimal",
+            Self::Low => "low",
+            Self::Medium => "medium",
+            Self::High => "high",
+            Self::Xhigh => "xhigh",
+            Self::Max => "max",
+        }
+    }
+}
+
+impl From<ThinkingLevel> for ModelThinkingLevel {
+    fn from(level: ThinkingLevel) -> Self {
+        match level {
+            ThinkingLevel::Minimal => Self::Minimal,
+            ThinkingLevel::Low => Self::Low,
+            ThinkingLevel::Medium => Self::Medium,
+            ThinkingLevel::High => Self::High,
+            ThinkingLevel::Xhigh => Self::Xhigh,
+            ThinkingLevel::Max => Self::Max,
+        }
+    }
+}
+
+impl ModelThinkingLevel {
+    /// The level without `off`; `None` for [`ModelThinkingLevel::Off`].
+    #[must_use]
+    pub const fn thinking(self) -> Option<ThinkingLevel> {
+        match self {
+            Self::Off => None,
+            Self::Minimal => Some(ThinkingLevel::Minimal),
+            Self::Low => Some(ThinkingLevel::Low),
+            Self::Medium => Some(ThinkingLevel::Medium),
+            Self::High => Some(ThinkingLevel::High),
+            Self::Xhigh => Some(ThinkingLevel::Xhigh),
+            Self::Max => Some(ThinkingLevel::Max),
+        }
+    }
+}
+
 /// Provider value for a thinking level; `null` marks it unsupported.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(untagged)]

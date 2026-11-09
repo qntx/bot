@@ -872,6 +872,853 @@
       },
       "supportsStrictMode": false,
       "error": "Tool \"probe\" requires JSON-schema constrained sampling, but strict tools are unsupported."
+    },
+    {
+      "kind": "grammar-resolve",
+      "name": "no-constrained-sampling",
+      "tool": {
+        "name": "check",
+        "description": "check input",
+        "parameters": {
+          "type": "object",
+          "required": [
+            "code"
+          ],
+          "properties": {
+            "code": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "supports": true,
+      "result": null
+    },
+    {
+      "kind": "grammar-resolve",
+      "name": "grammar-unsupported",
+      "tool": {
+        "name": "check",
+        "description": "check input",
+        "parameters": {
+          "type": "object",
+          "required": [
+            "code"
+          ],
+          "properties": {
+            "code": {
+              "type": "string"
+            }
+          }
+        },
+        "constrainedSampling": {
+          "type": "grammar",
+          "variants": {
+            "openai_lark": "root ::= \"x\""
+          }
+        }
+      },
+      "supports": false,
+      "result": null
+    },
+    {
+      "kind": "grammar-resolve",
+      "name": "grammar-lark",
+      "tool": {
+        "name": "check",
+        "description": "check input",
+        "parameters": {
+          "type": "object",
+          "required": [
+            "code"
+          ],
+          "properties": {
+            "code": {
+              "type": "string"
+            }
+          }
+        },
+        "constrainedSampling": {
+          "type": "grammar",
+          "variants": {
+            "openai_lark": "root ::= \"x\""
+          }
+        }
+      },
+      "supports": true,
+      "result": {
+        "format": "lark",
+        "definition": "root ::= \"x\"",
+        "inputProperty": "code"
+      }
+    },
+    {
+      "kind": "grammar-resolve",
+      "name": "grammar-regex-when-lark-blank",
+      "tool": {
+        "name": "check",
+        "description": "check input",
+        "parameters": {
+          "type": "object",
+          "required": [
+            "code"
+          ],
+          "properties": {
+            "code": {
+              "type": "string"
+            }
+          }
+        },
+        "constrainedSampling": {
+          "type": "grammar",
+          "variants": {
+            "openai_lark": "   ",
+            "openai_regex": "[a-z]+"
+          }
+        }
+      },
+      "supports": true,
+      "result": {
+        "format": "regex",
+        "definition": "[a-z]+",
+        "inputProperty": "code"
+      }
+    },
+    {
+      "kind": "grammar-resolve",
+      "name": "grammar-both-blank",
+      "tool": {
+        "name": "check",
+        "description": "check input",
+        "parameters": {
+          "type": "object",
+          "required": [
+            "code"
+          ],
+          "properties": {
+            "code": {
+              "type": "string"
+            }
+          }
+        },
+        "constrainedSampling": {
+          "type": "grammar",
+          "variants": {
+            "openai_lark": " ",
+            "openai_regex": ""
+          }
+        }
+      },
+      "supports": true,
+      "error": "Tool \"check\" cannot use grammar constrained sampling: no supported grammar variant was provided."
+    },
+    {
+      "kind": "grammar-resolve",
+      "name": "grammar-schema-not-object",
+      "tool": {
+        "name": "check",
+        "description": "check input",
+        "parameters": {
+          "type": "string"
+        },
+        "constrainedSampling": {
+          "type": "grammar",
+          "variants": {
+            "openai_regex": "x"
+          }
+        }
+      },
+      "supports": true,
+      "error": "Tool \"check\" cannot use grammar constrained sampling: grammar constrained sampling requires an object parameter schema."
+    },
+    {
+      "kind": "grammar-resolve",
+      "name": "grammar-required-multi",
+      "tool": {
+        "name": "check",
+        "description": "check input",
+        "parameters": {
+          "type": "object",
+          "required": [
+            "a",
+            "b"
+          ],
+          "properties": {
+            "a": {
+              "type": "string"
+            },
+            "b": {
+              "type": "string"
+            }
+          }
+        },
+        "constrainedSampling": {
+          "type": "grammar",
+          "variants": {
+            "openai_regex": "x"
+          }
+        }
+      },
+      "supports": true,
+      "error": "Tool \"check\" cannot use grammar constrained sampling: grammar constrained sampling requires exactly one required string property."
+    },
+    {
+      "kind": "grammar-resolve",
+      "name": "grammar-required-missing",
+      "tool": {
+        "name": "check",
+        "description": "check input",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "string"
+            }
+          }
+        },
+        "constrainedSampling": {
+          "type": "grammar",
+          "variants": {
+            "openai_regex": "x"
+          }
+        }
+      },
+      "supports": true,
+      "error": "Tool \"check\" cannot use grammar constrained sampling: grammar constrained sampling requires exactly one required string property."
+    },
+    {
+      "kind": "grammar-resolve",
+      "name": "grammar-property-missing",
+      "tool": {
+        "name": "check",
+        "description": "check input",
+        "parameters": {
+          "type": "object",
+          "required": [
+            "code"
+          ],
+          "properties": {}
+        },
+        "constrainedSampling": {
+          "type": "grammar",
+          "variants": {
+            "openai_regex": "x"
+          }
+        }
+      },
+      "supports": true,
+      "error": "Tool \"check\" cannot use grammar constrained sampling: grammar constrained sampling requires a properties entry for code."
+    },
+    {
+      "kind": "grammar-resolve",
+      "name": "grammar-property-not-string",
+      "tool": {
+        "name": "check",
+        "description": "check input",
+        "parameters": {
+          "type": "object",
+          "required": [
+            "code"
+          ],
+          "properties": {
+            "code": {
+              "type": "number"
+            }
+          }
+        },
+        "constrainedSampling": {
+          "type": "grammar",
+          "variants": {
+            "openai_regex": "x"
+          }
+        }
+      },
+      "supports": true,
+      "error": "Tool \"check\" cannot use grammar constrained sampling: grammar constrained sampling property code must have type string."
+    },
+    {
+      "kind": "grammar-create-properties",
+      "tools": [
+        {
+          "name": "check",
+          "description": "check input",
+          "parameters": {
+            "type": "object",
+            "required": [
+              "code"
+            ],
+            "properties": {
+              "code": {
+                "type": "string"
+              }
+            }
+          },
+          "constrainedSampling": {
+            "type": "grammar",
+            "variants": {
+              "openai_lark": "r ::= 1"
+            }
+          }
+        },
+        {
+          "name": "check",
+          "description": "check input",
+          "parameters": {
+            "type": "object",
+            "required": [
+              "code"
+            ],
+            "properties": {
+              "code": {
+                "type": "string"
+              }
+            }
+          },
+          "constrainedSampling": {
+            "type": "grammar",
+            "variants": {
+              "openai_regex": "[0-9]"
+            }
+          }
+        },
+        {
+          "name": "check",
+          "description": "check input",
+          "parameters": {
+            "type": "object",
+            "required": [
+              "code"
+            ],
+            "properties": {
+              "code": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      ],
+      "result": [
+        [
+          "check",
+          "code"
+        ]
+      ]
+    },
+    {
+      "kind": "grammar-input",
+      "arguments": {
+        "code": "src"
+      },
+      "property": "code",
+      "result": "src"
+    },
+    {
+      "kind": "grammar-input-error",
+      "arguments": {
+        "code": 3
+      },
+      "property": "code",
+      "error": "Grammar tool call \"t\" requires argument \"code\" to be a string."
+    },
+    {
+      "kind": "grammar-buffer",
+      "name": "append-basic",
+      "ops": [
+        [
+          "append",
+          "in",
+          "he",
+          null,
+          {
+            "result": "{\"in\":\"he"
+          }
+        ],
+        [
+          "append",
+          "in",
+          "llo",
+          null,
+          {
+            "result": "llo"
+          }
+        ],
+        [
+          "close",
+          "in",
+          null,
+          null,
+          {
+            "result": "\"}"
+          }
+        ]
+      ],
+      "buffer": {
+        "input": "hello",
+        "started": true,
+        "closed": true
+      }
+    },
+    {
+      "kind": "grammar-buffer",
+      "name": "append-empty",
+      "ops": [
+        [
+          "append",
+          "in",
+          "",
+          null,
+          {
+            "result": null
+          }
+        ],
+        [
+          "close",
+          "in",
+          null,
+          null,
+          {
+            "result": "{\"in\":\"\"}"
+          }
+        ]
+      ],
+      "buffer": {
+        "input": "",
+        "started": true,
+        "closed": true
+      }
+    },
+    {
+      "kind": "grammar-buffer",
+      "name": "close-no-final",
+      "ops": [
+        [
+          "append",
+          "in",
+          "x",
+          null,
+          {
+            "result": "{\"in\":\"x"
+          }
+        ],
+        [
+          "close",
+          "in",
+          null,
+          null,
+          {
+            "result": "\"}"
+          }
+        ]
+      ],
+      "buffer": {
+        "input": "x",
+        "started": true,
+        "closed": true
+      }
+    },
+    {
+      "kind": "grammar-buffer",
+      "name": "close-with-final",
+      "ops": [
+        [
+          "append",
+          "in",
+          "he",
+          null,
+          {
+            "result": "{\"in\":\"he"
+          }
+        ],
+        [
+          "close",
+          "in",
+          "hello",
+          null,
+          {
+            "result": "\"}"
+          }
+        ]
+      ],
+      "buffer": {
+        "input": "he",
+        "started": true,
+        "closed": true
+      }
+    },
+    {
+      "kind": "grammar-buffer",
+      "name": "close-twice-same",
+      "ops": [
+        [
+          "append",
+          "in",
+          "x",
+          null,
+          {
+            "result": "{\"in\":\"x"
+          }
+        ],
+        [
+          "close",
+          "in",
+          "xy",
+          null,
+          {
+            "result": "\"}"
+          }
+        ],
+        [
+          "close",
+          "in",
+          "xy",
+          null,
+          {
+            "result": null
+          }
+        ]
+      ],
+      "buffer": {
+        "input": "x",
+        "started": true,
+        "closed": true
+      }
+    },
+    {
+      "kind": "grammar-buffer",
+      "name": "close-twice-diff",
+      "ops": [
+        [
+          "append",
+          "in",
+          "x",
+          null,
+          {
+            "result": "{\"in\":\"x"
+          }
+        ],
+        [
+          "close",
+          "in",
+          "xy",
+          null,
+          {
+            "result": "\"}"
+          }
+        ],
+        [
+          "close",
+          "in",
+          "xz",
+          null,
+          {
+            "result": null
+          }
+        ]
+      ],
+      "buffer": {
+        "input": "x",
+        "started": true,
+        "closed": true
+      }
+    },
+    {
+      "kind": "grammar-buffer",
+      "name": "close-non-monotonic",
+      "ops": [
+        [
+          "append",
+          "in",
+          "he",
+          null,
+          {
+            "result": "{\"in\":\"he"
+          }
+        ],
+        [
+          "close",
+          "in",
+          "xx",
+          null,
+          {
+            "result": "\"}"
+          }
+        ]
+      ],
+      "buffer": {
+        "input": "he",
+        "started": true,
+        "closed": true
+      }
+    },
+    {
+      "kind": "grammar-buffer",
+      "name": "append-after-close",
+      "ops": [
+        [
+          "append",
+          "in",
+          "x",
+          null,
+          {
+            "result": "{\"in\":\"x"
+          }
+        ],
+        [
+          "close",
+          "in",
+          null,
+          null,
+          {
+            "result": "\"}"
+          }
+        ],
+        [
+          "append",
+          "in",
+          "y",
+          null,
+          {
+            "error": "grammar tool input for property \"in\" changed after it was closed"
+          }
+        ]
+      ],
+      "buffer": {
+        "input": "x",
+        "started": true,
+        "closed": true
+      }
+    },
+    {
+      "kind": "grammar-buffer",
+      "name": "escape-quote",
+      "ops": [
+        [
+          "append",
+          "in",
+          "say \"hi\"",
+          null,
+          {
+            "result": "{\"in\":\"say \\\"hi\\\""
+          }
+        ],
+        [
+          "close",
+          "in",
+          null,
+          null,
+          {
+            "result": "\"}"
+          }
+        ]
+      ],
+      "buffer": {
+        "input": "say \"hi\"",
+        "started": true,
+        "closed": true
+      }
+    },
+    {
+      "kind": "grammar-buffer",
+      "name": "escape-backslash",
+      "ops": [
+        [
+          "append",
+          "in",
+          "a\\b",
+          null,
+          {
+            "result": "{\"in\":\"a\\\\b"
+          }
+        ],
+        [
+          "close",
+          "in",
+          null,
+          null,
+          {
+            "result": "\"}"
+          }
+        ]
+      ],
+      "buffer": {
+        "input": "a\\b",
+        "started": true,
+        "closed": true
+      }
+    },
+    {
+      "kind": "grammar-buffer",
+      "name": "escape-newline",
+      "ops": [
+        [
+          "append",
+          "in",
+          "a\nb",
+          null,
+          {
+            "result": "{\"in\":\"a\\nb"
+          }
+        ],
+        [
+          "close",
+          "in",
+          null,
+          null,
+          {
+            "result": "\"}"
+          }
+        ]
+      ],
+      "buffer": {
+        "input": "a\nb",
+        "started": true,
+        "closed": true
+      }
+    },
+    {
+      "kind": "grammar-buffer",
+      "name": "escape-tab",
+      "ops": [
+        [
+          "append",
+          "in",
+          "a\tb",
+          null,
+          {
+            "result": "{\"in\":\"a\\tb"
+          }
+        ],
+        [
+          "close",
+          "in",
+          null,
+          null,
+          {
+            "result": "\"}"
+          }
+        ]
+      ],
+      "buffer": {
+        "input": "a\tb",
+        "started": true,
+        "closed": true
+      }
+    },
+    {
+      "kind": "grammar-buffer",
+      "name": "escape-control",
+      "ops": [
+        [
+          "append",
+          "in",
+          "a\u0001b",
+          null,
+          {
+            "result": "{\"in\":\"a\\u0001b"
+          }
+        ],
+        [
+          "close",
+          "in",
+          null,
+          null,
+          {
+            "result": "\"}"
+          }
+        ]
+      ],
+      "buffer": {
+        "input": "a\u0001b",
+        "started": true,
+        "closed": true
+      }
+    },
+    {
+      "kind": "grammar-buffer",
+      "name": "escape-u2028",
+      "ops": [
+        [
+          "append",
+          "in",
+          "a b",
+          null,
+          {
+            "result": "{\"in\":\"a b"
+          }
+        ],
+        [
+          "close",
+          "in",
+          null,
+          null,
+          {
+            "result": "\"}"
+          }
+        ]
+      ],
+      "buffer": {
+        "input": "a b",
+        "started": true,
+        "closed": true
+      }
+    },
+    {
+      "kind": "grammar-buffer",
+      "name": "escape-non-bmp",
+      "ops": [
+        [
+          "append",
+          "in",
+          "x😀y",
+          null,
+          {
+            "result": "{\"in\":\"x😀y"
+          }
+        ],
+        [
+          "close",
+          "in",
+          null,
+          null,
+          {
+            "result": "\"}"
+          }
+        ]
+      ],
+      "buffer": {
+        "input": "x😀y",
+        "started": true,
+        "closed": true
+      }
+    },
+    {
+      "kind": "grammar-buffer",
+      "name": "escape-property-name",
+      "ops": [
+        [
+          "append",
+          "weird\"prop",
+          "v",
+          null,
+          {
+            "result": "{\"weird\\\"prop\":\"v"
+          }
+        ],
+        [
+          "close",
+          "weird\"prop",
+          null,
+          null,
+          {
+            "result": "\"}"
+          }
+        ]
+      ],
+      "buffer": {
+        "input": "v",
+        "started": true,
+        "closed": true
+      }
     }
   ]
 }

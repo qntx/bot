@@ -5,3 +5,6 @@
 /// `anthropic-messages` — the Anthropic Messages API adapter.
 pub mod anthropic_messages;
 pub mod constrained_sampling;
+/// `openai-completions` — the OpenAI Chat Completions API adapter.
+pub mod openai_completions;
+pub mod openai_prompt_cache;

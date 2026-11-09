@@ -814,6 +814,79 @@ for (const [name, base, modelMax, level, custom] of [
   );
 }
 
+type HashModule = {
+  shortHash: (s: string) => string;
+};
+type PromptCacheModule = {
+  clampOpenAIPromptCacheKey: (key: string | undefined) => string | undefined;
+};
+function isHashModule(value: unknown): value is HashModule {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "shortHash" in value &&
+    typeof value.shortHash === "function"
+  );
+}
+function isPromptCacheModule(value: unknown): value is PromptCacheModule {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "clampOpenAIPromptCacheKey" in value &&
+    typeof value.clampOpenAIPromptCacheKey === "function"
+  );
+}
+const hashModule: unknown = await import(import.meta.resolve("@earendil-works/pi-ai/utils/hash"));
+const promptCacheModule: unknown = await import(
+  import.meta.resolve("@earendil-works/pi-ai/api/openai-prompt-cache")
+);
+if (!isHashModule(hashModule) || !isPromptCacheModule(promptCacheModule)) {
+  throw new Error("hash/prompt-cache dist modules lack the expected exports");
+}
+
+const hashCases: Case[] = [];
+const HASH_INPUTS = [
+  "",
+  "a",
+  "call|item",
+  "call_xyz|item_abc123",
+  `call_${"x".repeat(50)}|item_${"y".repeat(50)}`,
+  `call|${"i".repeat(80)}`,
+  "sk-ant-oat-1234567890",
+  "\u4F60\u597D\u4E16\u754C",
+  `emoji ${String.fromCodePoint(0x1f600)} test`,
+  "a+b=c/d",
+  "the quick brown fox jumps over the lazy dog",
+];
+for (const input of HASH_INPUTS) {
+  push(
+    hashCases,
+    `hash-${input.slice(0, 20) || "empty"}`,
+    "shortHash",
+    input,
+    hashModule.shortHash(input),
+  );
+}
+const PROMPT_CACHE_INPUTS: Array<string | undefined> = [
+  undefined,
+  "",
+  "key",
+  "k".repeat(64),
+  "k".repeat(65),
+  "k".repeat(100),
+  `${"e".repeat(63)}${String.fromCodePoint(0x1f600)}`,
+  `${String.fromCodePoint(0x1f600)}${"x".repeat(63)}`,
+];
+for (const input of PROMPT_CACHE_INPUTS) {
+  push(
+    hashCases,
+    `prompt-cache-${input === undefined ? "undefined" : String(input.length)}`,
+    "clampPromptCacheKey",
+    input,
+    promptCacheModule.clampOpenAIPromptCacheKey(input),
+  );
+}
+
 const generator = {
   script: "scripts/parity/generate-ai-utils.ts",
   node: process.version,
@@ -825,6 +898,7 @@ for (const [file, cases] of [
   ["vectors/ai/retry.json", retryCases],
   ["vectors/ai/cost.json", costCases],
   ["vectors/ai/simple-options.json", simpleCases],
+  ["vectors/ai/hash.json", hashCases],
 ] as const) {
   writeFileSync(file, `${JSON.stringify({ generator, cases }, null, 2)}\n`);
   console.log(`${file}: ${cases.length} cases`);

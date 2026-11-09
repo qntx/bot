@@ -6,8 +6,7 @@
 //! stream, which is [`EndOfStream::Flush`].
 //!
 //! Not yet ported: `OpenRouter` billed-cost fields in `message_delta` usage,
-//! `input_transformations` diagnostics, the strict-tools fallback retry and
-//! `onProviderStreamEvent`.
+//! `input_transformations` diagnostics and `onProviderStreamEvent`.
 
 use std::collections::HashMap;
 use std::sync::Arc;

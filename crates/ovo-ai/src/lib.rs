@@ -14,6 +14,7 @@ pub mod auth;
 pub mod cost;
 pub mod estimate;
 pub mod faux;
+pub mod hash;
 pub mod http;
 pub mod identity;
 pub mod json;

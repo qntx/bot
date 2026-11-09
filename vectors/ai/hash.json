@@ -1,0 +1,121 @@
+{
+  "generator": {
+    "script": "scripts/parity/generate-ai-utils.ts",
+    "node": "v26.13.0",
+    "upstream": "@earendil-works/pi-ai@1.5.0"
+  },
+  "cases": [
+    {
+      "name": "hash-empty",
+      "kind": "shortHash",
+      "args": "",
+      "result": "k4n83c7h0j2b"
+    },
+    {
+      "name": "hash-a",
+      "kind": "shortHash",
+      "args": "a",
+      "result": "m8735310ae7sx"
+    },
+    {
+      "name": "hash-call|item",
+      "kind": "shortHash",
+      "args": "call|item",
+      "result": "10ylsymdm6aat"
+    },
+    {
+      "name": "hash-call_xyz|item_abc123",
+      "kind": "shortHash",
+      "args": "call_xyz|item_abc123",
+      "result": "sdfrev1g0x1zm"
+    },
+    {
+      "name": "hash-call_xxxxxxxxxxxxxxx",
+      "kind": "shortHash",
+      "args": "call_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx|item_yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",
+      "result": "1eaalkx84dx6y"
+    },
+    {
+      "name": "hash-call|iiiiiiiiiiiiiii",
+      "kind": "shortHash",
+      "args": "call|iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii",
+      "result": "xb9al41xl2x8a"
+    },
+    {
+      "name": "hash-sk-ant-oat-123456789",
+      "kind": "shortHash",
+      "args": "sk-ant-oat-1234567890",
+      "result": "1gk94r5c9b8qi"
+    },
+    {
+      "name": "hash-你好世界",
+      "kind": "shortHash",
+      "args": "你好世界",
+      "result": "tv7rq2jx1on"
+    },
+    {
+      "name": "hash-emoji 😀 test",
+      "kind": "shortHash",
+      "args": "emoji 😀 test",
+      "result": "1e246gawaszvb"
+    },
+    {
+      "name": "hash-a+b=c/d",
+      "kind": "shortHash",
+      "args": "a+b=c/d",
+      "result": "vmgicw1dw5k81"
+    },
+    {
+      "name": "hash-the quick brown fox ",
+      "kind": "shortHash",
+      "args": "the quick brown fox jumps over the lazy dog",
+      "result": "1g9i2804wuc0o"
+    },
+    {
+      "name": "prompt-cache-undefined",
+      "kind": "clampPromptCacheKey"
+    },
+    {
+      "name": "prompt-cache-0",
+      "kind": "clampPromptCacheKey",
+      "args": "",
+      "result": ""
+    },
+    {
+      "name": "prompt-cache-3",
+      "kind": "clampPromptCacheKey",
+      "args": "key",
+      "result": "key"
+    },
+    {
+      "name": "prompt-cache-64",
+      "kind": "clampPromptCacheKey",
+      "args": "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk",
+      "result": "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
+    },
+    {
+      "name": "prompt-cache-65",
+      "kind": "clampPromptCacheKey",
+      "args": "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk",
+      "result": "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
+    },
+    {
+      "name": "prompt-cache-100",
+      "kind": "clampPromptCacheKey",
+      "args": "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk",
+      "result": "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
+    },
+    {
+      "name": "prompt-cache-65",
+      "kind": "clampPromptCacheKey",
+      "args": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee😀",
+      "result": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee😀"
+    },
+    {
+      "name": "prompt-cache-65",
+      "kind": "clampPromptCacheKey",
+      "args": "😀xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "result": "😀xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    }
+  ]
+}

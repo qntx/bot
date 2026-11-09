@@ -61,6 +61,59 @@ fn constrained_sampling_matches_upstream() {
                 let supports = case["supportsStrictMode"].as_bool().unwrap_or(false);
                 recorded(resolve_json_schema_strict_sampling(&tool, supports, None))
             }
+            Some("grammar-resolve") => {
+                let tool: Tool = serde_json::from_value(case["tool"].clone())
+                    .unwrap_or_else(|e| panic!("{name}: tool: {e}"));
+                let supports = case["supports"].as_bool().unwrap_or(false);
+                recorded(
+                    ovo_ai::api::constrained_sampling::resolve_grammar_constrained_sampling(
+                        &tool, supports,
+                    ),
+                )
+            }
+            Some("grammar-create-properties") => {
+                // The case stores the tool list the generator used.
+                let tools: Vec<Tool> = serde_json::from_value(case["tools"].clone())
+                    .unwrap_or_else(|e| panic!("{name}: tools: {e}"));
+                let result =
+                    ovo_ai::api::constrained_sampling::create_grammar_tool_input_properties(
+                        &tools, true,
+                    );
+                match result {
+                    Ok(map) => {
+                        serde_json::json!({"result": map.into_iter().map(|(k, v)| serde_json::json!([k, v])).collect::<Vec<_>>()})
+                    }
+                    Err(e) => serde_json::json!({"error": e.to_string()}),
+                }
+            }
+            Some("grammar-input" | "grammar-input-error") => {
+                let args: Map<String, Value> = serde_json::from_value(case["arguments"].clone())
+                    .unwrap_or_else(|e| panic!("{name}: args: {e}"));
+                recorded(ovo_ai::api::constrained_sampling::grammar_tool_input(
+                    "t", &args, "code",
+                ))
+            }
+            Some("grammar-buffer") => {
+                let mut buffer =
+                    ovo_ai::api::constrained_sampling::GrammarToolInputJsonBuffer::default();
+                let ops = case["ops"].as_array().cloned().unwrap_or_default();
+                for op in &ops {
+                    let kind = op[0].as_str().unwrap_or_default();
+                    let property = op[1].as_str().unwrap_or_default();
+                    let outcome = if kind == "append" {
+                        buffer.append_delta(property, op[2].as_str().unwrap_or_default())
+                    } else {
+                        buffer.close(property, op[3].as_str())
+                    };
+                    let actual = recorded(outcome);
+                    let expected_op = op.get(4).cloned().unwrap_or(Value::Null);
+                    assert!(
+                        js_value_eq(&actual, &expected_op),
+                        "{name}: op {kind} {property}: got {actual} want {expected_op}",
+                    );
+                }
+                Value::Object(Map::new())
+            }
             other => panic!("{name}: unknown kind {other:?}"),
         };
         let mut expected = Map::new();
