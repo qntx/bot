@@ -80,12 +80,14 @@ impl TestProvider {
             auth: ProviderAuth {
                 api_key: Some(ApiKeyAuth::custom(
                     "Ambient",
-                    Arc::new(|_, _| {
-                        Ok(Some(AuthResult {
-                            auth: ModelAuth::default(),
-                            env: None,
-                            source: None,
-                        }))
+                    Arc::new(|_| {
+                        Box::pin(async {
+                            Ok(Some(AuthResult {
+                                auth: ModelAuth::default(),
+                                env: None,
+                                source: None,
+                            }))
+                        })
                     }),
                 )),
                 oauth: None,
@@ -214,27 +216,31 @@ fn env_key_auth(key: Option<&str>) -> ApiKeyAuth {
     let key = key.map(str::to_owned);
     ApiKeyAuth::custom(
         "Test API key",
-        Arc::new(move |credential, _env| {
-            let resolved = credential
-                .and_then(|c| c.key.as_ref())
-                .map(|k| ExposeSecret::expose_secret(k).to_owned())
-                .or_else(|| key.clone());
-            Ok(resolved.map(|found| {
-                let mut result = AuthResult {
-                    auth: ModelAuth {
-                        api_key: Some(secrecy::SecretString::from(found)),
-                        ..ModelAuth::default()
-                    },
-                    env: None,
-                    source: None,
-                };
-                result.source = Some(if credential.is_some() {
-                    String::from("stored")
-                } else {
-                    String::from("env")
-                });
-                result
-            }))
+        Arc::new(move |input| {
+            let key = key.clone();
+            Box::pin(async move {
+                let resolved = input
+                    .credential
+                    .and_then(|c| c.key.as_ref())
+                    .map(|k| ExposeSecret::expose_secret(k).to_owned())
+                    .or_else(|| key.clone());
+                Ok(resolved.map(|found| {
+                    let mut result = AuthResult {
+                        auth: ModelAuth {
+                            api_key: Some(secrecy::SecretString::from(found)),
+                            ..ModelAuth::default()
+                        },
+                        env: None,
+                        source: None,
+                    };
+                    result.source = Some(if input.credential.is_some() {
+                        String::from("stored")
+                    } else {
+                        String::from("env")
+                    });
+                    result
+                }))
+            })
         }),
     )
 }
@@ -539,7 +545,7 @@ async fn persists_dynamic_catalogs_and_restores_them_without_network_access() {
             (context.publish)(ModelsPublication {
                 persist: PersistAction::Write(ModelsStoreEntry {
                     models: vec![AnyModel::Chat(Box::new(test_model("dynamic", "fetched")))],
-                    checked_at: 0.0,
+                    checked_at: 0,
                 }),
                 update: None,
             })
@@ -774,21 +780,25 @@ async fn merges_resolved_auth_into_stream_options_explicit_options_win() {
     provider.auth = ProviderAuth {
         api_key: Some(ApiKeyAuth::custom(
             "Test",
-            Arc::new(|_, _| {
-                Ok(Some(AuthResult {
-                    auth: ModelAuth {
-                        api_key: Some(secrecy::SecretString::from(String::from("resolved-key"))),
-                        headers: Some(
-                            json!({"Authorization": "Bearer resolved-key", "x-a": "auth", "x-b": "auth"})
-                                .as_object()
-                                .cloned()
-                                .unwrap_or_default(),
-                        ),
-                        base_url: Some(String::from("https://auth.test/v1")),
-                    },
-                    env: None,
-                    source: None,
-                }))
+            Arc::new(|_| {
+                Box::pin(async {
+                    Ok(Some(AuthResult {
+                        auth: ModelAuth {
+                            api_key: Some(secrecy::SecretString::from(String::from(
+                                "resolved-key",
+                            ))),
+                            headers: Some(
+                                json!({"Authorization": "Bearer resolved-key", "x-a": "auth", "x-b": "auth"})
+                                    .as_object()
+                                    .cloned()
+                                    .unwrap_or_default(),
+                            ),
+                            base_url: Some(String::from("https://auth.test/v1")),
+                        },
+                        env: None,
+                        source: None,
+                    }))
+                })
             }),
         )),
         oauth: None,
@@ -852,32 +862,36 @@ async fn uses_explicit_request_api_key_and_env_during_provider_auth_resolution()
     provider.auth = ProviderAuth {
         api_key: Some(ApiKeyAuth::custom(
             "Scoped",
-            Arc::new(|credential, env| {
-                let account = credential
-                    .and_then(|c| c.env.as_ref())
-                    .and_then(|e| e.get("ACCOUNT_ID"))
-                    .and_then(Value::as_str)
-                    .map(str::to_owned)
-                    .or_else(|| env.get("ACCOUNT_ID"));
-                let key = credential
-                    .and_then(|c| c.key.as_ref())
-                    .map(|k| ExposeSecret::expose_secret(k).to_owned());
-                Ok(match (key, account) {
-                    (Some(key), Some(account)) => Some(AuthResult {
-                        auth: ModelAuth {
-                            api_key: Some(secrecy::SecretString::from(key)),
-                            base_url: Some(format!("https://example.test/{account}")),
-                            ..ModelAuth::default()
-                        },
-                        env: Some(
-                            json!({"ACCOUNT_ID": account})
-                                .as_object()
-                                .cloned()
-                                .unwrap_or_default(),
-                        ),
-                        source: None,
-                    }),
-                    _ => None,
+            Arc::new(|input| {
+                Box::pin(async move {
+                    let account = input
+                        .credential
+                        .and_then(|c| c.env.as_ref())
+                        .and_then(|e| e.get("ACCOUNT_ID"))
+                        .and_then(Value::as_str)
+                        .map(str::to_owned)
+                        .or_else(|| input.env.get("ACCOUNT_ID"));
+                    let key = input
+                        .credential
+                        .and_then(|c| c.key.as_ref())
+                        .map(|k| ExposeSecret::expose_secret(k).to_owned());
+                    Ok(match (key, account) {
+                        (Some(key), Some(account)) => Some(AuthResult {
+                            auth: ModelAuth {
+                                api_key: Some(secrecy::SecretString::from(key)),
+                                base_url: Some(format!("https://example.test/{account}")),
+                                ..ModelAuth::default()
+                            },
+                            env: Some(
+                                json!({"ACCOUNT_ID": account})
+                                    .as_object()
+                                    .cloned()
+                                    .unwrap_or_default(),
+                            ),
+                            source: None,
+                        }),
+                        _ => None,
+                    })
                 })
             }),
         )),
@@ -969,7 +983,7 @@ async fn restores_cached_models_before_waiting_for_network_auth() {
         "dynamic",
         &ModelsStoreEntry {
             models: vec![AnyModel::Chat(Box::new(test_model("dynamic", "cached")))],
-            checked_at: 0.0,
+            checked_at: 0,
         },
     )
     .await
@@ -986,8 +1000,8 @@ async fn restores_cached_models_before_waiting_for_network_auth() {
     provider.auth = ProviderAuth {
         api_key: Some(ApiKeyAuth::custom(
             "Blocked auth",
-            Arc::new({
-                move |_, _| {
+            Arc::new(|_| {
+                Box::pin(async {
                     Ok(Some(AuthResult {
                         auth: ModelAuth {
                             api_key: Some(secrecy::SecretString::from(String::from("key"))),
@@ -996,7 +1010,7 @@ async fn restores_cached_models_before_waiting_for_network_auth() {
                         env: None,
                         source: None,
                     }))
-                }
+                })
             }),
         )),
         oauth: None,
@@ -1071,7 +1085,7 @@ async fn restores_cached_models_before_waiting_for_network_auth() {
 async fn lets_providers_choose_persistent_deletion_and_ephemeral_publication() {
     let entry = Arc::new(Mutex::new(Some(ModelsStoreEntry {
         models: vec![AnyModel::Chat(Box::new(test_model("dynamic", "stored")))],
-        checked_at: 0.0,
+        checked_at: 0,
     })));
     let store: Arc<dyn ModelsStore> = Arc::new(CellStore {
         entry: Arc::clone(&entry),
@@ -1204,7 +1218,7 @@ async fn rejects_late_publication_from_a_superseded_provider() {
                 (context.publish)(ModelsPublication {
                     persist: PersistAction::Write(ModelsStoreEntry {
                         models: vec![AnyModel::Chat(Box::new(test_model("dynamic", &value)))],
-                        checked_at: 0.0,
+                        checked_at: 0,
                     }),
                     update: Some(Box::new(move || {
                         *state
@@ -1531,7 +1545,7 @@ async fn checks_provider_auth_without_oauth_and_filters_available_models() {
         .await
         .unwrap_or_else(|e| panic!("check: {e}"));
     assert_eq!(
-        ambient_check.map(|c| (c.source, c.type_)),
+        ambient_check.map(|c| (c.source, c.kind.as_str())),
         Some((Some(String::from("env")), "api_key"))
     );
     assert!(
@@ -1546,7 +1560,7 @@ async fn checks_provider_auth_without_oauth_and_filters_available_models() {
         .await
         .unwrap_or_else(|e| panic!("check: {e}"));
     assert_eq!(
-        oauth_check.map(|c| (c.source, c.type_)),
+        oauth_check.map(|c| (c.source, c.kind.as_str())),
         Some((Some(String::from("OAuth")), "oauth"))
     );
     let available = models
@@ -1725,7 +1739,7 @@ async fn wraps_api_key_auth_failures_in_models_error() {
     provider.auth = ProviderAuth {
         api_key: Some(ApiKeyAuth::custom(
             "Failing",
-            Arc::new(|_, _| Err(String::from("nope"))),
+            Arc::new(|_| Box::pin(async { Err(String::from("nope")) })),
         )),
         oauth: None,
     };
@@ -1943,4 +1957,247 @@ async fn get_auth_resolves_env_key() {
         )
         .await;
     assert!(auth.is_ok(), "{auth:?}");
+}
+
+/// B1 — `withClientIdentity` wrappers share the `Registry`: mutations
+/// through either handle are visible to the other.
+#[tokio::test]
+async fn wrapper_mutations_are_visible_both_ways() {
+    let models = models();
+    let wrapped =
+        ovo_ai::models::with_client_identity(&models, ovo_ai::identity::ClientIdentity::default());
+    models.set_provider(Arc::new(TestProvider::new("p-shared")));
+    assert!(wrapped.get_provider("p-shared").is_some());
+    wrapped.set_provider(Arc::new(TestProvider::new("p-wrapped")));
+    assert!(models.get_provider("p-wrapped").is_some());
+    wrapped.delete_provider("p-shared");
+    assert!(models.get_provider("p-shared").is_none());
+    models.delete_provider("p-wrapped");
+    assert!(wrapped.get_provider("p-wrapped").is_none());
+}
+
+/// B1 — identity merges base → wrapper → options, field by field.
+#[tokio::test]
+async fn wrapper_identity_merges_three_levels() {
+    use ovo_ai::identity::{ClientIdentity, UserAgentMode};
+    let provider = Arc::new(TestProvider::new("p1"));
+    let calls = Arc::clone(&provider.calls);
+    let base = ClientIdentity {
+        version: Some(String::from("a-base")),
+        user_agent: Some(UserAgentMode::Custom(String::from("b-base"))),
+        attribution: Some(Some(ovo_ai::identity::ClientAttribution {
+            name: String::from("c-base"),
+            url: String::from("https://base.test"),
+            categories: None,
+        })),
+    };
+    let models = create_models(CreateModelsOptions {
+        identity: Some(base),
+        ..CreateModelsOptions::default()
+    });
+    models.set_provider(provider);
+    let wrapped = ovo_ai::models::with_client_identity(
+        &models,
+        ClientIdentity {
+            user_agent: Some(UserAgentMode::Custom(String::from("b-wrapper"))),
+            attribution: Some(Some(ovo_ai::identity::ClientAttribution {
+                name: String::from("c-wrapper"),
+                url: String::from("https://wrapper.test"),
+                categories: None,
+            })),
+            ..ClientIdentity::default()
+        },
+    );
+    let model = test_model("p1", "model-a");
+    let options = StreamOptions {
+        identity: Some(ClientIdentity {
+            attribution: Some(Some(ovo_ai::identity::ClientAttribution {
+                name: String::from("c-options"),
+                url: String::from("https://options.test"),
+                categories: None,
+            })),
+            ..ClientIdentity::default()
+        }),
+        ..StreamOptions::default()
+    };
+    let mut stream = wrapped.stream(&model, &context(), Some(options));
+    while stream.next().await.is_some() {}
+    let identity = calls
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner)
+        .first()
+        .and_then(|(_, o)| o.identity.clone())
+        .unwrap_or_else(|| panic!("no identity"));
+    assert_eq!(identity.version.as_deref(), Some("a-base"));
+    assert!(matches!(
+        identity.user_agent,
+        Some(UserAgentMode::Custom(ref v)) if v == "b-wrapper"
+    ));
+    let attribution = identity
+        .attribution
+        .and_then(|a| a)
+        .unwrap_or_else(|| panic!("no attribution"));
+    assert_eq!(attribution.name, "c-options");
+
+    // A wrapper of a wrapper composes the same way.
+    let nested = ovo_ai::models::with_client_identity(
+        &wrapped,
+        ClientIdentity {
+            attribution: Some(Some(ovo_ai::identity::ClientAttribution {
+                name: String::from("c-nested"),
+                url: String::from("https://nested.test"),
+                categories: None,
+            })),
+            ..ClientIdentity::default()
+        },
+    );
+    let mut nested_stream = nested.stream(&model, &context(), None);
+    while nested_stream.next().await.is_some() {}
+    let nested_identity = calls
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner)
+        .get(1)
+        .and_then(|(_, o)| o.identity.clone())
+        .unwrap_or_else(|| panic!("no identity"));
+    assert_eq!(nested_identity.version.as_deref(), Some("a-base"));
+    assert!(matches!(
+        nested_identity.user_agent,
+        Some(UserAgentMode::Custom(ref v)) if v == "b-wrapper"
+    ));
+    let nested_attribution = nested_identity
+        .attribution
+        .and_then(|a| a)
+        .unwrap_or_else(|| panic!("no attribution"));
+    assert_eq!(nested_attribution.name, "c-nested");
+}
+
+/// B4 — `getAuth` merges `model.headers` over the resolved auth
+/// headers for every model kind.
+#[tokio::test]
+async fn get_auth_merges_model_headers_per_kind() {
+    let models = models();
+    let mut provider = TestProvider::new("p1");
+    provider.auth = ProviderAuth {
+        api_key: Some(env_key_auth(Some("env-key"))),
+        oauth: None,
+    };
+    models.set_provider(Arc::new(provider));
+    let model_headers = |value: Value| {
+        Some(
+            json!({"x-model": value})
+                .as_object()
+                .cloned()
+                .unwrap_or_default(),
+        )
+    };
+    let chat = AnyModel::Chat(Box::new({
+        let mut m = test_model("p1", "chat-a");
+        m.headers = model_headers(json!("chat-h"));
+        m
+    }));
+    let image: AnyModel = serde_json::from_value(json!({
+        "type": "image", "id": "img", "name": "img", "api": "test-images",
+        "provider": "p1", "baseUrl": "https://example.test/v1",
+        "input": ["text"], "output": ["image"],
+        "cost": {"input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0},
+        "headers": {"x-model": "img-h"},
+    }))
+    .unwrap_or_else(|e| panic!("image: {e}"));
+    let classifier: AnyModel = serde_json::from_value(json!({
+        "type": "classifier", "id": "cls", "name": "cls",
+        "api": "test-classifier", "provider": "p1",
+        "baseUrl": "https://example.test/v1", "input": ["text"],
+        "cost": {"input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0},
+        "contextWindow": 1000,
+        "headers": {"x-model": "cls-h"},
+    }))
+    .unwrap_or_else(|e| panic!("classifier: {e}"));
+    for (model, want) in [(&chat, "chat-h"), (&image, "img-h"), (&classifier, "cls-h")] {
+        let resolution = models
+            .get_auth(
+                ProviderOrModel::Model(model),
+                &AuthResolutionOverrides::default(),
+            )
+            .await
+            .unwrap_or_else(|e| panic!("get_auth: {e}"))
+            .unwrap_or_else(|| panic!("no resolution"));
+        let headers = resolution
+            .auth
+            .headers
+            .unwrap_or_else(|| panic!("no headers"));
+        assert_eq!(
+            headers.get("x-model").and_then(Value::as_str),
+            Some(want),
+            "{model:?}"
+        );
+    }
+}
+
+/// B5 — `ModelsStoreEntry.models` drops unknown `type` elements and
+/// still errors on malformed known-type elements.
+#[test]
+fn store_entry_drops_unknown_model_types() {
+    let entry: ModelsStoreEntry = serde_json::from_value(json!({
+        "models": [
+            {
+                "type": "chat", "id": "c", "name": "c", "api": "test",
+                "provider": "p", "baseUrl": "https://x.test",
+                "reasoning": false, "input": ["text"],
+                "cost": {"input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0},
+                "contextWindow": 100, "maxTokens": 10,
+            },
+            {"type": "video", "id": "v", "name": "v"},
+        ],
+        "checkedAt": 0,
+    }))
+    .unwrap_or_else(|e| panic!("entry: {e}"));
+    assert_eq!(entry.models.len(), 1);
+    assert!(matches!(entry.models.first(), Some(AnyModel::Chat(_))));
+
+    let malformed = serde_json::from_value::<ModelsStoreEntry>(json!({
+        "models": [{"type": "chat"}],
+        "checkedAt": 0,
+    }));
+    assert!(malformed.is_err(), "malformed chat element must error");
+}
+
+/// B6 — a resolver awaiting `input.signal.cancelled()` returns when
+/// the caller cancels `overrides.signal`.
+#[tokio::test]
+async fn resolver_honors_overrides_signal() {
+    let models = models();
+    let mut provider = TestProvider::new("p1");
+    provider.auth = ProviderAuth {
+        api_key: Some(ApiKeyAuth::custom(
+            "Cancellable",
+            Arc::new(|input| {
+                let signal = input.signal.clone();
+                Box::pin(async move {
+                    signal.cancelled().await;
+                    Ok(None)
+                })
+            }),
+        )),
+        oauth: None,
+    };
+    models.set_provider(Arc::new(provider));
+    let signal = tokio_util::sync::CancellationToken::new();
+    let cancel = signal.clone();
+    tokio::spawn(async move {
+        tokio::task::yield_now().await;
+        cancel.cancel();
+    });
+    let overrides = AuthResolutionOverrides {
+        signal: Some(signal),
+        ..AuthResolutionOverrides::default()
+    };
+    let result = tokio::time::timeout(
+        std::time::Duration::from_secs(5),
+        models.get_auth(ProviderOrModel::Id("p1"), &overrides),
+    )
+    .await;
+    let resolution = result
+        .unwrap_or_else(|_| panic!("get_auth hung after signal cancel"))
+        .unwrap_or_else(|e| panic!("get_auth: {e}"));
+    assert!(resolution.is_none());
 }

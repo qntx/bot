@@ -6,13 +6,9 @@ use std::future::Future;
 use std::pin::Pin;
 
 use crate::auth::env::{Env, env_get};
-use crate::auth::store::CredentialStore;
 use std::sync::Arc;
 
-use crate::auth::types::{
-    ApiKeyCredential, AuthError, AuthResult, Credential, ModelAuth, OAuthCredential,
-};
-use crate::models_error::ModelsErrorCode;
+use crate::auth::types::{ApiKeyCredential, AuthResult, ModelAuth, OAuthCredential};
 
 /// `ProcessCommandRunner` for `!command` values: `sh -c` on unix,
 /// `cmd /C` on Windows, 10 s timeout like upstream.
@@ -159,58 +155,8 @@ pub struct AuthResolutionOverrides {
     pub api_key: Option<secrecy::SecretString>,
     /// Provider env overlay merged over `Env`.
     pub env: Option<serde_json::Map<String, serde_json::Value>>,
-    /// `minOAuthValidityMs` (defaults to five minutes).
-    pub min_oauth_validity_ms: Option<f64>,
-}
-
-/// `resolveProviderAuth` (M1 scope): `overrides.apiKey` → stored
-/// credential → ambient env vars.
-///
-/// A stored `api_key` credential owns the provider (no silent env
-/// fallback); a stored `oauth` credential surfaces the OAuth refresh
-/// path as a `ModelsError` (`"oauth"`) — flows land in M5.
-///
-/// # Errors
-/// [`AuthError::Models`] for store failures (`"auth"`) or a stored
-/// OAuth credential (`"oauth"`); [`AuthError::Io`]/`InvalidData`
-/// propagate from the store.
-pub async fn resolve_provider_auth(
-    provider_id: &str,
-    store: &dyn CredentialStore,
-    env: &dyn Env,
-    overrides: Option<&AuthResolutionOverrides>,
-) -> Result<Option<AuthResult>, AuthError> {
-    // Overlay env when provided — the injected `Env` stays the base.
-    let overlay_env = overrides
-        .and_then(|o| o.env.as_ref())
-        .map(|overlay| crate::auth::env::OverlayEnv::new(overlay, env));
-    let env: &dyn Env = if let Some(o) = &overlay_env { o } else { env };
-    let env_vars = api_key_env_vars(provider_id);
-
-    if let Some(api_key) = overrides.and_then(|o| o.api_key.as_ref()) {
-        let credential = ApiKeyCredential {
-            key: Some(secrecy::SecretString::from(api_key.clone())),
-            env: overrides.and_then(|o| o.env.clone()),
-        };
-        return Ok(resolve_api_key_env(env_vars, Some(&credential), env));
-    }
-
-    let stored = store.read(provider_id).await.map_err(|e| {
-        AuthError::models(
-            ModelsErrorCode::Auth,
-            format!("Credential store read failed for {provider_id}: {e}"),
-        )
-    })?;
-    match stored {
-        Some(Credential::ApiKey(credential)) => {
-            Ok(resolve_api_key_env(env_vars, Some(&credential), env))
-        }
-        Some(Credential::OAuth(_)) => Err(AuthError::models(
-            ModelsErrorCode::Oauth,
-            format!("OAuth resolution for {provider_id} is not implemented until M5"),
-        )),
-        None => Ok(resolve_api_key_env(env_vars, None, env)),
-    }
+    /// `overrides.signal` — aborted resolutions stop waiting.
+    pub signal: Option<tokio_util::sync::CancellationToken>,
 }
 
 /// `ApiKeyAuth.resolve` hook.
@@ -218,8 +164,35 @@ pub async fn resolve_provider_auth(
 /// A stored key wins, else ambient sources (env vars, custom
 /// resolution). `envApiKeyAuth` builds the standard resolver;
 /// providers with custom auth (faux, IAM, ADC) supply their own.
+/// The input every `ApiKeyResolve` sees — upstream's
+impl std::fmt::Debug for ApiKeyResolveInput<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ApiKeyResolveInput")
+            .field("credential", &self.credential)
+            .finish_non_exhaustive()
+    }
+}
+
+/// The input every `ApiKeyResolve` sees — upstream's
+/// `(credential, env)` plus the caller's `AbortSignal`.
+#[derive(Clone, Copy)]
+pub struct ApiKeyResolveInput<'a> {
+    /// The stored credential, when one exists.
+    pub credential: Option<&'a ApiKeyCredential>,
+    /// Ambient environment for key lookup.
+    pub env: &'a dyn Env,
+    /// The caller's `AbortSignal` (linked refresh token, request
+    /// signal, or a fresh token for checks).
+    pub signal: &'a tokio_util::sync::CancellationToken,
+}
+
+/// `ApiKeyAuth.resolve` — async so callers can abort it.
 pub type ApiKeyResolve = Arc<
-    dyn Fn(Option<&ApiKeyCredential>, &dyn Env) -> Result<Option<AuthResult>, String> + Send + Sync,
+    dyn for<'a> Fn(
+            ApiKeyResolveInput<'a>,
+        ) -> crate::provider::BoxFuture<'a, Result<Option<AuthResult>, String>>
+        + Send
+        + Sync,
 >;
 
 /// `ApiKeyAuth`-shaped provider hook (`name` + `resolve`), the M1
@@ -255,12 +228,15 @@ impl ApiKeyAuth {
         let vars: Vec<String> = env_vars.iter().map(|s| (*s).to_owned()).collect();
         Self {
             name: name.to_owned(),
-            resolve: Arc::new(move |credential, env| {
-                Ok(resolve_api_key_env(
-                    &vars.iter().map(String::as_str).collect::<Vec<_>>(),
-                    credential,
-                    env,
-                ))
+            resolve: Arc::new(move |input| {
+                let vars = vars.clone();
+                Box::pin(async move {
+                    Ok(resolve_api_key_env(
+                        &vars.iter().map(String::as_str).collect::<Vec<_>>(),
+                        input.credential,
+                        input.env,
+                    ))
+                })
             }),
         }
     }
