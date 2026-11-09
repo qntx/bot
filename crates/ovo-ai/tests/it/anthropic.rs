@@ -21,23 +21,33 @@ fn anthropic_request() {
         let context: ovo_ai::types::context::Context =
             serde_json::from_value(case["context"].clone())
                 .unwrap_or_else(|e| panic!("{name}: context: {e}"));
-        let mut options = ovo_ai::api::anthropic_messages::AnthropicOptions::default();
-        if let Some(api_key) = case["options"]["apiKey"].as_str() {
-            options.base.api_key = Some(api_key.to_owned());
+        let options = anthropic_options(&case["options"]);
+        // The vectors call the published adapter directly, which reads only
+        // `context.messages`; normalize the same messages.
+        let mut context = context;
+        context.system_prompt = None;
+        context.tools = None;
+        let transcript = ovo_ai::transcript::normalize_context(&context);
+        let built = if case["simple"].as_bool() == Some(true) {
+            let simple = simple_options(&case["options"]);
+            let mapped = ovo_ai::api::anthropic_messages::AnthropicOptions::from_simple(
+                &model,
+                &transcript,
+                &simple,
+            );
+            ovo_ai::api::anthropic_messages::build_request(&model, &transcript, &mapped, false)
+        } else {
+            ovo_ai::api::anthropic_messages::build_request(&model, &transcript, &options, false)
+        };
+        if let Some(expected_error) = case["request"]["error"].as_str() {
+            assert_eq!(
+                built.err().as_deref(),
+                Some(expected_error),
+                "{name}: error"
+            );
+            continue;
         }
-        if let Some(t) = case["options"]["temperature"].as_f64() {
-            options.base.temperature = Some(t);
-        }
-        if let Some(r) = case["options"]["cacheRetention"].as_str() {
-            options.base.cache_retention = Some(match r {
-                "long" => ovo_ai::options::CacheRetention::Long,
-                "none" => ovo_ai::options::CacheRetention::None,
-                _ => ovo_ai::options::CacheRetention::Short,
-            });
-        }
-        let request =
-            ovo_ai::api::anthropic_messages::build_request(&model, &context, Some(&options))
-                .unwrap_or_else(|e| panic!("build_request: {e}"));
+        let request = built.unwrap_or_else(|e| panic!("{name}: build_request: {e}"));
         let (url, headers, body) = (request.url, request.headers, request.body);
         assert_eq!(
             url,
@@ -87,4 +97,46 @@ fn anthropic_request() {
             );
         }
     }
+}
+
+/// The stream option fields the vectors set.
+fn stream_options(options: &Value) -> ovo_ai::options::StreamOptions {
+    let mut base = ovo_ai::options::StreamOptions::default();
+    base.api_key = options["apiKey"].as_str().map(str::to_owned);
+    base.temperature = options["temperature"].as_f64();
+    base.max_tokens = options["maxTokens"].as_u64();
+    base.cache_retention = options["cacheRetention"].as_str().map(|r| match r {
+        "long" => ovo_ai::options::CacheRetention::Long,
+        "none" => ovo_ai::options::CacheRetention::None,
+        _ => ovo_ai::options::CacheRetention::Short,
+    });
+    base.metadata = options["metadata"].as_object().cloned();
+    base.headers = options["headers"].as_object().cloned();
+    base
+}
+
+/// `AnthropicOptions` from a vector case's options.
+fn anthropic_options(options: &Value) -> ovo_ai::api::anthropic_messages::AnthropicOptions {
+    let mut anthropic = ovo_ai::api::anthropic_messages::AnthropicOptions::default();
+    anthropic.base = stream_options(options);
+    anthropic.thinking_enabled = options["thinkingEnabled"].as_bool();
+    anthropic.thinking_budget_tokens = options["thinkingBudgetTokens"].as_u64();
+    anthropic.effort = options["effort"].as_str().map(str::to_owned);
+    anthropic.thinking_display = options["thinkingDisplay"].as_str().map(str::to_owned);
+    anthropic.interleaved_thinking = options["interleavedThinking"].as_bool();
+    anthropic.tool_choice = options.get("toolChoice").filter(|v| !v.is_null()).cloned();
+    anthropic
+}
+
+/// `SimpleStreamOptions` from a vector case's options.
+fn simple_options(options: &Value) -> ovo_ai::options::SimpleStreamOptions {
+    let mut simple = ovo_ai::options::SimpleStreamOptions::default();
+    simple.base = stream_options(options);
+    simple.reasoning = options
+        .get("reasoning")
+        .and_then(|level| serde_json::from_value(level.clone()).ok());
+    simple.tool_choice = options
+        .get("toolChoice")
+        .and_then(|choice| serde_json::from_value(choice.clone()).ok());
+    simple
 }

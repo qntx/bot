@@ -13,6 +13,7 @@ use crate::identity::ClientIdentity;
 use crate::simple_options::{clamp_max_tokens_to_context, resolve_sampling_params};
 use crate::transcript::TranscriptContext;
 use crate::types::model::{Model, ModelThinkingLevel, ThinkingLevel};
+use crate::types::tool::ToolChoice;
 
 /// The future a `transformHeaders` callback returns.
 pub type TransformHeadersFuture = std::pin::Pin<Box<dyn Future<Output = ProviderHeaders> + Send>>;
@@ -114,16 +115,6 @@ pub enum CacheRetention {
     Short,
     /// `long`.
     Long,
-}
-
-/// `ToolChoice = "auto" | "none"`.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-#[serde(rename_all = "lowercase")]
-pub enum ToolChoice {
-    /// `auto`.
-    Auto,
-    /// `none`.
-    None,
 }
 
 /// `SimpleStreamOptions`: `StreamOptions` plus the simple-request

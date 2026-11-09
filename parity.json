@@ -182,6 +182,13 @@
       "vectors": ["vectors/ai/anthropic-request.json", "vectors/ai/anthropic-stream.json"],
       "rust": ["crates/ovo-ai/tests/it/anthropic.rs", "crates/ovo-ai/tests/it/anthropic_stream.rs"],
       "classes": ["sdk-headers", "key-order", "wall-clock"]
+    },
+    {
+      "id": "AI-CONSTRAINED-SAMPLING",
+      "upstream": ["packages/ai/src/api/constrained-sampling.ts"],
+      "vectors": ["vectors/ai/constrained-sampling.json"],
+      "rust": ["crates/ovo-ai/tests/it/constrained_sampling.rs"],
+      "classes": []
     }
   ],
   "classes": {
