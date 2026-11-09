@@ -233,18 +233,27 @@ pub fn get_beta_features(
     features
 }
 
-/// `buildRequest` — the `MessageCreateParamsStreaming` body in upstream
+/// One request to the Messages endpoint, ready to send.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct AnthropicRequest {
+    /// `{baseUrl}/v1/messages?beta=true` (the SDK's beta messages path).
+    pub url: String,
+    /// Request headers after the SDK and `createClient` merge order.
+    pub headers: Map<String, Value>,
+    /// The JSON body, byte-identical to upstream's `buildParams` output.
+    pub body: Vec<u8>,
+}
+
+/// `buildRequest`: the `MessageCreateParamsStreaming` body in upstream
 /// `buildParams` key order plus the request headers.
-#[expect(
-    clippy::too_many_lines,
-    reason = "mirrors upstream `buildParams` — a flat ordered dispatch; splitting it obscures the key order"
-)]
-#[must_use]
+///
+/// # Errors
+/// Returns the JSON error when the body cannot be serialized.
 pub fn build_request(
     model: &Model,
     context: &Context,
     options: Option<&AnthropicOptions>,
-) -> (String, Map<String, Value>, Vec<u8>) {
+) -> Result<AnthropicRequest, crate::json::JsonError> {
     let options = options.cloned().unwrap_or_default();
     let base = options.base.clone();
     let compat = AnthropicMessagesCompat::of(model);
@@ -360,33 +369,85 @@ pub fn build_request(
     if !converted_tools.is_empty() {
         params.insert(String::from("tools"), Value::from(converted_tools));
     }
-    let body = to_vec(&Value::from(params)).unwrap_or_default();
+    let body = to_vec(&Value::from(params))?;
+    let headers = request_headers(model, &base, &betas_header);
+    Ok(AnthropicRequest {
+        url: format!(
+            "{}/v1/messages?beta=true",
+            model.base_url.trim_end_matches('/')
+        ),
+        headers,
+        body,
+    })
+}
 
-    // Headers — `anthropic-version` + `anthropic-beta` (joined) +
-    // `x-api-key` or `Authorization: Bearer` + model/provider/request
-    // headers merged in order.
-    let mut headers = Map::new();
-    headers.insert(String::from("anthropic-version"), Value::from("2023-06-01"));
-    if !betas_header.is_empty() {
-        headers.insert(String::from("anthropic-beta"), Value::from(betas_header));
-    }
+/// The request headers in the order the Anthropic SDK applies them: its own
+/// content type, version and auth first, then pi's `defaultHeaders`
+/// (`createClient`: identity or Claude Code headers, then `model.headers`,
+/// then the request headers), then the per-request `anthropic-beta`. Later
+/// sources win case-insensitively and `null` removes a header.
+fn request_headers(model: &Model, base: &StreamOptions, betas: &str) -> Map<String, Value> {
     let api_key = base.api_key.as_deref().unwrap_or_default();
-    if !api_key.is_empty() {
-        if is_oauth_token(api_key) {
-            headers.insert(
-                String::from("authorization"),
-                Value::from(format!("Bearer {api_key}")),
-            );
-        } else {
-            headers.insert(String::from("x-api-key"), Value::from(api_key));
-        }
+    let oauth = is_oauth_token(api_key);
+    let mut sdk = Map::new();
+    sdk.insert(
+        String::from("content-type"),
+        Value::from("application/json"),
+    );
+    sdk.insert(String::from("anthropic-version"), Value::from("2023-06-01"));
+    if oauth {
+        sdk.insert(
+            String::from("authorization"),
+            Value::from(format!("Bearer {api_key}")),
+        );
+    } else if !api_key.is_empty() {
+        sdk.insert(String::from("x-api-key"), Value::from(api_key));
     }
-    (model.base_url.clone(), headers, body)
+    let mut defaults = Map::new();
+    if oauth {
+        defaults.insert(String::from("accept"), Value::from("application/json"));
+        defaults.insert(
+            String::from("anthropic-dangerous-direct-browser-access"),
+            Value::from("true"),
+        );
+        defaults.insert(
+            String::from("user-agent"),
+            Value::from(format!("claude-cli/{CLAUDE_CODE_VERSION}")),
+        );
+        defaults.insert(String::from("x-app"), Value::from("cli"));
+    } else {
+        defaults.insert(
+            String::from("User-Agent"),
+            Value::from(crate::identity::format_user_agent(
+                base.identity.as_ref(),
+                crate::identity::OVO_PRODUCT,
+                crate::identity::OVO_VERSION,
+            )),
+        );
+        defaults.insert(String::from("accept"), Value::from("application/json"));
+        defaults.insert(
+            String::from("anthropic-dangerous-direct-browser-access"),
+            Value::from("true"),
+        );
+    }
+    let mut beta = Map::new();
+    if !betas.is_empty() {
+        beta.insert(String::from("anthropic-beta"), Value::from(betas));
+    }
+    crate::http::headers::provider_headers_to_record(&[
+        Some(&sdk),
+        Some(&defaults),
+        model.headers.as_ref(),
+        base.headers.as_ref(),
+        Some(&beta),
+    ])
+    .unwrap_or_default()
 }
 
 /// `Api` constant — `"anthropic-messages"`.
 pub const API: &str = "anthropic-messages";
 
+const CLAUDE_CODE_VERSION: &str = "2.1.280";
 const FINE_GRAINED_TOOL_STREAMING_BETA: &str = "fine-grained-tool-streaming-2025-05-14";
 const INTERLEAVED_THINKING_BETA: &str = "interleaved-thinking-2025-05-14";
 const SERVER_SIDE_FALLBACK_BETA: &str = "server-side-fallback-2026-07-01";

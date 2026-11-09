@@ -14,7 +14,7 @@ use ovo_ai::types::context::Context;
 use ovo_ai::types::message::Message;
 use ovo_ai::types::model::Model;
 use serde_json::Value;
-use wiremock::matchers::{method, path};
+use wiremock::matchers::{method, path, query_param};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 
 use crate::support::js_value_eq;
@@ -56,6 +56,7 @@ async fn serve(case: &Value) -> MockServer {
     );
     Mock::given(method("POST"))
         .and(path("/v1/messages"))
+        .and(query_param("beta", "true"))
         .respond_with(response)
         .mount(&server)
         .await;

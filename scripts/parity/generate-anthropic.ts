@@ -56,7 +56,7 @@ function captureFetch(recorded: CapturedRequest[]): typeof globalThis.fetch {
   return async (url: string | URL | Request, init?: RequestInit) => {
     const headers: Record<string, string> = {};
     for (const [key, value] of new Headers(init?.headers)) {
-      if (!key.startsWith("x-stainless-") && key !== "user-agent") {
+      if (!key.startsWith("x-stainless-")) {
         headers[key] = value;
       }
     }
@@ -77,19 +77,10 @@ const BASE_MODEL = {
   provider: "anthropic",
   baseUrl: "https://api.anthropic.com",
   input: ["text", "image"],
-  inputLimits: { context: 200_000, output: 8192 },
   cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
-  headers: {},
-  kind: "chat",
   reasoning: true,
-  thinkingLevelMap: null,
-  promptCache: null,
   contextWindow: 200_000,
   maxTokens: 8192,
-  samplingParams: null,
-  samplingParamsByThinkingLevel: null,
-  compat: null,
-  extra: {},
 };
 
 const BASE_OPTIONS = {
@@ -360,7 +351,13 @@ const CASES = [
   },
 ];
 
-const results: Array<{ name: string; request: CapturedRequest | { error: string } }> = [];
+const results: Array<{
+  name: string;
+  model: unknown;
+  context: unknown;
+  options: unknown;
+  request: CapturedRequest | { error: string };
+}> = [];
 for (const testCase of CASES) {
   const recorded: CapturedRequest[] = [];
   let failure: string | undefined;
@@ -382,6 +379,9 @@ for (const testCase of CASES) {
   }
   results.push({
     name: testCase.name,
+    model: testCase.model,
+    context: testCase.context,
+    options: testCase.options,
     request: recorded[0] ?? { error: failure ?? "no request was sent" },
   });
 }
