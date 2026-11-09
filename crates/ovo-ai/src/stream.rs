@@ -5,9 +5,9 @@
 //! consumer folds them into a live `AssistantMessage` (`partial()`), and
 //! `result()` yields the message after the terminal `done`/`error`.
 //!
-//! Unlike upstream this stream owns no runtime: the producer task and its
-//! abort-on-drop arrive with the HTTP layer (M1-08); `channel` only wires
-//! a bounded `tokio::sync::mpsc` queue.
+//! `spawn` owns the producer task through a
+//! `tokio_util::task::AbortOnDropHandle` — dropping the stream aborts
+//! it. `channel` only wires a bounded `tokio::sync::mpsc` queue.
 
 pub mod accumulator;
 pub mod event;
@@ -35,7 +35,7 @@ pub struct AssistantStream {
     receiver: mpsc::Receiver<Item>,
     acc: AssistantMessageAccumulator,
     done: bool,
-    producer: Option<tokio::task::JoinHandle<()>>,
+    producer: Option<tokio_util::task::AbortOnDropHandle<()>>,
 }
 
 impl AssistantStream {
@@ -70,7 +70,9 @@ impl AssistantStream {
         Fut: Future<Output = ()> + Send + 'static,
     {
         let (sender, mut stream) = Self::channel(base, capacity);
-        stream.producer = Some(tokio::spawn(producer(sender)));
+        stream.producer = Some(tokio_util::task::AbortOnDropHandle::new(tokio::spawn(
+            producer(sender),
+        )));
         stream
     }
 
@@ -85,13 +87,7 @@ impl AssistantStream {
     /// ends `stopReason: error` with an ovo-specific `errorMessage`.
     pub async fn result(mut self) -> AssistantMessage {
         while let Some(item) = self.receiver.recv().await {
-            match item {
-                Item::Meta(metadata) => self.acc.apply_metadata(metadata),
-                Item::Patch { index, block } => self.acc.ensure_block(index, block),
-                Item::ToolcallReset { index, text } => self.acc.toolcall_reset(index, &text),
-                Item::Message(message) => *self.acc.message_mut() = *message,
-                Item::Event(event) => self.acc.apply(&event),
-            }
+            let _ = self.fold_item(item);
         }
         if !self.done {
             let message = self.acc.message_mut();
@@ -108,26 +104,95 @@ impl AssistantStream {
 }
 
 impl AssistantStream {
-    /// `lazyStream`'s forwarding: drain `inner` into `sender` — events
-    /// pass through `Item::Event` verbatim, and the inner stream's
-    /// final message ends the outer one (`forwardStream`'s
-    /// `target.end(result)` carries the inner metadata the events
-    /// did not).
+    /// `lazyStream`'s forwarding: the inner stream's raw `Item`s pass
+    /// through unchanged, so the outer accumulator folds exactly what
+    /// the inner one would — `partial()` matches the direct stream after
+    /// every event and each argument byte is parsed once.
     pub(crate) async fn forward(mut inner: Self, sender: &mut AssistantStreamSender) {
-        use futures::StreamExt as _;
-        while let Some(event) = inner.next().await {
-            if sender.push_event(event).await.is_err() {
+        while let Some(item) = inner.receiver.recv().await {
+            if sender.send_item(item).await.is_err() {
                 return;
             }
         }
-        let message = inner.result().await;
-        sender.send_final(message).await.ok();
     }
 }
 
 impl std::fmt::Debug for AssistantStream {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("AssistantStream").finish_non_exhaustive()
+    }
+}
+
+impl AssistantStream {
+    /// Fold one channel item into the accumulator; returns the wire event
+    /// to yield when the item carries one (an `Item::Event` or the event
+    /// synthesized from `ToolcallEnd`/a continued `ToolcallReplace`).
+    fn fold_item(&mut self, item: Item) -> Option<AssistantMessageEvent> {
+        match item {
+            Item::Meta(metadata) => {
+                self.acc.apply_metadata(metadata);
+                None
+            }
+            Item::Patch { index, block } => {
+                self.acc.ensure_block(index, block);
+                None
+            }
+            Item::ToolcallReset { index, text } => {
+                self.acc.toolcall_reset(index, &text);
+                None
+            }
+            Item::ToolcallFields { index, call } => {
+                self.acc.toolcall_fields(index, call);
+                None
+            }
+            Item::ToolcallEnd { index } => {
+                let event = toolcall_end_event(&mut self.acc, index);
+                if let Some(event) = &event {
+                    self.acc.apply(event);
+                }
+                event
+            }
+            Item::ToolcallReplace { index, text } => self
+                .acc
+                .toolcall_replace(index, &text)
+                .map(|delta| toolcall_delta_event(index, delta)),
+            Item::Event(event) => {
+                self.acc.apply(&event);
+                Some(event)
+            }
+        }
+    }
+}
+
+/// Synthesize the public `toolcall_end` event from the accumulator's
+/// fold (`Item::ToolcallEnd`).
+fn toolcall_end_event(
+    acc: &mut AssistantMessageAccumulator,
+    index: usize,
+) -> Option<AssistantMessageEvent> {
+    acc.toolcall_finish(index)
+        .map(|call| AssistantMessageEvent::ToolcallEnd {
+            content_index: index,
+            tool_call: call,
+        })
+}
+
+/// Synthesize the public `toolcall_delta` event for a continued
+/// `Item::ToolcallReplace`; the accumulator already folded the changes.
+/// `done`/`error` end the stream.
+const fn terminal_event(event: &AssistantMessageEvent) -> bool {
+    matches!(
+        event,
+        AssistantMessageEvent::Done { .. } | AssistantMessageEvent::Error { .. }
+    )
+}
+
+/// Synthesize the public `toolcall_delta` event for a continued
+/// `Item::ToolcallReplace`; the accumulator already folded the changes.
+const fn toolcall_delta_event(index: usize, delta: String) -> AssistantMessageEvent {
+    AssistantMessageEvent::ToolcallDelta {
+        content_index: index,
+        delta,
     }
 }
 
@@ -139,30 +204,14 @@ impl futures::Stream for AssistantStream {
             return Poll::Ready(None);
         }
         loop {
-            match self.receiver.poll_recv(context) {
-                Poll::Ready(Some(Item::Meta(metadata))) => {
-                    self.acc.apply_metadata(metadata);
-                }
-                Poll::Ready(Some(Item::Patch { index, block })) => {
-                    self.acc.ensure_block(index, block);
-                }
-                Poll::Ready(Some(Item::Message(message))) => {
-                    *self.acc.message_mut() = *message;
-                }
-                Poll::Ready(Some(Item::ToolcallReset { index, text })) => {
-                    self.acc.toolcall_reset(index, &text);
-                }
-                Poll::Ready(Some(Item::Event(event))) => {
-                    let terminal = matches!(
-                        event,
-                        AssistantMessageEvent::Done { .. } | AssistantMessageEvent::Error { .. }
-                    );
-                    self.done = self.done || terminal;
-                    self.acc.apply(&event);
-                    return Poll::Ready(Some(event));
-                }
+            let item = match self.receiver.poll_recv(context) {
+                Poll::Ready(Some(item)) => item,
                 Poll::Ready(None) => return Poll::Ready(None),
                 Poll::Pending => return Poll::Pending,
+            };
+            if let Some(event) = self.fold_item(item) {
+                self.done = self.done || terminal_event(&event);
+                return Poll::Ready(Some(event));
             }
         }
     }
@@ -552,12 +601,11 @@ mod sender_tests {
     /// Release-path: an ordering violation terminates the stream with
     /// `stopReason: error` and a violation `errorMessage`, never a panic.
     #[test]
-    fn delta_before_start_terminates_with_error() {
+    fn delta_for_unopened_index_terminates_with_error() {
         futures::executor::block_on(async {
             let (mut tx, mut stream) = AssistantStream::channel(base(), 8);
             tx.skip_violation_asserts();
-            tx.text_start().await.ok();
-            // No `start` yet, and a delta on an unopened index is invalid.
+            tx.start().await.ok();
             tx.text_delta(7, "x").await.ok();
             let mut saw_error = false;
             while let Some(event) = stream.next().await {
@@ -586,7 +634,7 @@ mod sender_tests {
 
     /// Events after the terminal are protocol violations too.
     #[test]
-    fn events_after_done_terminate_with_error() {
+    fn start_twice_terminates_with_error() {
         futures::executor::block_on(async {
             let (mut tx, mut stream) = AssistantStream::channel(base(), 8);
             tx.skip_violation_asserts();
@@ -601,6 +649,98 @@ mod sender_tests {
             assert!(saw_error);
             drop(tx);
             assert_eq!(stream.result().await.stop_reason, StopReason::Error);
+        });
+    }
+
+    /// After the terminal event every sender method errs without
+    /// emitting — a late delta never reaches the stream.
+    #[test]
+    fn delta_after_terminal_is_not_emitted() {
+        futures::executor::block_on(async {
+            let (mut tx, mut stream) = AssistantStream::channel(base(), 8);
+            tx.skip_violation_asserts();
+            tx.start().await.ok();
+            let index = tx.text_start().await.expect("text_start");
+            tx.text_delta(index, "a").await.ok();
+            // A protocol violation emits the terminal `error`; every later
+            // call errs without sending.
+            tx.text_delta(7, "x").await.ok();
+            assert!(tx.text_delta(index, "late").await.is_err());
+            let mut deltas = String::new();
+            while let Some(event) = stream.next().await {
+                if let AssistantMessageEvent::TextDelta { delta, .. } = event {
+                    deltas.push_str(&delta);
+                }
+            }
+            assert_eq!(deltas, "a");
+        });
+    }
+
+    /// The first violation's message stays the final `errorMessage` — a
+    /// `done()` after the violation errs instead of overwriting it.
+    #[test]
+    fn done_after_violation_keeps_the_first_message() {
+        futures::executor::block_on(async {
+            let (mut tx, stream) = AssistantStream::channel(base(), 8);
+            tx.skip_violation_asserts();
+            tx.start().await.ok();
+            tx.text_delta(7, "x").await.ok();
+            assert!(tx.done(DoneReason::Stop).await.is_err());
+            let message = stream.result().await;
+            assert_eq!(message.stop_reason, StopReason::Error);
+            assert!(
+                message
+                    .error_message
+                    .unwrap_or_default()
+                    .contains("text_delta")
+            );
+        });
+    }
+
+    /// `start` must precede every block; `block_start` before it is a
+    /// protocol violation.
+    #[test]
+    fn block_before_start_is_a_violation() {
+        futures::executor::block_on(async {
+            let (mut tx, mut stream) = AssistantStream::channel(base(), 8);
+            tx.skip_violation_asserts();
+            tx.text_start().await.ok();
+            let mut saw_error = false;
+            while let Some(event) = stream.next().await {
+                if let AssistantMessageEvent::Error { error_message, .. } = &event {
+                    saw_error = true;
+                    assert!(error_message.contains("before start"));
+                }
+            }
+            assert!(saw_error);
+        });
+    }
+
+    /// A violation recorded by an item-based method flushes immediately —
+    /// `toolcall_end` on an index never opened sends the terminal `error`
+    /// instead of the item, and `done()` errs.
+    #[test]
+    fn toolcall_end_violation_flushes_immediately() {
+        futures::executor::block_on(async {
+            let (mut tx, mut stream) = AssistantStream::channel(base(), 8);
+            tx.skip_violation_asserts();
+            tx.start().await.ok();
+            tx.toolcall_end(5).await.ok();
+            assert!(tx.done(DoneReason::Stop).await.is_err());
+            let mut toolcall_end = false;
+            while let Some(event) = stream.next().await {
+                toolcall_end =
+                    toolcall_end || matches!(event, AssistantMessageEvent::ToolcallEnd { .. });
+            }
+            assert!(!toolcall_end, "the dropped item reached the stream");
+            let message = stream.result().await;
+            assert_eq!(message.stop_reason, StopReason::Error);
+            assert!(
+                message
+                    .error_message
+                    .unwrap_or_default()
+                    .contains("toolcall_end")
+            );
         });
     }
 

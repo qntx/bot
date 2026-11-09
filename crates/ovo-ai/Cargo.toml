@@ -18,7 +18,7 @@ serde_json            = { workspace = true, features = ["preserve_order", "float
 ryu-js.workspace      = true
 thiserror.workspace   = true
 tokio                 = { workspace = true, features = ["sync", "rt", "time", "macros", "process"] }
-tokio-util            = { workspace = true }
+tokio-util            = { workspace = true, features = ["rt"] }
 url                   = { workspace = true }
 bytes                 = { workspace = true }
 reqwest               = { workspace = true, optional = true }

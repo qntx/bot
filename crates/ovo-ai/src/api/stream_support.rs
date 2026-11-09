@@ -111,7 +111,10 @@ pub(super) async fn finish(
 }
 
 /// Publish one metadata update.
-pub(super) async fn send(sender: &AssistantStreamSender, metadata: Metadata) -> Result<(), String> {
+pub(super) async fn send(
+    sender: &mut AssistantStreamSender,
+    metadata: Metadata,
+) -> Result<(), String> {
     sender.metadata(metadata).await.map_err(|_| closed())
 }
 

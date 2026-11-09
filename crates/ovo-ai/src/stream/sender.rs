@@ -2,33 +2,11 @@
 
 use tokio::sync::mpsc;
 
-use crate::json::streaming::ToolCallArgumentsStream;
 use crate::stream::event::{AssistantMessageEvent, DoneReason, ErrorReason};
 use crate::types::content::{AssistantContentBlock, TextContent, ThinkingContent, ToolCall};
 use crate::types::deferred::DeferredHandle;
 use crate::types::diagnostic::AssistantMessageDiagnostic;
-use crate::types::message::AssistantMessage;
 use crate::types::usage::Usage;
-
-/// One open tool call's fold state (shared with the accumulator).
-#[derive(Debug)]
-pub(crate) struct FoldToolCall {
-    /// The call under construction (id/name carried for `toolcall_end`).
-    pub(crate) call: ToolCall,
-    pub(crate) stream: ToolCallArgumentsStream,
-}
-
-impl FoldToolCall {
-    /// A fold for `call` whose parser already holds its initial arguments.
-    fn seeded(call: ToolCall) -> Result<Self, StreamClosed> {
-        let mut stream = ToolCallArgumentsStream::new();
-        let initial = crate::json::to_string(&call.arguments).map_err(|_| StreamClosed)?;
-        if initial != "{}" {
-            stream.append(&initial);
-        }
-        Ok(Self { call, stream })
-    }
-}
 
 #[derive(Debug)]
 /// A field mutation of the live message (no wire event).
@@ -69,17 +47,30 @@ pub(crate) enum Item {
         index: usize,
         block: AssistantContentBlock,
     },
-    /// Provider `replace` restart: reset the block's parser and arguments
-    /// (upstream assigns `block.arguments = arguments` directly).
+    /// Provider `replace` restart or field-less assignment: the consumer's
+    /// fold restarts from `text` (upstream assigns `block.arguments`
+    /// directly).
     ToolcallReset {
         index: usize,
         text: String,
     },
-    /// A forwarded inner stream's final message — `forwardStream`'s
-    /// `target.end(result)` replaces the folded message wholesale, so the
-    /// outer stream's result carries every field the inner accumulator
-    /// learned outside wire events (usage, signatures, response ids).
-    Message(Box<AssistantMessage>),
+    /// `toolcall_end`: the consumer's fold finishes the call and emits the
+    /// public `toolcall_end` event (arguments parsed exactly once, there).
+    ToolcallEnd {
+        index: usize,
+    },
+    /// `toolcall_fields`: set the open call's non-argument fields; the
+    /// consumer's parser keeps the text streamed so far.
+    ToolcallFields {
+        index: usize,
+        call: ToolCall,
+    },
+    /// `toolcall_replace`: the consumer feeds `text` to its fold —
+    /// `Continued` emits a `toolcall_delta`, `Restarted` silently resets.
+    ToolcallReplace {
+        index: usize,
+        text: String,
+    },
 }
 
 /// The producer half of `AssistantStream::channel`.
@@ -98,7 +89,6 @@ pub struct AssistantStreamSender {
     /// The kind of every started block, by content index.
     kinds: Vec<BlockKind>,
     open: Vec<(usize, BlockKind)>,
-    tool_calls: std::collections::HashMap<usize, FoldToolCall>,
     violation: Option<String>,
     /// Debug builds `debug_assert!` on protocol violations; tests disable
     /// the assertion to exercise the release path.
@@ -114,7 +104,7 @@ enum BlockKind {
 
 impl AssistantStreamSender {
     /// The producer half of a new channel.
-    pub(crate) fn new(sender: mpsc::Sender<Item>) -> Self {
+    pub(crate) const fn new(sender: mpsc::Sender<Item>) -> Self {
         Self {
             sender,
             started: false,
@@ -122,29 +112,34 @@ impl AssistantStreamSender {
             next_index: 0,
             kinds: Vec::new(),
             open: Vec::new(),
-            tool_calls: std::collections::HashMap::new(),
             violation: None,
             assert_violations: cfg!(debug_assertions),
         }
     }
 
-    async fn emit(&mut self, event: AssistantMessageEvent) -> Result<(), StreamClosed> {
-        if let Some(violation) = &self.violation {
+    /// The one channel send path: terminated errs, a pending violation is
+    /// flushed as the terminal `error` event (the item is dropped), else
+    /// the item is sent.
+    async fn send(&mut self, item: Item) -> Result<(), StreamClosed> {
+        if self.terminated {
+            return Err(StreamClosed);
+        }
+        if let Some(violation) = self.violation.take() {
             self.sender
                 .send(Item::Event(AssistantMessageEvent::Error {
                     reason: ErrorReason::Error,
-                    error_message: violation.clone(),
+                    error_message: violation,
                 }))
                 .await
                 .ok();
             self.terminated = true;
-            self.violation = None;
             return Ok(());
         }
-        self.sender
-            .send(Item::Event(event))
-            .await
-            .map_err(|_| StreamClosed)
+        self.sender.send(item).await.map_err(|_| StreamClosed)
+    }
+
+    async fn emit(&mut self, event: AssistantMessageEvent) -> Result<(), StreamClosed> {
+        self.send(Item::Event(event)).await
     }
 
     /// Record an ordering violation: `debug_assert!` in debug builds, and in
@@ -181,6 +176,7 @@ impl AssistantStreamSender {
     }
 
     async fn block_start(&mut self, kind: BlockKind) -> Result<usize, StreamClosed> {
+        self.check(self.started, "block start before start()");
         let index = self.next_index;
         self.next_index += 1;
         self.kinds.push(kind);
@@ -278,9 +274,8 @@ impl AssistantStreamSender {
     /// Returns `Err(StreamClosed)` when the consumer is gone.
     pub async fn toolcall_start(&mut self, call: ToolCall) -> Result<usize, StreamClosed> {
         let index = self.block_start(BlockKind::ToolCall).await?;
-        self.patch_block(index, AssistantContentBlock::ToolCall(call.clone()))
+        self.patch_block(index, AssistantContentBlock::ToolCall(call))
             .await?;
-        self.tool_calls.insert(index, FoldToolCall::seeded(call)?);
         Ok(index)
     }
 
@@ -309,10 +304,6 @@ impl AssistantStreamSender {
             valid,
             "patch for a block that is not a started block of its kind",
         );
-        if let AssistantContentBlock::ToolCall(call) = &block {
-            self.tool_calls
-                .insert(index, FoldToolCall::seeded(call.clone())?);
-        }
         self.patch_block(index, block).await
     }
 
@@ -324,9 +315,6 @@ impl AssistantStreamSender {
             self.is_open(index, BlockKind::ToolCall),
             "toolcall_delta for a non-open tool call",
         );
-        if let Some(open) = self.tool_calls.get_mut(&index) {
-            open.stream.append(delta);
-        }
         self.emit(AssistantMessageEvent::ToolcallDelta {
             content_index: index,
             delta: delta.to_owned(),
@@ -348,23 +336,11 @@ impl AssistantStreamSender {
             self.is_open(index, BlockKind::ToolCall),
             "toolcall_fields for a non-open tool call",
         );
-        let Some(open) = self.tool_calls.get_mut(&index) else {
-            return Ok(());
-        };
-        open.call = ToolCall {
-            arguments: std::mem::take(&mut open.call.arguments),
-            ..fields
-        };
-        let call = open.call.clone();
-        let text = open.stream.text().to_owned();
-        // The patch reseeds the consumer's fold; the reset restores the
-        // argument text streamed so far.
-        self.patch_block(index, AssistantContentBlock::ToolCall(call))
-            .await?;
-        self.sender
-            .send(Item::ToolcallReset { index, text })
-            .await
-            .map_err(|_| StreamClosed)
+        self.send(Item::ToolcallFields {
+            index,
+            call: fields,
+        })
+        .await
     }
 
     /// Replace the open tool call's argument text with `text` without a
@@ -381,30 +357,21 @@ impl AssistantStreamSender {
             self.is_open(index, BlockKind::ToolCall),
             "toolcall_arguments for a non-open tool call",
         );
-        if let Some(open) = self.tool_calls.get_mut(&index) {
-            open.stream = ToolCallArgumentsStream::new();
-            open.stream.append(text);
-        }
-        self.sender
-            .send(Item::ToolcallReset {
-                index,
-                text: text.to_owned(),
-            })
-            .await
-            .map_err(|_| StreamClosed)
+        self.send_item(Item::ToolcallReset {
+            index,
+            text: text.to_owned(),
+        })
+        .await
     }
 
     /// Send authoritative block fields (no wire event); the consumer folds
     /// them into `partial()` like upstream's live `output` assignments.
     async fn patch_block(
-        &self,
+        &mut self,
         index: usize,
         block: AssistantContentBlock,
     ) -> Result<(), StreamClosed> {
-        self.sender
-            .send(Item::Patch { index, block })
-            .await
-            .map_err(|_| StreamClosed)
+        self.send(Item::Patch { index, block }).await
     }
 
     /// Provider sent its complete argument text: emits a `toolcall_delta`
@@ -417,38 +384,11 @@ impl AssistantStreamSender {
             self.is_open(index, BlockKind::ToolCall),
             "toolcall_replace for a non-open tool call",
         );
-        let mut reset = false;
-        let continued =
-            self.tool_calls
-                .get_mut(&index)
-                .and_then(|open| match open.stream.replace(text) {
-                    crate::json::streaming::Replaced::Continued { delta, .. }
-                        if !delta.is_empty() =>
-                    {
-                        Some(delta)
-                    }
-                    crate::json::streaming::Replaced::Restarted { .. } => {
-                        reset = true;
-                        None
-                    }
-                    crate::json::streaming::Replaced::Continued { .. } => None,
-                });
-        if let Some(delta) = continued {
-            self.emit(AssistantMessageEvent::ToolcallDelta {
-                content_index: index,
-                delta,
-            })
-            .await?;
-        } else if reset {
-            self.sender
-                .send(Item::ToolcallReset {
-                    index,
-                    text: text.to_owned(),
-                })
-                .await
-                .map_err(|_| StreamClosed)?;
-        }
-        Ok(())
+        self.send(Item::ToolcallReplace {
+            index,
+            text: text.to_owned(),
+        })
+        .await
     }
 
     /// Disable the debug assertion on ordering violations so tests can
@@ -468,28 +408,7 @@ impl AssistantStreamSender {
             "toolcall_end for a non-open tool call",
         );
         self.close(index);
-        let call = self.tool_calls.remove(&index).map_or_else(
-            || ToolCall {
-                id: String::new(),
-                name: String::new(),
-                arguments: serde_json::Map::new(),
-                thought_signature: None,
-                namespace: None,
-                arguments_error: None,
-            },
-            |open| {
-                let mut call = open.call;
-                let finished = open.stream.finish();
-                call.arguments = finished.arguments;
-                call.arguments_error = finished.arguments_error;
-                call
-            },
-        );
-        self.emit(AssistantMessageEvent::ToolcallEnd {
-            content_index: index,
-            tool_call: call,
-        })
-        .await
+        self.send_item(Item::ToolcallEnd { index }).await
     }
 
     /// Mutate a non-event field of the message (usage, response id, …).
@@ -497,20 +416,17 @@ impl AssistantStreamSender {
     /// visible in `partial()` from the next event on.
     /// # Errors
     /// Returns `Err(StreamClosed)` when the consumer is gone.
-    pub async fn metadata(&self, metadata: Metadata) -> Result<(), StreamClosed> {
-        self.sender
-            .send(Item::Meta(metadata))
-            .await
-            .map_err(|_| StreamClosed)
+    pub async fn metadata(&mut self, metadata: Metadata) -> Result<(), StreamClosed> {
+        self.send(Item::Meta(metadata)).await
     }
 
-    /// The forwarded inner stream's final message, applied wholesale by
-    /// the consumer — `forwardStream`'s `target.end(result)`.
-    pub(crate) async fn send_final(&self, message: AssistantMessage) -> Result<(), StreamClosed> {
-        self.sender
-            .send(Item::Message(Box::new(message)))
-            .await
-            .map_err(|_| StreamClosed)
+    /// Forward a channel `Item` unchanged — `AssistantStream::forward`'s
+    /// pass-through for lazy `Models` dispatch.
+    /// # Errors
+    /// Returns `Err(StreamClosed)` when the consumer is gone or the stream
+    /// already terminated.
+    pub(crate) async fn send_item(&mut self, item: Item) -> Result<(), StreamClosed> {
+        self.send(item).await
     }
 
     /// Terminal: the response finished normally.
@@ -518,8 +434,12 @@ impl AssistantStreamSender {
     /// Returns `Err(StreamClosed)` when the consumer is gone.
     pub async fn done(mut self, reason: DoneReason) -> Result<(), StreamClosed> {
         self.check(!self.terminated, "done() after a terminal event");
+        if self.terminated {
+            return Err(StreamClosed);
+        }
+        self.emit(AssistantMessageEvent::Done { reason }).await?;
         self.terminated = true;
-        self.emit(AssistantMessageEvent::Done { reason }).await
+        Ok(())
     }
 
     /// Terminal: the response failed or was aborted.
@@ -531,21 +451,16 @@ impl AssistantStreamSender {
         error_message: String,
     ) -> Result<(), StreamClosed> {
         self.check(!self.terminated, "error() after a terminal event");
-        self.terminated = true;
+        if self.terminated {
+            return Err(StreamClosed);
+        }
         self.emit(AssistantMessageEvent::Error {
             reason,
             error_message,
         })
-        .await
-    }
-
-    /// Forward a pre-built wire event — used by `AssistantStream::forward`
-    /// (the lazy `Models` dispatch path).
-    pub(crate) async fn push_event(
-        &mut self,
-        event: AssistantMessageEvent,
-    ) -> Result<(), StreamClosed> {
-        self.emit(event).await
+        .await?;
+        self.terminated = true;
+        Ok(())
     }
 
     fn is_open(&self, index: usize, kind: BlockKind) -> bool {
