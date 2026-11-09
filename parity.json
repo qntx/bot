@@ -283,5 +283,554 @@
     "wall-clock": "Values taken from the wall clock (Date.now) are masked; presence and type are compared.",
     "schema-formats": "Format checks use the jsonschema crate's implementations; the decision may differ from TypeBox on edge cases, messages match.",
     "sdk-headers": "Headers the upstream SDK injects (x-stainless-*) and the client identity User-Agent are not compared; only headers pi sets explicitly are."
+  },
+  "upstreamTests": {
+    "packages/ai/test/abort.test.ts": {
+      "e2e": "calls live provider APIs; ported to tests/e2e and run manually before release"
+    },
+    "packages/ai/test/anthropic-auth-token.test.ts": ["AI-API-ANTHROPIC", "AI-PROVIDERS-CORE"],
+    "packages/ai/test/anthropic-cache-write-1h-cost.test.ts": ["AI-API-ANTHROPIC", "AI-COST"],
+    "packages/ai/test/anthropic-eager-tool-input-compat.test.ts": ["AI-API-ANTHROPIC"],
+    "packages/ai/test/anthropic-eager-tool-input-e2e.test.ts": {
+      "e2e": "calls live provider APIs; ported to tests/e2e and run manually before release"
+    },
+    "packages/ai/test/anthropic-empty-thinking-signature-compat.test.ts": ["AI-API-ANTHROPIC"],
+    "packages/ai/test/anthropic-error-tool-result-images.test.ts": [
+      "AI-API-ANTHROPIC",
+      "AI-TRANSFORM-MESSAGES"
+    ],
+    "packages/ai/test/anthropic-federation-sdk.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-API-ANTHROPIC"
+    },
+    "packages/ai/test/anthropic-federation.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-API-ANTHROPIC"
+    },
+    "packages/ai/test/anthropic-force-adaptive-thinking.test.ts": ["AI-API-ANTHROPIC"],
+    "packages/ai/test/anthropic-long-cache-retention-e2e.test.ts": {
+      "e2e": "calls live provider APIs; ported to tests/e2e and run manually before release"
+    },
+    "packages/ai/test/anthropic-mid-conversation-effort.test.ts": ["AI-API-ANTHROPIC"],
+    "packages/ai/test/anthropic-oauth.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-AUTH-OAUTH"
+    },
+    "packages/ai/test/anthropic-opus-4-8-smoke.test.ts": {
+      "e2e": "calls live provider APIs; ported to tests/e2e and run manually before release"
+    },
+    "packages/ai/test/anthropic-sse-parsing.test.ts": ["AI-API-ANTHROPIC"],
+    "packages/ai/test/anthropic-strict-tool-fallback.test.ts": ["AI-API-ANTHROPIC"],
+    "packages/ai/test/anthropic-strict-tool-schema.test.ts": [
+      "AI-API-ANTHROPIC",
+      "AI-CONSTRAINED-SAMPLING"
+    ],
+    "packages/ai/test/anthropic-temperature-compat.test.ts": ["AI-API-ANTHROPIC"],
+    "packages/ai/test/anthropic-thinking-binding-e2e.test.ts": {
+      "e2e": "calls live provider APIs; ported to tests/e2e and run manually before release"
+    },
+    "packages/ai/test/anthropic-thinking-disable.test.ts": ["AI-API-ANTHROPIC"],
+    "packages/ai/test/anthropic-tool-name-normalization.test.ts": ["AI-API-ANTHROPIC"],
+    "packages/ai/test/azure-openai-base-url.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-API-AZURE"
+    },
+    "packages/ai/test/azure-openai-completions.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-API-AZURE"
+    },
+    "packages/ai/test/azure-openai-responses-reasoning-replay.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-API-AZURE"
+    },
+    "packages/ai/test/azure-openai-tool-choice.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-API-AZURE"
+    },
+    "packages/ai/test/baseten-models.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-PROVIDERS-ALL"
+    },
+    "packages/ai/test/bedrock-cache-write-1h-cost.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-API-BEDROCK"
+    },
+    "packages/ai/test/bedrock-convert-messages.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-API-BEDROCK"
+    },
+    "packages/ai/test/bedrock-credentials.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-API-BEDROCK"
+    },
+    "packages/ai/test/bedrock-custom-headers.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-API-BEDROCK"
+    },
+    "packages/ai/test/bedrock-endpoint-resolution.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-API-BEDROCK"
+    },
+    "packages/ai/test/bedrock-error-metadata.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-API-BEDROCK"
+    },
+    "packages/ai/test/bedrock-models.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-API-BEDROCK"
+    },
+    "packages/ai/test/bedrock-raw-stop-reason.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-API-BEDROCK"
+    },
+    "packages/ai/test/bedrock-redacted-reasoning.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-API-BEDROCK"
+    },
+    "packages/ai/test/bedrock-response-headers.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-API-BEDROCK"
+    },
+    "packages/ai/test/bedrock-stream-state.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-API-BEDROCK"
+    },
+    "packages/ai/test/bedrock-strict-tool-fallback.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-API-BEDROCK"
+    },
+    "packages/ai/test/bedrock-thinking-payload.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-API-BEDROCK"
+    },
+    "packages/ai/test/cache-retention.test.ts": [
+      "AI-API-ANTHROPIC",
+      "AI-API-OPENAI-COMPLETIONS",
+      "AI-API-OPENAI-RESPONSES"
+    ],
+    "packages/ai/test/classifier-images-live.test.ts": {
+      "e2e": "calls live provider APIs; ported to tests/e2e and run manually before release"
+    },
+    "packages/ai/test/classifier-models.test.ts": {
+      "milestone": "M6",
+      "capability": "AI-CLASSIFIER"
+    },
+    "packages/ai/test/cloudflare-ai-binding.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-API-CLOUDFLARE"
+    },
+    "packages/ai/test/cloudflare-stream.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-API-CLOUDFLARE"
+    },
+    "packages/ai/test/cloudflare-workers-ai-system-one.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-API-CLOUDFLARE"
+    },
+    "packages/ai/test/compat-env.test.ts": {
+      "excluded": "tests the legacy pi-ai API shim (src/compat.ts); ovo keeps no compatibility layer"
+    },
+    "packages/ai/test/compat-schema.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-PROVIDERS-ALL"
+    },
+    "packages/ai/test/constrained-sampling.test.ts": ["AI-CONSTRAINED-SAMPLING"],
+    "packages/ai/test/context-estimate.test.ts": ["AI-ESTIMATE"],
+    "packages/ai/test/context-overflow.test.ts": {
+      "e2e": "calls live provider APIs; ported to tests/e2e and run manually before release"
+    },
+    "packages/ai/test/cross-provider-handoff.test.ts": {
+      "e2e": "calls live provider APIs; ported to tests/e2e and run manually before release"
+    },
+    "packages/ai/test/empty.test.ts": {
+      "e2e": "calls live provider APIs; ported to tests/e2e and run manually before release"
+    },
+    "packages/ai/test/env-api-keys.test.ts": ["AI-AUTH-APIKEY"],
+    "packages/ai/test/error-body.test.ts": ["AI-ERROR-BODY"],
+    "packages/ai/test/event-stream.test.ts": ["AI-STREAM-PROTOCOL"],
+    "packages/ai/test/faux-provider.test.ts": {
+      "milestone": "M1",
+      "capability": "AI-FAUX"
+    },
+    "packages/ai/test/fetch-option.test.ts": {
+      "excluded": "tests the JavaScript fetch injection option; ovo injects its HTTP client instead"
+    },
+    "packages/ai/test/fireworks-model-generation.test.ts": {
+      "excluded": "tests the TypeScript catalog generator and its sources, which ovo consumes as built output (ADR-006)"
+    },
+    "packages/ai/test/fireworks-models.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-PROVIDERS-ALL"
+    },
+    "packages/ai/test/generate-models-strict.test.ts": {
+      "excluded": "tests the TypeScript catalog generator and its sources, which ovo consumes as built output (ADR-006)"
+    },
+    "packages/ai/test/github-copilot-anthropic.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-API-COPILOT-HEADERS"
+    },
+    "packages/ai/test/github-copilot-oauth.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-AUTH-OAUTH"
+    },
+    "packages/ai/test/github-copilot-request-size-overflow.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-PROVIDERS-ALL"
+    },
+    "packages/ai/test/google-raw-stop-reason.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-API-GOOGLE"
+    },
+    "packages/ai/test/google-shared-convert-tools.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-API-GOOGLE"
+    },
+    "packages/ai/test/google-shared-gemini3-unsigned-tool-call.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-API-GOOGLE"
+    },
+    "packages/ai/test/google-shared-image-tool-result-routing.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-API-GOOGLE"
+    },
+    "packages/ai/test/google-shared-retry.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-API-GOOGLE"
+    },
+    "packages/ai/test/google-shared-signed-empty-blocks.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-API-GOOGLE"
+    },
+    "packages/ai/test/google-thinking-disable.test.ts": {
+      "e2e": "calls live provider APIs; ported to tests/e2e and run manually before release"
+    },
+    "packages/ai/test/google-thinking-level-map.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-API-GOOGLE"
+    },
+    "packages/ai/test/google-thinking-signature.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-API-GOOGLE"
+    },
+    "packages/ai/test/google-vertex-api-key-resolution.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-API-VERTEX"
+    },
+    "packages/ai/test/identity.test.ts": ["AI-IDENTITY"],
+    "packages/ai/test/image-model-data.test.ts": {
+      "excluded": "tests the TypeScript catalog generator and its sources, which ovo consumes as built output (ADR-006)"
+    },
+    "packages/ai/test/image-tool-result.test.ts": {
+      "e2e": "calls live provider APIs; ported to tests/e2e and run manually before release"
+    },
+    "packages/ai/test/images-models.test.ts": {
+      "milestone": "M6",
+      "capability": "AI-IMAGES"
+    },
+    "packages/ai/test/images.test.ts": {
+      "e2e": "calls live provider APIs; ported to tests/e2e and run manually before release"
+    },
+    "packages/ai/test/interleaved-thinking.test.ts": {
+      "e2e": "calls live provider APIs; ported to tests/e2e and run manually before release"
+    },
+    "packages/ai/test/json-parse.test.ts": ["AI-JSON-PARTIAL"],
+    "packages/ai/test/kimi-coding-oauth.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-AUTH-OAUTH"
+    },
+    "packages/ai/test/lax-message-content.test.ts": ["AI-TRANSFORM-MESSAGES"],
+    "packages/ai/test/lazy-module-load.test.ts": {
+      "excluded": "tests lazy dynamic imports of provider modules, a JavaScript bundling concern"
+    },
+    "packages/ai/test/llama-cpp-classify.test.ts": {
+      "milestone": "M6",
+      "capability": "AI-CLASSIFIER"
+    },
+    "packages/ai/test/max-thinking.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-API-CODEX"
+    },
+    "packages/ai/test/message-types.test.ts": ["AI-TYPES-SERDE"],
+    "packages/ai/test/meta-oauth.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-AUTH-OAUTH"
+    },
+    "packages/ai/test/mistral-http-transport.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-API-MISTRAL"
+    },
+    "packages/ai/test/mistral-raw-stop-reason.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-API-MISTRAL"
+    },
+    "packages/ai/test/mistral-reasoning-mode.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-API-MISTRAL"
+    },
+    "packages/ai/test/mistral-tool-schema.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-API-MISTRAL"
+    },
+    "packages/ai/test/model-catalog-types.test.ts": {
+      "excluded": "TypeScript type-level checks of the generated catalog wrappers"
+    },
+    "packages/ai/test/model-cost-tiers.test.ts": {
+      "excluded": "tests the TypeScript catalog generator and its sources, which ovo consumes as built output (ADR-006)"
+    },
+    "packages/ai/test/model-data-validation.test.ts": {
+      "excluded": "tests the TypeScript catalog generator and its sources, which ovo consumes as built output (ADR-006)"
+    },
+    "packages/ai/test/model-types.test.ts": {
+      "milestone": "M1",
+      "capability": "AI-MODELS-REGISTRY"
+    },
+    "packages/ai/test/models-entry.test.ts": {
+      "milestone": "M1",
+      "capability": "AI-MODELS-REGISTRY"
+    },
+    "packages/ai/test/models-runtime.test.ts": {
+      "milestone": "M1",
+      "capability": "AI-MODELS-REGISTRY"
+    },
+    "packages/ai/test/node-http-proxy.test.ts": ["AI-HTTP-PROXY"],
+    "packages/ai/test/oauth-auth.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-AUTH-OAUTH"
+    },
+    "packages/ai/test/oauth-callback-server.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-AUTH-OAUTH"
+    },
+    "packages/ai/test/oauth-device-code.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-AUTH-OAUTH"
+    },
+    "packages/ai/test/openai-chatgpt-oauth.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-AUTH-OAUTH"
+    },
+    "packages/ai/test/openai-codex-cache-affinity-e2e.test.ts": {
+      "e2e": "calls live provider APIs; ported to tests/e2e and run manually before release"
+    },
+    "packages/ai/test/openai-codex-oauth.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-AUTH-OAUTH"
+    },
+    "packages/ai/test/openai-codex-stream.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-API-CODEX"
+    },
+    "packages/ai/test/openai-completions-cache-control-format.test.ts": [
+      "AI-API-OPENAI-COMPLETIONS"
+    ],
+    "packages/ai/test/openai-completions-empty-tools.test.ts": ["AI-API-OPENAI-COMPLETIONS"],
+    "packages/ai/test/openai-completions-prompt-cache.test.ts": ["AI-API-OPENAI-COMPLETIONS"],
+    "packages/ai/test/openai-completions-provider-stream-event.test.ts": {
+      "milestone": "M1",
+      "capability": "AI-API-OPENAI-COMPLETIONS-STREAM"
+    },
+    "packages/ai/test/openai-completions-raw-stop-reason.test.ts": [
+      "AI-API-OPENAI-COMPLETIONS-STREAM"
+    ],
+    "packages/ai/test/openai-completions-reasoning-details.test.ts": [
+      "AI-API-OPENAI-COMPLETIONS-STREAM"
+    ],
+    "packages/ai/test/openai-completions-response-model.test.ts": [
+      "AI-API-OPENAI-COMPLETIONS-STREAM"
+    ],
+    "packages/ai/test/openai-completions-retry.test.ts": ["AI-API-OPENAI-COMPLETIONS-STREAM"],
+    "packages/ai/test/openai-completions-thinking-as-text.test.ts": ["AI-API-OPENAI-COMPLETIONS"],
+    "packages/ai/test/openai-completions-thinking-token-budget.test.ts": [
+      "AI-API-OPENAI-COMPLETIONS"
+    ],
+    "packages/ai/test/openai-completions-tool-choice.test.ts": ["AI-API-OPENAI-COMPLETIONS"],
+    "packages/ai/test/openai-completions-tool-result-images.test.ts": ["AI-API-OPENAI-COMPLETIONS"],
+    "packages/ai/test/openai-completions-vllm-priority.test.ts": ["AI-API-OPENAI-COMPLETIONS"],
+    "packages/ai/test/openai-decisions.test.ts": {
+      "milestone": "M6",
+      "capability": "AI-CLASSIFIER"
+    },
+    "packages/ai/test/openai-responses-cache-affinity-e2e.test.ts": {
+      "e2e": "calls live provider APIs; ported to tests/e2e and run manually before release"
+    },
+    "packages/ai/test/openai-responses-chatgpt-sign-in.test.ts": ["AI-API-OPENAI-RESPONSES"],
+    "packages/ai/test/openai-responses-compat.test.ts": ["AI-API-OPENAI-RESPONSES"],
+    "packages/ai/test/openai-responses-empty-tool-result.test.ts": ["AI-API-OPENAI-RESPONSES"],
+    "packages/ai/test/openai-responses-foreign-toolcall-id.test.ts": ["AI-API-OPENAI-RESPONSES"],
+    "packages/ai/test/openai-responses-message-id.test.ts": ["AI-API-OPENAI-RESPONSES"],
+    "packages/ai/test/openai-responses-mid-convo-effort.test.ts": ["AI-API-OPENAI-RESPONSES"],
+    "packages/ai/test/openai-responses-namespace.test.ts": ["AI-API-OPENAI-RESPONSES"],
+    "packages/ai/test/openai-responses-partial-json-cleanup.test.ts": ["AI-API-OPENAI-RESPONSES"],
+    "packages/ai/test/openai-responses-reasoning-replay-e2e.test.ts": {
+      "e2e": "calls live provider APIs; ported to tests/e2e and run manually before release"
+    },
+    "packages/ai/test/openai-responses-terminal-event.test.ts": ["AI-API-OPENAI-RESPONSES"],
+    "packages/ai/test/openai-responses-tool-result-images.test.ts": ["AI-API-OPENAI-RESPONSES"],
+    "packages/ai/test/openai-responses-usage-limit.test.ts": ["AI-API-OPENAI-RESPONSES"],
+    "packages/ai/test/opencode-model-generation.test.ts": {
+      "excluded": "tests the TypeScript catalog generator and its sources, which ovo consumes as built output (ADR-006)"
+    },
+    "packages/ai/test/opencode-provider-headers.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-PROVIDERS-ALL"
+    },
+    "packages/ai/test/openrouter-cache-write-repro.test.ts": {
+      "e2e": "calls live provider APIs; ported to tests/e2e and run manually before release"
+    },
+    "packages/ai/test/openrouter-cost.test.ts": ["AI-OPENROUTER-COST"],
+    "packages/ai/test/openrouter-images.test.ts": {
+      "milestone": "M6",
+      "capability": "AI-IMAGES"
+    },
+    "packages/ai/test/openrouter-oauth.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-AUTH-OAUTH"
+    },
+    "packages/ai/test/openrouter-reasoning-options.test.ts": {
+      "excluded": "tests the TypeScript catalog generator and its sources, which ovo consumes as built output (ADR-006)"
+    },
+    "packages/ai/test/openrouter-user-models.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-PROVIDER-DYNAMIC"
+    },
+    "packages/ai/test/overflow.test.ts": ["AI-OVERFLOW"],
+    "packages/ai/test/pi-messages.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-API-PI-MESSAGES"
+    },
+    "packages/ai/test/pre-generation-error.test.ts": [
+      "AI-API-ANTHROPIC",
+      "AI-API-OPENAI-COMPLETIONS",
+      "AI-API-OPENAI-RESPONSES"
+    ],
+    "packages/ai/test/provider-error-body-passthrough.test.ts": {
+      "milestone": "M6",
+      "capability": "AI-IMAGES"
+    },
+    "packages/ai/test/provider-error-body-regression.test.ts": [
+      "AI-API-OPENAI-COMPLETIONS-STREAM",
+      "AI-API-OPENAI-RESPONSES"
+    ],
+    "packages/ai/test/provider-retry.test.ts": ["AI-HTTP-RETRY"],
+    "packages/ai/test/providers.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-PROVIDERS-ALL"
+    },
+    "packages/ai/test/qwen-token-plan-models.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-PROVIDERS-ALL"
+    },
+    "packages/ai/test/radius-oauth.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-AUTH-OAUTH"
+    },
+    "packages/ai/test/radius-provider.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-PROVIDER-DYNAMIC"
+    },
+    "packages/ai/test/radius-thinking-replay-e2e.test.ts": {
+      "e2e": "calls live provider APIs; ported to tests/e2e and run manually before release"
+    },
+    "packages/ai/test/reasoning-options.test.ts": {
+      "excluded": "tests the TypeScript catalog generator and its sources, which ovo consumes as built output (ADR-006)"
+    },
+    "packages/ai/test/responseid.test.ts": {
+      "e2e": "calls live provider APIs; ported to tests/e2e and run manually before release"
+    },
+    "packages/ai/test/retry.test.ts": ["AI-RETRY-POLICY"],
+    "packages/ai/test/sampling-options.test.ts": ["AI-SIMPLE-OPTIONS"],
+    "packages/ai/test/stream.test.ts": {
+      "e2e": "calls live provider APIs; ported to tests/e2e and run manually before release"
+    },
+    "packages/ai/test/streaming-json.test.ts": ["AI-JSON-PARTIAL"],
+    "packages/ai/test/streaming-tool-arguments.test.ts": [
+      "AI-API-ANTHROPIC",
+      "AI-API-OPENAI-COMPLETIONS-STREAM",
+      "AI-API-OPENAI-RESPONSES"
+    ],
+    "packages/ai/test/supports-xhigh.test.ts": ["AI-COST"],
+    "packages/ai/test/system-message-replay.test.ts": ["AI-TRANSCRIPT"],
+    "packages/ai/test/telemetry-options.test.ts": {
+      "excluded": "pi-telemetry is replaced by tracing (ADR-001)"
+    },
+    "packages/ai/test/telemetry.test.ts": {
+      "excluded": "pi-telemetry is replaced by tracing (ADR-001)"
+    },
+    "packages/ai/test/text.test.ts": ["AI-TRANSCRIPT"],
+    "packages/ai/test/together-models.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-PROVIDERS-ALL"
+    },
+    "packages/ai/test/tokens.test.ts": {
+      "e2e": "calls live provider APIs; ported to tests/e2e and run manually before release"
+    },
+    "packages/ai/test/tool-call-id-normalization.test.ts": {
+      "e2e": "calls live provider APIs; ported to tests/e2e and run manually before release"
+    },
+    "packages/ai/test/tool-call-without-result.test.ts": {
+      "e2e": "calls live provider APIs; ported to tests/e2e and run manually before release"
+    },
+    "packages/ai/test/total-tokens.test.ts": {
+      "e2e": "calls live provider APIs; ported to tests/e2e and run manually before release"
+    },
+    "packages/ai/test/transcript-tool-changes.test.ts": ["AI-TRANSCRIPT"],
+    "packages/ai/test/transform-messages-copilot-openai-to-anthropic.test.ts": [
+      "AI-TRANSFORM-MESSAGES"
+    ],
+    "packages/ai/test/transform-messages-cross-model-thinking.test.ts": ["AI-TRANSFORM-MESSAGES"],
+    "packages/ai/test/typesafe-system-one.test.ts": {
+      "milestone": "M6",
+      "capability": "AI-CLASSIFIER"
+    },
+    "packages/ai/test/unicode-surrogate.test.ts": {
+      "e2e": "calls live provider APIs; ported to tests/e2e and run manually before release"
+    },
+    "packages/ai/test/uuid.test.ts": {
+      "excluded": "UUIDs come from the uuid crate (ADR on time and ids); the session id rules are tested with M3 sessions"
+    },
+    "packages/ai/test/validation-probes.test.ts": ["AI-SCHEMA-VALIDATE"],
+    "packages/ai/test/validation.test.ts": ["AI-SCHEMA-VALIDATE"],
+    "packages/ai/test/xai-oauth.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-AUTH-OAUTH"
+    },
+    "packages/ai/test/xai-responses.test.ts": ["AI-API-OPENAI-RESPONSES", "AI-PROVIDERS-CORE"],
+    "packages/ai/test/xhigh.test.ts": {
+      "e2e": "calls live provider APIs; ported to tests/e2e and run manually before release"
+    },
+    "packages/ai/test/xiaomi-models.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-PROVIDERS-ALL"
+    },
+    "packages/ai/test/xiaomi-token-plan-ams-anthropic-empty-signature-smoke.test.ts": {
+      "e2e": "calls live provider APIs; ported to tests/e2e and run manually before release"
+    },
+    "packages/ai/test/zai-coding-plan-models.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-PROVIDERS-ALL"
+    },
+    "packages/ai/test/zen.test.ts": {
+      "e2e": "calls live provider APIs; ported to tests/e2e and run manually before release"
+    },
+    "packages/schema/test/builders.test.ts": {
+      "excluded": "tests the TypeBox builder API; ovo tool schemas are plain JSON Schema values"
+    },
+    "packages/schema/test/coerce-typebox.test.ts": ["AI-SCHEMA-COERCE"],
+    "packages/schema/test/coerce.test.ts": ["AI-SCHEMA-COERCE"],
+    "packages/schema/test/conformance.test.ts": ["AI-SCHEMA-VALIDATE"],
+    "packages/schema/test/shared.test.ts": {
+      "excluded": "tests the TypeBox builder API; ovo tool schemas are plain JSON Schema values"
+    },
+    "packages/schema/test/typebox-static.test.ts": {
+      "excluded": "TypeScript type-level checks of TypeBox static types"
+    },
+    "packages/schema/test/validator.test.ts": ["AI-SCHEMA-VALIDATE"],
+    "packages/agent/test/": {
+      "milestone": "M2"
+    },
+    "packages/coding-agent/test/": {
+      "milestone": "M3",
+      "note": "split per file across M3 to M6 as each milestone starts"
+    }
   }
 }

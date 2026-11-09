@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vite-plus/test";
 
-import { checkParity } from "./check.ts";
+import { checkParity, checkUpstreamTests } from "./check.ts";
 import type { ParityFs } from "./check.ts";
 
 function fsWith(files: Record<string, string>): ParityFs {
@@ -102,6 +102,56 @@ describe("checkParity", () => {
     expect(checkParity(parity(), fsWith(files))).toStrictEqual([]);
     expect(checkParity(parity(), fsWith(files), true)).toStrictEqual([
       "AI-JSON-JS: upstream file missing: packages/coding-agent/src/core/session-manager.ts",
+    ]);
+  });
+});
+
+describe("checkUpstreamTests", () => {
+  const inventory = {
+    commit: "abc",
+    files: {
+      "packages/ai/test/a.test.ts": [],
+      "packages/agent/test/b.test.ts": [],
+      "packages/agent/test/c.test.ts": [],
+    },
+  };
+  const owned = (upstreamTests: Record<string, unknown>) => ({
+    upstream: { commit: "abc" },
+    capabilities: [CAPABILITY],
+    upstreamTests,
+  });
+
+  test("accepts file and directory owners", () => {
+    const owners = {
+      "packages/ai/test/a.test.ts": ["AI-JSON-JS"],
+      "packages/agent/test/": { milestone: "M2" },
+    };
+    expect(checkUpstreamTests(owned(owners), inventory)).toStrictEqual([]);
+  });
+
+  test("rejects unowned files, stale entries and a commit mismatch", () => {
+    const owners = { "packages/ai/test/gone.test.ts": { e2e: "live" } };
+    expect(
+      checkUpstreamTests({ ...owned(owners), upstream: { commit: "def" } }, inventory),
+    ).toStrictEqual([
+      "upstream test inventory is of abc, parity.json pins def",
+      "upstream test packages/ai/test/a.test.ts has no owner in parity.json upstreamTests",
+      "upstream test packages/agent/test/b.test.ts has no owner in parity.json upstreamTests",
+      "upstream test packages/agent/test/c.test.ts has no owner in parity.json upstreamTests",
+      "upstreamTests entry packages/ai/test/gone.test.ts owns no listed upstream test",
+    ]);
+  });
+
+  test("rejects invalid owners", () => {
+    const owners = {
+      "packages/ai/test/a.test.ts": ["AI-NOPE"],
+      "packages/agent/test/b.test.ts": { milestone: "later" },
+      "packages/agent/test/c.test.ts": { excluded: "why", milestone: "M2" },
+    };
+    expect(checkUpstreamTests(owned(owners), inventory)).toStrictEqual([
+      "upstreamTests entry packages/ai/test/a.test.ts names capabilities not in parity.json: AI-NOPE",
+      'upstreamTests entry packages/agent/test/b.test.ts needs "e2e", "excluded" or a "milestone" like "M5"',
+      "upstreamTests entry packages/agent/test/c.test.ts takes no other fields",
     ]);
   });
 });

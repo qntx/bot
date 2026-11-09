@@ -122,6 +122,87 @@ export function checkParity(parity: unknown, fs: ParityFs, upstream = false): st
   return errors;
 }
 
+const MILESTONE_PATTERN = /^M[0-9]$/;
+
+/** Why an owner entry is invalid, or `undefined` when it is valid. */
+function ownerError(owner: unknown, capabilities: Set<string>): string | undefined {
+  if (Array.isArray(owner)) {
+    if (owner.length === 0) {
+      return "lists no capability";
+    }
+    const unknown = owner.filter((id) => typeof id !== "string" || !capabilities.has(id));
+    return unknown.length > 0
+      ? `names capabilities not in parity.json: ${unknown.join(", ")}`
+      : undefined;
+  }
+  if (!isRecord(owner)) {
+    return "must be a capability list or an object";
+  }
+  if (typeof owner["e2e"] === "string" || typeof owner["excluded"] === "string") {
+    return Object.keys(owner).length === 1 ? undefined : "takes no other fields";
+  }
+  const { milestone } = owner;
+  if (typeof milestone !== "string" || !MILESTONE_PATTERN.test(milestone)) {
+    return 'needs "e2e", "excluded" or a "milestone" like "M5"';
+  }
+  const { capability } = owner;
+  if (
+    capability !== undefined &&
+    (typeof capability !== "string" || !ID_PATTERN.test(capability))
+  ) {
+    return `capability must match ${ID_PATTERN.source}`;
+  }
+  return undefined;
+}
+
+/**
+ * Validate `parity.json` `upstreamTests` against the upstream test inventory: the inventory is of
+ * the pinned commit, every listed file has an owner (its own entry, else the longest directory
+ * entry ending in `/` above it), every entry owns a listed file, and every owner is valid.
+ */
+export function checkUpstreamTests(parity: unknown, inventory: unknown): string[] {
+  const errors: string[] = [];
+  const root = isRecord(parity) ? parity : {};
+  const commit = isRecord(root["upstream"]) ? root["upstream"]["commit"] : undefined;
+  const listed = isRecord(inventory) ? inventory : {};
+  if (listed["commit"] !== commit) {
+    errors.push(
+      `upstream test inventory is of ${String(listed["commit"])}, parity.json pins ${String(commit)}`,
+    );
+  }
+  const files = Object.keys(isRecord(listed["files"]) ? listed["files"] : {});
+  const owners = isRecord(root["upstreamTests"]) ? root["upstreamTests"] : {};
+  const capabilities = new Set(
+    (Array.isArray(root["capabilities"]) ? root["capabilities"] : [])
+      .map((entry) => (isRecord(entry) ? entry["id"] : undefined))
+      .filter((id): id is string => typeof id === "string"),
+  );
+  const used = new Set<string>();
+  for (const file of files) {
+    const key =
+      file in owners
+        ? file
+        : Object.keys(owners)
+            .filter((entry) => entry.endsWith("/") && file.startsWith(entry))
+            .toSorted((a, b) => b.length - a.length)[0];
+    if (key === undefined) {
+      errors.push(`upstream test ${file} has no owner in parity.json upstreamTests`);
+    } else {
+      used.add(key);
+    }
+  }
+  for (const [key, owner] of Object.entries(owners)) {
+    if (!used.has(key)) {
+      errors.push(`upstreamTests entry ${key} owns no listed upstream test`);
+    }
+    const error = ownerError(owner, capabilities);
+    if (error !== undefined) {
+      errors.push(`upstreamTests entry ${key} ${error}`);
+    }
+  }
+  return errors;
+}
+
 if (import.meta.main) {
   const upstream = process.argv.includes("--upstream");
   const parity = JSON.parse(readFileSync("parity.json", "utf8")) as unknown;
@@ -129,7 +210,8 @@ if (import.meta.main) {
     fileExists: (path) => existsSync(path),
     fileText: (path) => (existsSync(path) ? readFileSync(path, "utf8") : undefined),
   };
-  const errors = checkParity(parity, fs, upstream);
+  const inventory = JSON.parse(readFileSync("vectors/upstream/tests.json", "utf8")) as unknown;
+  const errors = [...checkParity(parity, fs, upstream), ...checkUpstreamTests(parity, inventory)];
   for (const error of errors) {
     console.error(`parity: ${error}`);
   }
