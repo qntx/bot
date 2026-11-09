@@ -89,6 +89,7 @@ impl AssistantStream {
                 Item::Meta(metadata) => self.acc.apply_metadata(metadata),
                 Item::Patch { index, block } => self.acc.ensure_block(index, block),
                 Item::ToolcallReset { index, text } => self.acc.toolcall_reset(index, &text),
+                Item::Message(message) => *self.acc.message_mut() = *message,
                 Item::Event(event) => self.acc.apply(&event),
             }
         }
@@ -109,14 +110,18 @@ impl AssistantStream {
 impl AssistantStream {
     /// `lazyStream`'s forwarding: drain `inner` into `sender` — events
     /// pass through `Item::Event` verbatim, and the inner stream's
-    /// final message ends the outer one.
+    /// final message ends the outer one (`forwardStream`'s
+    /// `target.end(result)` carries the inner metadata the events
+    /// did not).
     pub(crate) async fn forward(mut inner: Self, sender: &mut AssistantStreamSender) {
         use futures::StreamExt as _;
         while let Some(event) = inner.next().await {
             if sender.push_event(event).await.is_err() {
-                break;
+                return;
             }
         }
+        let message = inner.result().await;
+        sender.send_final(message).await.ok();
     }
 }
 
@@ -140,6 +145,9 @@ impl futures::Stream for AssistantStream {
                 }
                 Poll::Ready(Some(Item::Patch { index, block })) => {
                     self.acc.ensure_block(index, block);
+                }
+                Poll::Ready(Some(Item::Message(message))) => {
+                    *self.acc.message_mut() = *message;
                 }
                 Poll::Ready(Some(Item::ToolcallReset { index, text })) => {
                     self.acc.toolcall_reset(index, &text);
