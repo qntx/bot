@@ -2,6 +2,8 @@
 //! `models.ts` `calculateCost`, `getSupportedThinkingLevels`,
 //! `clampThinkingLevel`.
 
+use serde_json::Value;
+
 use crate::types::model::{Model, ModelThinkingLevel, ThinkingLevelMap, ThinkingLevelMapValue};
 use crate::types::usage::{Usage, UsageCost};
 
@@ -152,4 +154,57 @@ pub fn clamp_thinking_level(model: &Model, level: ModelThinkingLevel) -> ModelTh
         .first()
         .copied()
         .unwrap_or(ModelThinkingLevel::Off)
+}
+
+/// `isOpenRouterModel`: the `openrouter` provider or an `openrouter.ai` base URL.
+#[must_use]
+pub fn is_openrouter_model(model: &Model) -> bool {
+    model.provider.as_str() == "openrouter" || model.base_url.contains("openrouter.ai")
+}
+
+/// `applyOpenRouterReportedCost`: replace the catalog total with the cost
+/// `OpenRouter` billed when `reported` (the streamed usage object) carries
+/// complete, valid accounting.
+pub fn apply_openrouter_reported_cost(usage: &mut Usage, reported: &Value) {
+    let Some(cost) = valid_cost(reported.get("cost")) else {
+        return;
+    };
+    let total = match reported.get("is_byok").and_then(Value::as_bool) {
+        Some(false) => cost,
+        Some(true) => {
+            let Some(details) = reported.get("cost_details").filter(|d| !d.is_null()) else {
+                return;
+            };
+            // Only an explicit `null` falls back to the per-phase sum; an
+            // absent field is invalid like any other non-cost value.
+            let upstream = match details.get("upstream_inference_cost") {
+                Some(Value::Null) => {
+                    let (Some(prompt), Some(completions)) = (
+                        valid_cost(details.get("upstream_inference_prompt_cost")),
+                        valid_cost(details.get("upstream_inference_completions_cost")),
+                    ) else {
+                        return;
+                    };
+                    prompt + completions
+                }
+                other => {
+                    let Some(upstream) = valid_cost(other) else {
+                        return;
+                    };
+                    upstream
+                }
+            };
+            cost + upstream
+        }
+        None => return,
+    };
+    usage.cost.total = total;
+    usage.cost.total_from_provider = Some(true);
+}
+
+/// `isValidCost`: a finite, non-negative number.
+fn valid_cost(value: Option<&Value>) -> Option<f64> {
+    value
+        .and_then(Value::as_f64)
+        .filter(|cost| cost.is_finite() && *cost >= 0.0)
 }

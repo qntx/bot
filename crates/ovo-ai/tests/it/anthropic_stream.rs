@@ -79,10 +79,19 @@ async fn anthropic_stream_replays_upstream_events() {
         let mut model: Model = serde_json::from_value(vectors["model"].clone())
             .unwrap_or_else(|e| panic!("model: {e}"));
         model.base_url = server.uri();
+        if let Some(provider) = case.get("provider") {
+            model.provider = serde_json::from_value(provider.clone())
+                .unwrap_or_else(|e| panic!("{name}: provider: {e}"));
+        }
         let api = AnthropicMessagesApi::new(Arc::new(HttpClient::new(HttpClientConfig::default())));
         let mut options = StreamOptions::default();
         options.api_key = Some(String::from("sk-ant-api03-test"));
         options.max_retries = Some(0);
+        if case["abort"].as_str() == Some("before") {
+            let signal = tokio_util::sync::CancellationToken::new();
+            signal.cancel();
+            options.signal = Some(signal);
+        }
         let mut stream = api.stream(&model, normalize_context(&context), options);
         let mut events = Vec::new();
         while let Some(event) = stream.next().await {

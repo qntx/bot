@@ -1,0 +1,714 @@
+{
+  "generator": {
+    "script": "scripts/parity/generate-ai-utils.ts",
+    "node": "v26.13.0",
+    "upstream": "@earendil-works/pi-ai@1.5.0"
+  },
+  "cases": [
+    {
+      "name": "cost-null",
+      "kind": "applyOpenRouterReportedCost",
+      "args": {
+        "usage": {
+          "input": 100,
+          "output": 20,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 120,
+          "cost": {
+            "input": 0.0003,
+            "output": 0.0003,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0.0006
+          }
+        },
+        "reported": {
+          "cost": null,
+          "is_byok": false
+        }
+      },
+      "result": {
+        "input": 100,
+        "output": 20,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "totalTokens": 120,
+        "cost": {
+          "input": 0.0003,
+          "output": 0.0003,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0.0006
+        }
+      }
+    },
+    {
+      "name": "cost-negative",
+      "kind": "applyOpenRouterReportedCost",
+      "args": {
+        "usage": {
+          "input": 100,
+          "output": 20,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 120,
+          "cost": {
+            "input": 0.0003,
+            "output": 0.0003,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0.0006
+          }
+        },
+        "reported": {
+          "cost": -1,
+          "is_byok": false
+        }
+      },
+      "result": {
+        "input": 100,
+        "output": 20,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "totalTokens": 120,
+        "cost": {
+          "input": 0.0003,
+          "output": 0.0003,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0.0006
+        }
+      }
+    },
+    {
+      "name": "cost-string",
+      "kind": "applyOpenRouterReportedCost",
+      "args": {
+        "usage": {
+          "input": 100,
+          "output": 20,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 120,
+          "cost": {
+            "input": 0.0003,
+            "output": 0.0003,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0.0006
+          }
+        },
+        "reported": {
+          "cost": "0.1",
+          "is_byok": false
+        }
+      },
+      "result": {
+        "input": 100,
+        "output": 20,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "totalTokens": 120,
+        "cost": {
+          "input": 0.0003,
+          "output": 0.0003,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0.0006
+        }
+      }
+    },
+    {
+      "name": "cost-missing",
+      "kind": "applyOpenRouterReportedCost",
+      "args": {
+        "usage": {
+          "input": 100,
+          "output": 20,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 120,
+          "cost": {
+            "input": 0.0003,
+            "output": 0.0003,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0.0006
+          }
+        },
+        "reported": {
+          "is_byok": false
+        }
+      },
+      "result": {
+        "input": 100,
+        "output": 20,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "totalTokens": 120,
+        "cost": {
+          "input": 0.0003,
+          "output": 0.0003,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0.0006
+        }
+      }
+    },
+    {
+      "name": "cost-zero",
+      "kind": "applyOpenRouterReportedCost",
+      "args": {
+        "usage": {
+          "input": 100,
+          "output": 20,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 120,
+          "cost": {
+            "input": 0.0003,
+            "output": 0.0003,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0.0006
+          }
+        },
+        "reported": {
+          "cost": 0,
+          "is_byok": false
+        }
+      },
+      "result": {
+        "input": 100,
+        "output": 20,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "totalTokens": 120,
+        "cost": {
+          "input": 0.0003,
+          "output": 0.0003,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0,
+          "totalFromProvider": true
+        }
+      }
+    },
+    {
+      "name": "byok-false",
+      "kind": "applyOpenRouterReportedCost",
+      "args": {
+        "usage": {
+          "input": 100,
+          "output": 20,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 120,
+          "cost": {
+            "input": 0.0003,
+            "output": 0.0003,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0.0006
+          }
+        },
+        "reported": {
+          "cost": 0.0042,
+          "is_byok": false,
+          "cost_details": null
+        }
+      },
+      "result": {
+        "input": 100,
+        "output": 20,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "totalTokens": 120,
+        "cost": {
+          "input": 0.0003,
+          "output": 0.0003,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0.0042,
+          "totalFromProvider": true
+        }
+      }
+    },
+    {
+      "name": "byok-missing",
+      "kind": "applyOpenRouterReportedCost",
+      "args": {
+        "usage": {
+          "input": 100,
+          "output": 20,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 120,
+          "cost": {
+            "input": 0.0003,
+            "output": 0.0003,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0.0006
+          }
+        },
+        "reported": {
+          "cost": 0.0042
+        }
+      },
+      "result": {
+        "input": 100,
+        "output": 20,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "totalTokens": 120,
+        "cost": {
+          "input": 0.0003,
+          "output": 0.0003,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0.0006
+        }
+      }
+    },
+    {
+      "name": "byok-string",
+      "kind": "applyOpenRouterReportedCost",
+      "args": {
+        "usage": {
+          "input": 100,
+          "output": 20,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 120,
+          "cost": {
+            "input": 0.0003,
+            "output": 0.0003,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0.0006
+          }
+        },
+        "reported": {
+          "cost": 0.0042,
+          "is_byok": "false"
+        }
+      },
+      "result": {
+        "input": 100,
+        "output": 20,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "totalTokens": 120,
+        "cost": {
+          "input": 0.0003,
+          "output": 0.0003,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0.0006
+        }
+      }
+    },
+    {
+      "name": "byok-details-null",
+      "kind": "applyOpenRouterReportedCost",
+      "args": {
+        "usage": {
+          "input": 100,
+          "output": 20,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 120,
+          "cost": {
+            "input": 0.0003,
+            "output": 0.0003,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0.0006
+          }
+        },
+        "reported": {
+          "cost": 0.001,
+          "is_byok": true,
+          "cost_details": null
+        }
+      },
+      "result": {
+        "input": 100,
+        "output": 20,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "totalTokens": 120,
+        "cost": {
+          "input": 0.0003,
+          "output": 0.0003,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0.0006
+        }
+      }
+    },
+    {
+      "name": "byok-details-missing",
+      "kind": "applyOpenRouterReportedCost",
+      "args": {
+        "usage": {
+          "input": 100,
+          "output": 20,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 120,
+          "cost": {
+            "input": 0.0003,
+            "output": 0.0003,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0.0006
+          }
+        },
+        "reported": {
+          "cost": 0.001,
+          "is_byok": true
+        }
+      },
+      "result": {
+        "input": 100,
+        "output": 20,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "totalTokens": 120,
+        "cost": {
+          "input": 0.0003,
+          "output": 0.0003,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0.0006
+        }
+      }
+    },
+    {
+      "name": "byok-upstream-number",
+      "kind": "applyOpenRouterReportedCost",
+      "args": {
+        "usage": {
+          "input": 100,
+          "output": 20,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 120,
+          "cost": {
+            "input": 0.0003,
+            "output": 0.0003,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0.0006
+          }
+        },
+        "reported": {
+          "cost": 0.001,
+          "is_byok": true,
+          "cost_details": {
+            "upstream_inference_cost": 0.004
+          }
+        }
+      },
+      "result": {
+        "input": 100,
+        "output": 20,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "totalTokens": 120,
+        "cost": {
+          "input": 0.0003,
+          "output": 0.0003,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0.005,
+          "totalFromProvider": true
+        }
+      }
+    },
+    {
+      "name": "byok-upstream-zero",
+      "kind": "applyOpenRouterReportedCost",
+      "args": {
+        "usage": {
+          "input": 100,
+          "output": 20,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 120,
+          "cost": {
+            "input": 0.0003,
+            "output": 0.0003,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0.0006
+          }
+        },
+        "reported": {
+          "cost": 0.001,
+          "is_byok": true,
+          "cost_details": {
+            "upstream_inference_cost": 0
+          }
+        }
+      },
+      "result": {
+        "input": 100,
+        "output": 20,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "totalTokens": 120,
+        "cost": {
+          "input": 0.0003,
+          "output": 0.0003,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0.001,
+          "totalFromProvider": true
+        }
+      }
+    },
+    {
+      "name": "byok-upstream-negative",
+      "kind": "applyOpenRouterReportedCost",
+      "args": {
+        "usage": {
+          "input": 100,
+          "output": 20,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 120,
+          "cost": {
+            "input": 0.0003,
+            "output": 0.0003,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0.0006
+          }
+        },
+        "reported": {
+          "cost": 0.001,
+          "is_byok": true,
+          "cost_details": {
+            "upstream_inference_cost": -0.004
+          }
+        }
+      },
+      "result": {
+        "input": 100,
+        "output": 20,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "totalTokens": 120,
+        "cost": {
+          "input": 0.0003,
+          "output": 0.0003,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0.0006
+        }
+      }
+    },
+    {
+      "name": "byok-upstream-missing",
+      "kind": "applyOpenRouterReportedCost",
+      "args": {
+        "usage": {
+          "input": 100,
+          "output": 20,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 120,
+          "cost": {
+            "input": 0.0003,
+            "output": 0.0003,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0.0006
+          }
+        },
+        "reported": {
+          "cost": 0.001,
+          "is_byok": true,
+          "cost_details": {
+            "upstream_inference_prompt_cost": 0.002,
+            "upstream_inference_completions_cost": 0.003
+          }
+        }
+      },
+      "result": {
+        "input": 100,
+        "output": 20,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "totalTokens": 120,
+        "cost": {
+          "input": 0.0003,
+          "output": 0.0003,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0.0006
+        }
+      }
+    },
+    {
+      "name": "byok-upstream-null-parts",
+      "kind": "applyOpenRouterReportedCost",
+      "args": {
+        "usage": {
+          "input": 100,
+          "output": 20,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 120,
+          "cost": {
+            "input": 0.0003,
+            "output": 0.0003,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0.0006
+          }
+        },
+        "reported": {
+          "cost": 0.001,
+          "is_byok": true,
+          "cost_details": {
+            "upstream_inference_cost": null,
+            "upstream_inference_prompt_cost": 0.002,
+            "upstream_inference_completions_cost": 0.003
+          }
+        }
+      },
+      "result": {
+        "input": 100,
+        "output": 20,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "totalTokens": 120,
+        "cost": {
+          "input": 0.0003,
+          "output": 0.0003,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0.006,
+          "totalFromProvider": true
+        }
+      }
+    },
+    {
+      "name": "byok-upstream-null-part-missing",
+      "kind": "applyOpenRouterReportedCost",
+      "args": {
+        "usage": {
+          "input": 100,
+          "output": 20,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 120,
+          "cost": {
+            "input": 0.0003,
+            "output": 0.0003,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0.0006
+          }
+        },
+        "reported": {
+          "cost": 0.001,
+          "is_byok": true,
+          "cost_details": {
+            "upstream_inference_cost": null,
+            "upstream_inference_prompt_cost": 0.002
+          }
+        }
+      },
+      "result": {
+        "input": 100,
+        "output": 20,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "totalTokens": 120,
+        "cost": {
+          "input": 0.0003,
+          "output": 0.0003,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0.0006
+        }
+      }
+    },
+    {
+      "name": "byok-upstream-null-part-negative",
+      "kind": "applyOpenRouterReportedCost",
+      "args": {
+        "usage": {
+          "input": 100,
+          "output": 20,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 120,
+          "cost": {
+            "input": 0.0003,
+            "output": 0.0003,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0.0006
+          }
+        },
+        "reported": {
+          "cost": 0.001,
+          "is_byok": true,
+          "cost_details": {
+            "upstream_inference_cost": null,
+            "upstream_inference_prompt_cost": 0.002,
+            "upstream_inference_completions_cost": -0.003
+          }
+        }
+      },
+      "result": {
+        "input": 100,
+        "output": 20,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "totalTokens": 120,
+        "cost": {
+          "input": 0.0003,
+          "output": 0.0003,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0.0006
+        }
+      }
+    },
+    {
+      "name": "provider-openrouter",
+      "kind": "isOpenRouterModel",
+      "args": {
+        "provider": "openrouter",
+        "baseUrl": "https://example.com/v1"
+      },
+      "result": true
+    },
+    {
+      "name": "url-openrouter",
+      "kind": "isOpenRouterModel",
+      "args": {
+        "provider": "custom",
+        "baseUrl": "https://openrouter.ai/api/v1"
+      },
+      "result": true
+    },
+    {
+      "name": "neither",
+      "kind": "isOpenRouterModel",
+      "args": {
+        "provider": "openai",
+        "baseUrl": "https://api.openai.com/v1"
+      },
+      "result": false
+    }
+  ]
+}

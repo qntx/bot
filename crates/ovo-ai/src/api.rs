@@ -8,3 +8,5 @@ pub mod constrained_sampling;
 /// `openai-completions` — the OpenAI Chat Completions API adapter.
 pub mod openai_completions;
 pub mod openai_prompt_cache;
+#[cfg(feature = "http")]
+mod stream_support;

@@ -5,6 +5,9 @@
 //! (serialized with `ovo_ai::json`, byte-identical) and the headers in the
 //! `OpenAI` SDK's merge order.
 //!
+//! The streaming side is
+//! [`stream`](crate::api::openai_completions::stream).
+//!
 //! Not yet ported: GitHub Copilot dynamic headers (Copilot is not an M1
 //! provider), `onPayload`.
 
@@ -31,6 +34,8 @@ use crate::types::tool::ToolChoice;
 
 pub mod compat;
 pub mod convert;
+#[cfg(feature = "http")]
+pub mod stream;
 
 pub use compat::OpenAiCompletionsCompat;
 use compat::{MaxTokensField, SessionAffinityFormat, ThinkingFormat};

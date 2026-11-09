@@ -89,7 +89,14 @@ const toolUse = (index: number, id: string, name: string, parts: string[]) => [
   blockStop(index),
 ];
 
-type Case = { name: string; sse?: string; status?: number; body?: string };
+type Case = {
+  name: string;
+  provider?: string;
+  sse?: string;
+  status?: number;
+  body?: string;
+  abort?: "before";
+};
 
 const CASES: Case[] = [
   {
@@ -207,6 +214,49 @@ const CASES: Case[] = [
       stop,
     ].join(""),
   },
+  {
+    name: "openrouter-billed-cost",
+    provider: "openrouter",
+    sse: [
+      start(),
+      ...text(0, ["hi"]),
+      messageDelta("end_turn", { output_tokens: 5, cost: 0.0042, is_byok: false }),
+      stop,
+    ].join(""),
+  },
+  {
+    name: "openrouter-byok-cost",
+    provider: "openrouter",
+    sse: [
+      start(),
+      ...text(0, ["hi"]),
+      messageDelta("end_turn", {
+        output_tokens: 5,
+        cost: 0.0001,
+        is_byok: true,
+        cost_details: {
+          upstream_inference_cost: null,
+          upstream_inference_prompt_cost: 0.002,
+          upstream_inference_completions_cost: 0.003,
+        },
+      }),
+      stop,
+    ].join(""),
+  },
+  {
+    name: "abort-before-request",
+    abort: "before",
+    sse: [start(), ...text(0, ["hi"]), messageDelta("end_turn"), stop].join(""),
+  },
+  {
+    name: "billed-cost-ignored-off-openrouter",
+    sse: [
+      start(),
+      ...text(0, ["hi"]),
+      messageDelta("end_turn", { output_tokens: 5, cost: 0.0042, is_byok: false }),
+      stop,
+    ].join(""),
+  },
 ];
 
 function respond(testCase: Case): Response {
@@ -235,10 +285,16 @@ const results: Array<Record<string, unknown>> = [];
 for (const testCase of CASES) {
   // oxlint-disable-next-line require-await -- fetch must return a promise; the response is ready
   const fetch: typeof globalThis.fetch = async () => respond(testCase);
-  const stream = streamAnthropic(MODEL, CONTEXT, {
+  const model = testCase.provider === undefined ? MODEL : { ...MODEL, provider: testCase.provider };
+  const controller = new AbortController();
+  if (testCase.abort === "before") {
+    controller.abort();
+  }
+  const stream = streamAnthropic(model, CONTEXT, {
     apiKey: "sk-ant-api03-test",
     maxRetries: 0,
     fetch,
+    signal: controller.signal,
   });
   const events: Array<Record<string, unknown>> = [];
   // Cases run one at a time so each records only its own events.

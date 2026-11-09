@@ -1,5 +1,6 @@
 //! Replays the M1-05B vectors: `AI-ESTIMATE`, `AI-OVERFLOW`,
-//! `AI-RETRY-POLICY`, `AI-COST`, `AI-SIMPLE-OPTIONS`.
+//! `AI-RETRY-POLICY`, `AI-COST`, `AI-SIMPLE-OPTIONS`, `AI-SHORT-HASH`,
+//! `AI-OPENROUTER-COST`.
 
 use serde_json::{Map, Value};
 
@@ -282,6 +283,52 @@ fn short_hash_matches_upstream() {
                 );
             }
             other => panic!("unknown kind {other}"),
+        }
+    }
+}
+
+/// parity: AI-OPENROUTER-COST
+#[test]
+fn openrouter_cost_matches_upstream() {
+    let cases = cases("vectors/ai/openrouter-cost.json");
+    assert!(!cases.is_empty(), "no cases");
+    for case in &cases {
+        let name = case["name"].as_str().unwrap_or("?");
+        let args = &case["args"];
+        match case["kind"].as_str().unwrap_or_default() {
+            "applyOpenRouterReportedCost" => {
+                let mut usage: Usage = decode(name, &args["usage"]);
+                cost::apply_openrouter_reported_cost(&mut usage, &args["reported"]);
+                let got = serde_json::to_value(&usage).unwrap_or_default();
+                assert!(
+                    js_value_eq(&got, &case["result"]),
+                    "{name}\n  got:  {got}\n  want: {}",
+                    case["result"]
+                );
+            }
+            "isOpenRouterModel" => {
+                let model: Model = decode(
+                    name,
+                    &serde_json::json!({
+                        "id": "m",
+                        "name": "m",
+                        "api": "openai-completions",
+                        "provider": args["provider"],
+                        "baseUrl": args["baseUrl"],
+                        "reasoning": false,
+                        "input": ["text"],
+                        "cost": { "input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0 },
+                        "contextWindow": 1,
+                        "maxTokens": 1,
+                    }),
+                );
+                assert_eq!(
+                    Value::Bool(cost::is_openrouter_model(&model)),
+                    case["result"],
+                    "{name}"
+                );
+            }
+            other => panic!("{name}: unknown kind {other}"),
         }
     }
 }
