@@ -251,3 +251,37 @@ fn simple_options_cases_replay() {
         );
     }
 }
+
+/// parity: AI-SHORT-HASH
+#[test]
+fn short_hash_matches_upstream() {
+    let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../vectors/ai/hash.json");
+    let document: Value = serde_json::from_str(&std::fs::read_to_string(path).unwrap_or_default())
+        .unwrap_or_default();
+    let cases = document["cases"].as_array().cloned().unwrap_or_default();
+    assert!(!cases.is_empty(), "no cases");
+    for case in &cases {
+        match case["kind"].as_str().unwrap_or_default() {
+            "shortHash" => {
+                let input = case["args"].as_str().unwrap_or_default();
+                let want = case["result"].as_str().unwrap_or_default();
+                assert_eq!(
+                    ovo_ai::hash::short_hash(input),
+                    want,
+                    "shortHash({input:?})"
+                );
+            }
+            "clampPromptCacheKey" => {
+                let input = case["args"].as_str();
+                let want = case["result"].as_str();
+                assert_eq!(
+                    ovo_ai::api::openai_prompt_cache::clamp_openai_prompt_cache_key(input)
+                        .as_deref(),
+                    want,
+                    "clamp({input:?})"
+                );
+            }
+            other => panic!("unknown kind {other}"),
+        }
+    }
+}

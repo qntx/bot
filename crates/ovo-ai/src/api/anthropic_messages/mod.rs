@@ -11,7 +11,9 @@
 use serde_json::{Map, Value, json};
 
 use crate::api::constrained_sampling::prefers_json_schema_strict_sampling;
-use crate::options::{CacheRetention, SimpleStreamOptions, StreamOptions, build_base_options};
+use crate::options::{
+    CacheRetention, SimpleStreamOptions, StreamOptions, build_base_options, resolve_cache_retention,
+};
 use crate::simple_options::{adjust_max_tokens_for_thinking, clamp_max_tokens_to_context};
 use crate::transcript::{TranscriptContext, get_current_tools, get_initial_system_message};
 use crate::types::message::Message;
@@ -220,25 +222,6 @@ fn effort_for_level(model: &Model, level: ThinkingLevel) -> String {
         ThinkingLevel::Minimal | ThinkingLevel::Low => "low",
         ThinkingLevel::Medium => "medium",
         _ => "high",
-    })
-}
-
-/// `resolveCacheRetention`: the option, else `PI_CACHE_RETENTION=long`, else short.
-#[must_use]
-pub fn resolve_cache_retention(
-    cache_retention: Option<CacheRetention>,
-    env: Option<&Map<String, Value>>,
-) -> CacheRetention {
-    cache_retention.unwrap_or_else(|| {
-        let long = env
-            .and_then(|e| e.get("PI_CACHE_RETENTION"))
-            .and_then(Value::as_str)
-            == Some("long");
-        if long {
-            CacheRetention::Long
-        } else {
-            CacheRetention::Short
-        }
     })
 }
 

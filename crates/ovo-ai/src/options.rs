@@ -105,6 +105,26 @@ pub enum Transport {
     Auto,
 }
 
+/// `resolveCacheRetention`: the option, else `PI_CACHE_RETENTION=long`,
+/// else short.
+#[must_use]
+pub fn resolve_cache_retention(
+    cache_retention: Option<CacheRetention>,
+    env: Option<&ProviderEnv>,
+) -> CacheRetention {
+    cache_retention.unwrap_or_else(|| {
+        let long = env
+            .and_then(|env| env.get("PI_CACHE_RETENTION"))
+            .and_then(Value::as_str)
+            == Some("long");
+        if long {
+            CacheRetention::Long
+        } else {
+            CacheRetention::Short
+        }
+    })
+}
+
 /// `CacheRetention`.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -160,14 +180,7 @@ pub fn build_base_options(
 ) -> StreamOptions {
     let reasoning = options
         .and_then(|o| o.reasoning)
-        .map_or(ModelThinkingLevel::Off, |level| match level {
-            ThinkingLevel::Minimal => ModelThinkingLevel::Minimal,
-            ThinkingLevel::Low => ModelThinkingLevel::Low,
-            ThinkingLevel::Medium => ModelThinkingLevel::Medium,
-            ThinkingLevel::High => ModelThinkingLevel::High,
-            ThinkingLevel::Xhigh => ModelThinkingLevel::Xhigh,
-            ThinkingLevel::Max => ModelThinkingLevel::Max,
-        });
+        .map_or(ModelThinkingLevel::Off, ModelThinkingLevel::from);
     let sampling_params = resolve_sampling_params(
         model,
         reasoning,

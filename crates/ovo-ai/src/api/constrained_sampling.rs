@@ -2,7 +2,7 @@
 //! sent in a provider's strict mode and the strict subset of its schema.
 //!
 //! Ported from earendil-works/pi packages/ai/src/api/constrained-sampling.ts
-//! (MIT). The grammar variants arrive with the `OpenAI` adapters.
+//! (MIT), including the `OpenAI` grammar tool variants.
 
 use serde_json::{Map, Value, json};
 
@@ -307,4 +307,259 @@ pub fn resolve_json_schema_strict_sampling(
         )));
     }
     Ok(None)
+}
+
+/// `GrammarConstrainedSampling`: the grammar variant a tool is sent with.
+#[derive(Clone, Debug, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GrammarConstrainedSampling {
+    /// `"lark"` | `"regex"`.
+    pub format: GrammarFormat,
+    /// The grammar text.
+    pub definition: String,
+    /// The single required string property carrying the grammar input.
+    pub input_property: String,
+}
+
+/// The `OpenAI` grammar syntax of a variant.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum GrammarFormat {
+    /// Lark grammar.
+    Lark,
+    /// Regular-expression grammar.
+    Regex,
+}
+
+/// `GrammarToolInputJsonBuffer`: a streamed grammar tool input and how much
+/// of its JSON arguments text was emitted.
+#[derive(Clone, Debug, Default)]
+pub struct GrammarToolInputJsonBuffer {
+    /// The accumulated `input` text.
+    pub input: String,
+    /// `{"<property>":"` has been emitted.
+    pub started: bool,
+    /// The arguments text closed with `"}`.
+    pub closed: bool,
+}
+
+/// A grammar tool that cannot be sent or replayed; the message is
+/// upstream's text.
+#[derive(Clone, Debug, PartialEq, Eq, thiserror::Error)]
+#[error("{0}")]
+pub struct GrammarSamplingError(String);
+
+/// `getGrammarToolInput`: the grammar input of a replayed tool call.
+///
+/// # Errors
+/// Returns upstream's message when the input property is not a string.
+pub fn grammar_tool_input<'a>(
+    tool_name: &str,
+    arguments: &'a Map<String, Value>,
+    input_property: &str,
+) -> Result<&'a str, GrammarSamplingError> {
+    let input = arguments.get(input_property);
+    input.and_then(Value::as_str).ok_or_else(|| {
+        GrammarSamplingError(format!(
+            "Grammar tool call \"{tool_name}\" requires argument \"{input_property}\" to be a string."
+        ))
+    })
+}
+
+impl GrammarToolInputJsonBuffer {
+    /// `appendGrammarToolInputJsonDelta`: append `input_delta` and return
+    /// the matching piece of the JSON arguments text, or `None` for an empty
+    /// delta. Costs time linear in the delta, never in the input so far.
+    ///
+    /// # Errors
+    /// Returns upstream's message when the buffer is already closed.
+    pub fn append_delta(
+        &mut self,
+        input_property: &str,
+        input_delta: &str,
+    ) -> Result<Option<String>, GrammarSamplingError> {
+        if self.closed {
+            return Err(GrammarSamplingError(format!(
+                "grammar tool input for property \"{input_property}\" changed after it was closed"
+            )));
+        }
+        if input_delta.is_empty() {
+            return Ok(None);
+        }
+        self.input.push_str(input_delta);
+        Ok(Some(format!(
+            "{}{}",
+            self.start(input_property),
+            escape_json(input_delta)
+        )))
+    }
+
+    /// `closeGrammarToolInputJson`: close the input and return the rest of
+    /// the JSON arguments text. `final_input`, when the provider sends one,
+    /// must continue the input streamed so far; closing again with the same
+    /// input returns `None`.
+    ///
+    /// # Errors
+    /// Returns upstream's message when the final input does not continue
+    /// the streamed one, or changes after the buffer closed.
+    pub fn close(
+        &mut self,
+        input_property: &str,
+        final_input: Option<&str>,
+    ) -> Result<Option<String>, GrammarSamplingError> {
+        if self.closed {
+            return match final_input {
+                None => Ok(None),
+                Some(final_input) if final_input == self.input => Ok(None),
+                Some(_) => Err(GrammarSamplingError(format!(
+                    "grammar tool input for property \"{input_property}\" changed after it was closed"
+                ))),
+            };
+        }
+        if let Some(final_input) = final_input
+            && !final_input.starts_with(&self.input)
+        {
+            return Err(GrammarSamplingError(format!(
+                "grammar tool input for property \"{input_property}\" changed non-monotonically"
+            )));
+        }
+        let rest = final_input.map_or("", |input| &input[self.input.len()..]);
+        if let Some(final_input) = final_input {
+            final_input.clone_into(&mut self.input);
+        }
+        self.closed = true;
+        Ok(Some(format!(
+            "{}{}\"}}",
+            self.start(input_property),
+            escape_json(rest)
+        )))
+    }
+
+    /// `grammarToolInputJsonStart`: the opening of the JSON arguments text,
+    /// once.
+    fn start(&mut self, input_property: &str) -> String {
+        if self.started {
+            return String::new();
+        }
+        self.started = true;
+        format!("{{\"{}\":\"", escape_json(input_property))
+    }
+}
+
+/// `JSON.stringify(text).slice(1, -1)`: the escaped string without quotes.
+fn escape_json(text: &str) -> String {
+    let mut quoted = crate::json::to_string(text).unwrap_or_default();
+    quoted.pop();
+    if !quoted.is_empty() {
+        quoted.remove(0);
+    }
+    quoted
+}
+
+/// `inferGrammarInputProperty`: the single required string property of
+/// the tool's `parameters` object.
+fn infer_grammar_input_property(tool: &Tool) -> Result<String, GrammarSamplingError> {
+    let schema = &tool.parameters;
+    if schema.get("type").and_then(Value::as_str) != Some("object") {
+        return Err(GrammarSamplingError(String::from(
+            "grammar constrained sampling requires an object parameter schema",
+        )));
+    }
+    let required = schema.get("required").and_then(Value::as_array);
+    let input_property = required.and_then(|r| {
+        (r.len() == 1)
+            .then(|| r.first().and_then(Value::as_str))
+            .flatten()
+    });
+    let Some(input_property) = input_property else {
+        return Err(GrammarSamplingError(String::from(
+            "grammar constrained sampling requires exactly one required string property",
+        )));
+    };
+    let property = schema.get("properties").and_then(|p| p.get(input_property));
+    let Some(property) = property else {
+        return Err(GrammarSamplingError(format!(
+            "grammar constrained sampling requires a properties entry for {input_property}"
+        )));
+    };
+    if property.get("type").and_then(Value::as_str) != Some("string") {
+        return Err(GrammarSamplingError(format!(
+            "grammar constrained sampling property {input_property} must have type string"
+        )));
+    }
+    Ok(input_property.to_owned())
+}
+
+/// `resolveGrammarConstrainedSampling`: the grammar variant to send a tool
+/// with, or `None` when it has no grammar config or the provider has no
+/// grammar tools.
+///
+/// # Errors
+/// Returns upstream's message when the tool has no usable variant or its
+/// schema has no single required string property.
+pub fn resolve_grammar_constrained_sampling(
+    tool: &Tool,
+    supports_openai_grammar_tools: bool,
+) -> Result<Option<GrammarConstrainedSampling>, GrammarSamplingError> {
+    let Some(ConstrainedSampling::Config(ConstrainedSamplingConfig::Grammar { variants })) =
+        &tool.constrained_sampling
+    else {
+        return Ok(None);
+    };
+    if !supports_openai_grammar_tools {
+        return Ok(None);
+    }
+    let lark = variants.openai_lark.as_deref();
+    let regex = variants.openai_regex.as_deref();
+    let has_lark = lark.is_some_and(|text| !crate::text::js_trim(text).is_empty());
+    let has_regex = regex.is_some_and(|text| !crate::text::js_trim(text).is_empty());
+    if !has_lark && !has_regex {
+        return Err(GrammarSamplingError(format!(
+            "Tool \"{}\" cannot use grammar constrained sampling: no supported grammar variant was provided.",
+            tool.name
+        )));
+    }
+    let definition = if has_lark {
+        lark.unwrap_or_default()
+    } else {
+        regex.unwrap_or_default()
+    };
+    infer_grammar_input_property(tool)
+        .map(|input_property| {
+            Some(GrammarConstrainedSampling {
+                format: if has_lark {
+                    GrammarFormat::Lark
+                } else {
+                    GrammarFormat::Regex
+                },
+                definition: definition.to_owned(),
+                input_property,
+            })
+        })
+        .map_err(|error| {
+            GrammarSamplingError(format!(
+                "Tool \"{}\" cannot use grammar constrained sampling: {error}.",
+                tool.name
+            ))
+        })
+}
+
+/// `createGrammarToolInputProperties`: the input property of every tool
+/// sent as a grammar tool, by tool name.
+///
+/// # Errors
+/// Returns the first tool's grammar error.
+pub fn create_grammar_tool_input_properties(
+    tools: &[Tool],
+    supports_openai_grammar_tools: bool,
+) -> Result<std::collections::BTreeMap<String, String>, GrammarSamplingError> {
+    let mut properties = std::collections::BTreeMap::new();
+    for tool in tools {
+        if let Some(grammar) =
+            resolve_grammar_constrained_sampling(tool, supports_openai_grammar_tools)?
+        {
+            properties.insert(tool.name.clone(), grammar.input_property);
+        }
+    }
+    Ok(properties)
 }

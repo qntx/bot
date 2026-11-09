@@ -189,6 +189,25 @@
       "vectors": ["vectors/ai/constrained-sampling.json"],
       "rust": ["crates/ovo-ai/tests/it/constrained_sampling.rs"],
       "classes": []
+    },
+    {
+      "id": "AI-SHORT-HASH",
+      "upstream": ["packages/ai/src/utils/hash.ts", "packages/ai/src/api/openai-prompt-cache.ts"],
+      "vectors": ["vectors/ai/hash.json"],
+      "rust": ["crates/ovo-ai/tests/it/ai_utils.rs"],
+      "classes": []
+    },
+    {
+      "id": "AI-API-OPENAI-COMPLETIONS",
+      "upstream": [
+        "packages/ai/src/api/openai-completions.ts",
+        "packages/ai/src/api/constrained-sampling.ts",
+        "packages/ai/src/api/openai-prompt-cache.ts",
+        "packages/ai/src/utils/hash.ts"
+      ],
+      "vectors": ["vectors/ai/openai-completions-request.json"],
+      "rust": ["crates/ovo-ai/tests/it/openai_completions.rs"],
+      "classes": ["sdk-headers"]
     }
   ],
   "classes": {
