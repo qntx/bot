@@ -11,9 +11,12 @@
 
 use serde_json::{Map, Value, json};
 
-use crate::text::render_system_message_update;
-use crate::text::sanitize_surrogates;
-use crate::types::content::{AssistantContentBlock, UserContentBlock};
+use crate::api::constrained_sampling::{
+    json_schema_tool_parameters, prefers_json_schema_strict_sampling,
+    resolve_json_schema_strict_sampling,
+};
+use crate::text::{js_trim, render_system_message_update, sanitize_surrogates};
+use crate::types::content::{AssistantContentBlock, TextOrBlocksWithImages, UserContentBlock};
 use crate::types::message::{Message, ToolResultMessage};
 use crate::types::tool::Tool;
 
@@ -125,9 +128,8 @@ pub fn convert_tool_result(msg: &ToolResultMessage, content: Option<&[UserConten
     })
 }
 
-/// `ANTHROPIC_STRICT_UNSUPPORTED_KEYWORDS` + `STRICT_STRING_FORMATS` —
-/// the strict-tool schema blacklist.
-const STRICT_UNSUPPORTED: &[&str] = &[
+/// Keywords Anthropic strict tool use rejects with a 400 for the whole request.
+const STRICT_UNSUPPORTED: [&str; 11] = [
     "minimum",
     "maximum",
     "exclusiveMinimum",
@@ -140,7 +142,9 @@ const STRICT_UNSUPPORTED: &[&str] = &[
     "minProperties",
     "maxProperties",
 ];
-const STRICT_FORMATS: &[&str] = &[
+
+/// String formats Anthropic strict tool use accepts.
+const STRICT_FORMATS: [&str; 10] = [
     "date-time",
     "time",
     "date",
@@ -152,275 +156,360 @@ const STRICT_FORMATS: &[&str] = &[
     "ipv6",
     "uuid",
 ];
+
+/// `isAnthropicStrictUnsupportedKeyword`.
+#[expect(clippy::float_cmp, reason = "JS strict equality against 0 and 1")]
 fn strict_unsupported(key: &str, value: &Value) -> bool {
     if STRICT_UNSUPPORTED.contains(&key) {
         return true;
     }
-    if key == "minItems" {
-        return value.as_u64().is_none_or(|n| n > 1);
-    }
-    if key == "format" {
-        return value.as_str().is_none_or(|f| !STRICT_FORMATS.contains(&f));
-    }
-    false
-}
-
-/// `resolveJsonSchemaStrictSampling` — `None` when the tool's schema
-/// hits a strict-unsupported keyword; `Some(true)` for an explicit
-/// strict request; `Some(false)` otherwise.
-fn resolve_strict(tool: &Tool) -> Option<bool> {
-    if schema_has_unsupported(&Value::from(tool.parameters.clone())) {
-        return None;
-    }
-    Some(false)
-}
-fn schema_has_unsupported(value: &Value) -> bool {
-    match value {
-        Value::Object(obj) => obj
-            .iter()
-            .any(|(k, v)| strict_unsupported(k, v) || schema_has_unsupported(v)),
-        Value::Array(items) => items.iter().any(schema_has_unsupported),
+    match key {
+        "minItems" => !value.as_f64().is_some_and(|n| n == 0.0 || n == 1.0),
+        "format" => !value.as_str().is_some_and(|f| STRICT_FORMATS.contains(&f)),
         _ => false,
     }
 }
 
-/// `getJsonSchemaToolParameters` — the `input_schema` the request sends.
-fn tool_parameters(tool: &Tool, strict: Option<bool>) -> Map<String, Value> {
-    let mut parameters = tool.parameters.clone();
-    if strict == Some(true) {
-        parameters.insert(String::from("type"), Value::from("object"));
-        parameters
-            .entry(String::from("properties"))
-            .or_insert(json!({}));
-        parameters
-            .entry(String::from("required"))
-            .or_insert(json!([]));
-    }
-    parameters
-}
-
-/// `convertTools` — each `Tool` → a `BetaTool` in upstream key order.
+/// `convertTools`: each `Tool` as a `BetaTool` in upstream key order.
 ///
-/// (`name`/`description`/`eager_input_streaming?`/`strict?`/`input_schema`/
-/// `cache_control?`); `name` uses the OAuth tool-name mapping only when
-/// `is_oauth_token`.
-#[must_use]
+/// # Errors
+/// Returns upstream's message when a tool requires strict sampling that the
+/// model or its schema cannot provide.
 pub fn convert_tools(
     tools: &[Tool],
+    compat: &super::AnthropicMessagesCompat,
     is_oauth_token: bool,
-    supports_eager_tool_input_streaming: bool,
     cache_control: Option<&Value>,
     disable_preferred_strict_tools: bool,
-) -> Vec<Value> {
-    let name = |n: &str| {
-        if is_oauth_token {
-            to_claude_code_name(n)
-        } else {
-            n.to_owned()
-        }
-    };
+) -> Result<Vec<Value>, String> {
     tools
         .iter()
         .enumerate()
         .map(|(index, tool)| {
-            let strict = if disable_preferred_strict_tools {
-                None
-            } else {
-                resolve_strict(tool)
-            };
-            let parameters = tool_parameters(tool, strict);
-            let mut result = Map::new();
-            result.insert("name".into(), Value::from(name(&tool.name)));
-            result.insert(
-                "description".into(),
-                Value::from(sanitize_surrogates(&tool.description)),
+            let strict =
+                if disable_preferred_strict_tools && prefers_json_schema_strict_sampling(tool) {
+                    None
+                } else {
+                    resolve_json_schema_strict_sampling(
+                        tool,
+                        compat.supports_strict_tools,
+                        Some(strict_unsupported),
+                    )
+                    .map_err(|error| error.to_string())?
+                };
+            let parameters =
+                json_schema_tool_parameters(tool, strict).map_err(|error| error.to_string())?;
+            let mut legacy = Map::new();
+            legacy.insert("type".into(), Value::from("object"));
+            legacy.insert(
+                "properties".into(),
+                parameters
+                    .get("properties")
+                    .cloned()
+                    .unwrap_or_else(|| json!({})),
             );
-            if supports_eager_tool_input_streaming {
+            legacy.insert(
+                "required".into(),
+                parameters
+                    .get("required")
+                    .cloned()
+                    .unwrap_or_else(|| json!([])),
+            );
+            let input_schema = if strict == Some(true) {
+                let mut merged = parameters;
+                merged.extend(legacy);
+                merged
+            } else {
+                legacy
+            };
+            let mut result = Map::new();
+            let name = if is_oauth_token {
+                to_claude_code_name(&tool.name)
+            } else {
+                tool.name.clone()
+            };
+            result.insert("name".into(), Value::from(name));
+            result.insert("description".into(), Value::from(tool.description.clone()));
+            if compat.supports_eager_tool_input_streaming {
                 result.insert("eager_input_streaming".into(), Value::from(true));
             }
             if strict == Some(true) {
                 result.insert("strict".into(), Value::from(true));
             }
-            result.insert("input_schema".into(), Value::from(parameters));
-            if let Some(cc) = cache_control
-                && index == tools.len() - 1
+            result.insert("input_schema".into(), Value::Object(input_schema));
+            if let Some(cache_control) = cache_control
+                && index + 1 == tools.len()
             {
-                result.insert("cache_control".into(), cc.clone());
+                result.insert("cache_control".into(), cache_control.clone());
             }
-            Value::from(result)
+            Ok(Value::Object(result))
         })
         .collect()
 }
 
-/// `convertMessages` — upstream's role-block pipeline in key order.
-/// `pendingSystem` merges before the next assistant message (or the end);
-/// consecutive `toolResult`s join into one `user` role entry.
-#[expect(
-    clippy::excessive_nesting,
-    clippy::cognitive_complexity,
-    clippy::too_many_lines,
-    reason = "the structure mirrors the upstream role-block dispatch; splitting it obscures the case order"
-)]
-#[must_use]
+/// The converted conversation plus the effort level recorded on each
+/// assistant message the managed-effort provider produced.
+#[derive(Clone, Debug, Default)]
+pub struct ConvertedMessages {
+    /// `MessageParam`s in request order.
+    pub messages: Vec<Value>,
+    /// Index into `messages` of an assistant message and the effort it used.
+    pub assistant_levels: Vec<(usize, String)>,
+}
+
+/// Converts tool definitions for native `tool_addition` blocks.
+pub type ToolDefinitions<'a> = &'a dyn Fn(&[Tool]) -> Result<Vec<Value>, String>;
+
+/// `convertMessages`: transcript messages as Anthropic `MessageParam`s.
+///
+/// Later system messages are held back until the next assistant message that
+/// is sent (or the end), consecutive tool results share one user message, and
+/// the last user or system message carries the conversation cache breakpoint.
+///
+/// # Errors
+/// Returns the error of `tool_definitions` for a native tool change.
 pub fn convert_messages(
-    transformed_messages: &[Message],
+    messages: &[Message],
     is_oauth_token: bool,
-    allow_empty_signature: bool,
-    _managed_provider: Option<&str>,
     cache_control: Option<&Value>,
-) -> Vec<Value> {
-    let name = |n: &str| {
-        if is_oauth_token {
-            to_claude_code_name(n)
-        } else {
-            n.to_owned()
-        }
-    };
-    let mut params: Vec<Value> = Vec::new();
+    allow_empty_signature: bool,
+    managed_provider: Option<&str>,
+    tool_definitions: Option<ToolDefinitions<'_>>,
+) -> Result<ConvertedMessages, String> {
+    let mut converted = ConvertedMessages::default();
     let mut pending_system: Vec<Value> = Vec::new();
     let mut index = 0;
-    while index < transformed_messages.len() {
-        let Some(msg) = transformed_messages.get(index) else {
-            break;
-        };
+    while let Some(message) = messages.get(index) {
         index += 1;
-        match msg {
+        match message {
             Message::System(system) => {
-                let text = render_system_message_update(system);
-                if !text.is_empty() {
-                    pending_system.push(json!({
-                        "role": "system",
-                        "content": [{"type":"text","text":sanitize_surrogates(&text)}],
-                    }));
+                let blocks = system_blocks(system, is_oauth_token, tool_definitions)?;
+                if !blocks.is_empty() {
+                    pending_system.push(json!({ "role": "system", "content": blocks }));
                 }
             }
             Message::User(user) => {
-                let content = match &user.content {
-                    crate::types::content::TextOrBlocksWithImages::Text(text) => {
-                        if text.trim().is_empty() {
-                            continue;
-                        }
-                        json!({"role":"user","content":sanitize_surrogates(text)})
-                    }
-                    crate::types::content::TextOrBlocksWithImages::Blocks(items) => {
-                        let blocks: Vec<Value> = items
-                            .iter()
-                            .map(|item| match item {
-                                UserContentBlock::Text(t) => {
-                                    json!({"type":"text","text":sanitize_surrogates(&t.text)})
-                                }
-                                UserContentBlock::Image(i) => convert_image_block(i),
-                            })
-                            .filter(|b| {
-                                b.get("type") != Some(&json!("text"))
-                                    || b["text"].as_str().is_none_or(|t| !t.trim().is_empty())
-                            })
-                            .collect();
-                        if blocks.is_empty() {
-                            continue;
-                        }
-                        json!({"role":"user","content":blocks})
-                    }
-                };
-                params.push(content);
+                if let Some(param) = user_param(user) {
+                    converted.messages.push(param);
+                }
             }
             Message::Assistant(assistant) => {
-                let mut blocks: Vec<Value> = Vec::new();
-                for block in &assistant.content {
-                    match block {
-                        AssistantContentBlock::Text(t) => {
-                            if t.text.trim().is_empty() {
-                                continue;
-                            }
-                            blocks.push(json!({"type":"text","text":sanitize_surrogates(&t.text)}));
-                        }
-                        AssistantContentBlock::Thinking(t) => {
-                            if t.redacted.unwrap_or(false) {
-                                blocks.push(
-                                    json!({"type":"redacted_thinking","data":t.thinking_signature}),
-                                );
-                                continue;
-                            }
-                            let sig = t.thinking_signature.as_deref().unwrap_or_default();
-                            let has_sig = !sig.trim().is_empty();
-                            if t.thinking.trim().is_empty() && !has_sig {
-                                continue;
-                            }
-                            if has_sig {
-                                blocks.push(json!({"type":"thinking","thinking":sanitize_surrogates(&t.thinking),"signature":sig}));
-                            } else if allow_empty_signature {
-                                blocks.push(json!({"type":"thinking","thinking":sanitize_surrogates(&t.thinking),"signature":""}));
-                            } else {
-                                blocks.push(
-                                    json!({"type":"text","text":sanitize_surrogates(&t.thinking)}),
-                                );
-                            }
-                        }
-                        AssistantContentBlock::ToolCall(t) => {
-                            blocks.push(json!({"type":"tool_use","id":t.id,"name":name(&t.name),"input":Value::from(t.arguments.clone())}));
-                        }
-                    }
-                }
+                let blocks = assistant_blocks(assistant, is_oauth_token, allow_empty_signature);
                 if blocks.is_empty() {
                     continue;
                 }
-                params.append(&mut pending_system);
-                params.push(json!({"role":"assistant","content":blocks}));
-            }
-            Message::ToolResult(_result) => {
-                // Merge consecutive toolResult messages into one `user`
-                // entry; error-result images follow via
-                // `splitErrorToolResultImages` (Anthropic rejects
-                // error tool results that contain images).
-                let mut tool_results: Vec<Value> = Vec::new();
-                let mut error_images: Vec<Value> = Vec::new();
-                let mut j = index - 1;
-                while j < transformed_messages.len() {
-                    let Some(Message::ToolResult(tool_msg)) = transformed_messages.get(j) else {
-                        break;
-                    };
-                    let split = crate::transform::split_error_tool_result_images(tool_msg);
-                    tool_results.push(convert_tool_result(
-                        tool_msg,
-                        split.as_ref().map(|s| s.content.as_slice()),
-                    ));
-                    if let Some(split) = split {
-                        error_images.push(json!({"type":"text","text":split.caption}));
-                        error_images.extend(split.images.iter().map(convert_image_block));
-                    }
-                    j += 1;
+                converted.messages.append(&mut pending_system);
+                let position = converted.messages.len();
+                converted
+                    .messages
+                    .push(json!({ "role": "assistant", "content": blocks }));
+                if let Some(level) = assistant
+                    .provider_thinking_level
+                    .as_deref()
+                    .filter(|level| is_anthropic_effort(level))
+                    .filter(|_| {
+                        assistant.api.as_str() == super::API
+                            && managed_provider == Some(assistant.provider.as_str())
+                    })
+                {
+                    converted
+                        .assistant_levels
+                        .push((position, level.to_owned()));
                 }
-                // `index` was already advanced past the current
-                // message at the loop top; `j` is the first index past
-                // the merged run.
-                index = j;
-                tool_results.append(&mut error_images);
-                params.push(json!({"role":"user","content":tool_results}));
+            }
+            Message::ToolResult(_) => {
+                let (param, next) = tool_results_param(messages, index - 1);
+                converted.messages.push(param);
+                index = next;
             }
         }
     }
-    params.append(&mut pending_system);
-    // `cache_control` lands on the last user/system message's final
-    // content block (or wraps a string content), matching upstream.
-    if let Some(cc) = cache_control
-        && let Some(last) = params.last_mut()
-        && (last.get("role") == Some(&json!("user")) || last.get("role") == Some(&json!("system")))
-    {
-        if let Some(Value::Array(blocks)) = last.get_mut("content") {
-            if let Some(block) = blocks.last_mut()
-                && let Some(Value::String(t)) = block.get("type")
-                && matches!(
-                    t.as_str(),
-                    "text" | "image" | "tool_result" | "tool_addition" | "tool_removal"
-                )
-                && let Some(obj) = block.as_object_mut()
-            {
-                obj.insert(String::from("cache_control"), cc.clone());
-            }
-        } else if let Some(Value::String(text)) = last.get("content") {
-            let text = text.clone();
-            last["content"] = json!([{"type":"text","text":text,"cache_control":cc}]);
+    converted.messages.append(&mut pending_system);
+    if let Some(cache_control) = cache_control {
+        mark_last_message(&mut converted.messages, cache_control);
+    }
+    Ok(converted)
+}
+
+/// `isAnthropicEffort`.
+fn is_anthropic_effort(level: &str) -> bool {
+    matches!(level, "low" | "medium" | "high" | "xhigh" | "max")
+}
+
+/// A later system message: its rendered update text and, when tool changes
+/// are native, `tool_removal` and `tool_addition` blocks.
+fn system_blocks(
+    system: &crate::types::message::SystemMessage,
+    is_oauth_token: bool,
+    tool_definitions: Option<ToolDefinitions<'_>>,
+) -> Result<Vec<Value>, String> {
+    let mut blocks = Vec::new();
+    let text = render_system_message_update(system);
+    if !text.is_empty() {
+        blocks.push(json!({ "type": "text", "text": sanitize_surrogates(&text) }));
+    }
+    let Some(tool_definitions) = tool_definitions else {
+        return Ok(blocks);
+    };
+    let added = system.tools_added.as_deref().unwrap_or_default();
+    for tool in system.tools_removed.iter().flatten() {
+        // A new definition under the same name replaces the old one.
+        if added.iter().any(|addition| addition.name == tool.name) {
+            continue;
+        }
+        let name = if is_oauth_token {
+            to_claude_code_name(&tool.name)
+        } else {
+            tool.name.clone()
+        };
+        blocks.push(json!({
+            "type": "tool_removal",
+            "tool": { "type": "tool_reference", "name": name },
+        }));
+    }
+    for definition in tool_definitions(added)? {
+        blocks.push(json!({
+            "type": "tool_addition",
+            "tool": { "type": "tool_definition", "definition": definition },
+        }));
+    }
+    Ok(blocks)
+}
+
+/// A user message, `None` when nothing but whitespace remains.
+fn user_param(user: &crate::types::message::UserMessage) -> Option<Value> {
+    match &user.content {
+        TextOrBlocksWithImages::Text(text) => (!js_trim(text).is_empty())
+            .then(|| json!({ "role": "user", "content": sanitize_surrogates(text) })),
+        TextOrBlocksWithImages::Blocks(items) => {
+            let blocks: Vec<Value> = items
+                .iter()
+                .filter_map(|item| match item {
+                    UserContentBlock::Text(text) => (!js_trim(&text.text).is_empty()).then(
+                        || json!({ "type": "text", "text": sanitize_surrogates(&text.text) }),
+                    ),
+                    UserContentBlock::Image(image) => Some(convert_image_block(image)),
+                })
+                .collect();
+            (!blocks.is_empty()).then(|| json!({ "role": "user", "content": blocks }))
         }
     }
-    params
+}
+
+/// The content blocks of an assistant message.
+fn assistant_blocks(
+    assistant: &crate::types::message::AssistantMessage,
+    is_oauth_token: bool,
+    allow_empty_signature: bool,
+) -> Vec<Value> {
+    let mut blocks = Vec::new();
+    for block in &assistant.content {
+        match block {
+            AssistantContentBlock::Text(text) => {
+                if !js_trim(&text.text).is_empty() {
+                    blocks.push(json!({ "type": "text", "text": sanitize_surrogates(&text.text) }));
+                }
+            }
+            AssistantContentBlock::Thinking(thinking) => {
+                if let Some(converted) = thinking_block(thinking, allow_empty_signature) {
+                    blocks.push(converted);
+                }
+            }
+            AssistantContentBlock::ToolCall(call) => {
+                let name = if is_oauth_token {
+                    to_claude_code_name(&call.name)
+                } else {
+                    call.name.clone()
+                };
+                blocks.push(json!({
+                    "type": "tool_use",
+                    "id": call.id,
+                    "name": name,
+                    "input": Value::Object(call.arguments.clone()),
+                }));
+            }
+        }
+    }
+    blocks
+}
+
+/// A thinking block: redacted payloads pass back as `redacted_thinking`; a
+/// missing signature (for example from an aborted stream) turns the thinking
+/// into text unless the model accepts empty signatures.
+fn thinking_block(
+    thinking: &crate::types::content::ThinkingContent,
+    allow_empty_signature: bool,
+) -> Option<Value> {
+    if thinking.redacted == Some(true) {
+        return Some(json!({ "type": "redacted_thinking", "data": thinking.thinking_signature }));
+    }
+    let signature = thinking
+        .thinking_signature
+        .as_deref()
+        .filter(|signature| !js_trim(signature).is_empty());
+    if js_trim(&thinking.thinking).is_empty() && signature.is_none() {
+        return None;
+    }
+    let text = sanitize_surrogates(&thinking.thinking);
+    Some(match signature {
+        Some(signature) => json!({ "type": "thinking", "thinking": text, "signature": signature }),
+        None if allow_empty_signature => {
+            json!({ "type": "thinking", "thinking": text, "signature": "" })
+        }
+        None => json!({ "type": "text", "text": text }),
+    })
+}
+
+/// The tool results starting at `start` merged into one user message, with
+/// error-result images after every result (Anthropic rejects images inside
+/// error results); returns the index past the run.
+fn tool_results_param(messages: &[Message], start: usize) -> (Value, usize) {
+    let mut results: Vec<Value> = Vec::new();
+    let mut error_images: Vec<Value> = Vec::new();
+    let mut next = start;
+    while let Some(Message::ToolResult(result)) = messages.get(next) {
+        let split = crate::transform::split_error_tool_result_images(result);
+        results.push(convert_tool_result(
+            result,
+            split.as_ref().map(|split| split.content.as_slice()),
+        ));
+        if let Some(split) = split {
+            error_images.push(json!({ "type": "text", "text": split.caption }));
+            error_images.extend(split.images.iter().map(convert_image_block));
+        }
+        next += 1;
+    }
+    results.append(&mut error_images);
+    (json!({ "role": "user", "content": results }), next)
+}
+
+/// Put the conversation cache breakpoint on the last user or system message.
+fn mark_last_message(messages: &mut [Value], cache_control: &Value) {
+    let Some(last) = messages.last_mut() else {
+        return;
+    };
+    let role = last.get("role").and_then(Value::as_str);
+    if role != Some("user") && role != Some("system") {
+        return;
+    }
+    match last.get_mut("content") {
+        Some(Value::Array(blocks)) => {
+            let Some(Value::Object(block)) = blocks.last_mut() else {
+                return;
+            };
+            let marked = matches!(
+                block.get("type").and_then(Value::as_str),
+                Some("text" | "image" | "tool_result" | "tool_addition" | "tool_removal")
+            );
+            if marked {
+                block.insert(String::from("cache_control"), cache_control.clone());
+            }
+        }
+        Some(Value::String(text)) => {
+            let text = std::mem::take(text);
+            last["content"] =
+                json!([{ "type": "text", "text": text, "cache_control": cache_control }]);
+        }
+        _ => {}
+    }
 }

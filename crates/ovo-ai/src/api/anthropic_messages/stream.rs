@@ -19,18 +19,19 @@ use tokio_util::sync::CancellationToken;
 
 use super::convert::from_claude_code_name;
 use super::{AnthropicOptions, build_request, is_oauth_token};
+use crate::api::constrained_sampling::is_strict_tool_limit_error_message;
 use crate::cost::calculate_cost;
 use crate::http::client::{HttpClient, HttpError, RequestPolicy, SendError};
 use crate::http::retry::jitter;
 use crate::http::sse::{EndOfStream, SseEvent, SseEventStream};
 use crate::json::repair::parse_json_with_repair;
-use crate::options::{ResponseMetadata, StreamOptions};
+use crate::options::{ResponseMetadata, SimpleStreamOptions, StreamOptions};
 use crate::provider::ChatApi;
 use crate::stream::accumulator::wall_ms;
 use crate::stream::{AssistantStream, AssistantStreamSender, DoneReason, ErrorReason, Metadata};
 use crate::transcript::{TranscriptContext, get_current_tools};
 use crate::types::content::{StopReason, TextContent, ThinkingContent, ToolCall};
-use crate::types::context::Context;
+use crate::types::diagnostic::{AssistantMessageDiagnostic, DiagnosticErrorInfo};
 use crate::types::message::AssistantMessage;
 use crate::types::model::Model;
 use crate::types::tool::Tool;
@@ -63,6 +64,26 @@ impl AnthropicMessagesApi {
     }
 }
 
+impl AnthropicMessagesApi {
+    /// `stream` with the Anthropic-specific options.
+    #[must_use]
+    pub fn stream_with(
+        &self,
+        model: &Model,
+        context: TranscriptContext,
+        options: AnthropicOptions,
+    ) -> AssistantStream {
+        let base = initial_message(model);
+        let model = model.clone();
+        let http = Arc::clone(&self.http);
+        AssistantStream::spawn(base, STREAM_CAPACITY, move |mut sender| async move {
+            let signal = options.base.signal.clone().unwrap_or_default();
+            let outcome = run(&http, &model, &context, &options, &signal, &mut sender).await;
+            finish(sender, outcome, signal.is_cancelled()).await;
+        })
+    }
+}
+
 impl ChatApi for AnthropicMessagesApi {
     fn stream(
         &self,
@@ -70,14 +91,23 @@ impl ChatApi for AnthropicMessagesApi {
         context: TranscriptContext,
         options: StreamOptions,
     ) -> AssistantStream {
-        let base = initial_message(model);
-        let model = model.clone();
-        let http = Arc::clone(&self.http);
-        AssistantStream::spawn(base, STREAM_CAPACITY, move |mut sender| async move {
-            let signal = options.signal.clone().unwrap_or_default();
-            let outcome = run(&http, &model, &context, &options, &signal, &mut sender).await;
-            finish(sender, outcome, signal.is_cancelled()).await;
-        })
+        let options = AnthropicOptions {
+            base: options,
+            ..AnthropicOptions::default()
+        };
+        self.stream_with(model, context, options)
+    }
+
+    /// `streamSimple`: the simple reasoning level becomes adaptive effort or a
+    /// thinking budget.
+    fn stream_simple(
+        &self,
+        model: &Model,
+        context: TranscriptContext,
+        options: SimpleStreamOptions,
+    ) -> AssistantStream {
+        let options = AnthropicOptions::from_simple(model, &context, &options);
+        self.stream_with(model, context, options)
     }
 }
 
@@ -141,43 +171,61 @@ async fn run(
     http: &HttpClient,
     model: &Model,
     context: &TranscriptContext,
-    options: &StreamOptions,
+    options: &AnthropicOptions,
     signal: &CancellationToken,
     sender: &mut AssistantStreamSender,
 ) -> Result<DoneReason, String> {
-    let oauth = is_oauth_token(options.api_key.as_deref().unwrap_or_default());
-    let request_context = Context {
-        system_prompt: None,
-        messages: context.messages().to_vec(),
-        tools: None,
+    let base = &options.base;
+    if !has_request_auth(base) {
+        return Err(format!("No API key for provider: {}", model.provider));
+    }
+    let oauth = is_oauth_token(base.api_key.as_deref().unwrap_or_default());
+    let mut disable_preferred_strict_tools = false;
+    let response = loop {
+        if signal.is_cancelled() {
+            return Err(String::from("Request was aborted"));
+        }
+        let request = build_request(model, context, options, disable_preferred_strict_tools)?;
+        if let Some(level) = &request.provider_thinking_level {
+            send(sender, Metadata::ProviderThinkingLevel(level.clone())).await?;
+        }
+        let header_pairs: Vec<(&str, &str)> = request
+            .headers
+            .iter()
+            .filter_map(|(name, value)| value.as_str().map(|v| (name.as_str(), v)))
+            .collect();
+        let sent = http
+            .post_json(
+                &request.url,
+                &Bytes::from(request.body.clone()),
+                &header_pairs,
+                &request_policy(base),
+                signal,
+                &jitter,
+            )
+            .await;
+        match sent {
+            Ok(response) => break response,
+            Err(SendError::Provider(error))
+                if !disable_preferred_strict_tools
+                    && request.has_preferred_strict_tools
+                    && is_strict_tool_limit_rejection(&error) =>
+            {
+                // Only a rejected request is downgraded, never a started stream.
+                disable_preferred_strict_tools = true;
+                let message = sdk_error_message(&error);
+                send(
+                    sender,
+                    Metadata::Diagnostic(strict_fallback_diagnostic(message)),
+                )
+                .await?;
+            }
+            Err(SendError::Provider(error)) => return Err(sdk_error_message(&error)),
+            Err(SendError::Transport(message)) => return Err(message),
+            Err(SendError::Aborted) => return Err(String::from("Request was aborted")),
+        }
     };
-    let anthropic_options = AnthropicOptions {
-        base: options.clone(),
-        ..AnthropicOptions::default()
-    };
-    let request = build_request(model, &request_context, Some(&anthropic_options))
-        .map_err(|error| error.to_string())?;
-    let header_pairs: Vec<(&str, &str)> = request
-        .headers
-        .iter()
-        .filter_map(|(name, value)| value.as_str().map(|v| (name.as_str(), v)))
-        .collect();
-    let response = http
-        .post_json(
-            &request.url,
-            &Bytes::from(request.body),
-            &header_pairs,
-            &request_policy(options),
-            signal,
-            &jitter,
-        )
-        .await
-        .map_err(|error| match error {
-            SendError::Provider(error) => sdk_error_message(&error),
-            SendError::Transport(message) => message,
-            SendError::Aborted => String::from("Request was aborted"),
-        })?;
-    if let Some(on_response) = &options.on_response {
+    if let Some(on_response) = &base.on_response {
         let metadata = ResponseMetadata {
             status: response.status().as_u16(),
             headers: headers_to_record(response.headers()),
@@ -228,6 +276,61 @@ fn sdk_error_message(error: &HttpError) -> String {
         (Some(status), false) => format!("{status} {message}"),
         (Some(status), true) => format!("{status} status code (no body)"),
         (None, _) => message,
+    }
+}
+
+/// `hasRequestAuth`: an API key or an auth header pi accepts.
+fn has_request_auth(options: &StreamOptions) -> bool {
+    if options
+        .api_key
+        .as_deref()
+        .is_some_and(|key| !key.is_empty())
+    {
+        return true;
+    }
+    options.headers.iter().flatten().any(|(name, value)| {
+        ["authorization", "x-api-key", "cf-aig-authorization"]
+            .iter()
+            .any(|auth| name.eq_ignore_ascii_case(auth))
+            && value
+                .as_str()
+                .is_some_and(|value| !crate::text::js_trim(value).is_empty())
+    })
+}
+
+/// A 400 `invalid_request_error` saying the strict tools exceed Claude's limits.
+fn is_strict_tool_limit_rejection(error: &HttpError) -> bool {
+    let Some(body) = error.body.as_deref() else {
+        return false;
+    };
+    let kind = crate::json::from_str::<Value>(body).ok().and_then(|body| {
+        body.get("error")
+            .and_then(|e| e.get("type"))
+            .and_then(Value::as_str)
+            .map(str::to_owned)
+    });
+    error.status == Some(400.0)
+        && kind.as_deref() == Some("invalid_request_error")
+        && is_strict_tool_limit_error_message(&sdk_error_message(error))
+}
+
+/// The diagnostic recorded when strict mode is dropped after a rejection.
+fn strict_fallback_diagnostic(message: String) -> AssistantMessageDiagnostic {
+    let mut details = Map::new();
+    details.insert(
+        String::from("reason"),
+        Value::from("strict_tool_limits_exceeded"),
+    );
+    AssistantMessageDiagnostic {
+        kind: String::from("anthropic_strict_tools_fallback"),
+        timestamp: wall_ms(),
+        error: Some(DiagnosticErrorInfo {
+            name: None,
+            message,
+            stack: None,
+            code: None,
+        }),
+        details: Some(details),
     }
 }
 

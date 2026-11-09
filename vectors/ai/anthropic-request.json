@@ -983,5 +983,1031 @@
 			},
 			"body": "{\"model\":\"claude-test\",\"messages\":[{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"hi\",\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"max_tokens\":8192,\"stream\":true,\"temperature\":0.5}"
 		}
+	},
+	{
+		"name": "thinking-budget",
+		"model": {
+			"id": "claude-test",
+			"name": "Test",
+			"api": "anthropic-messages",
+			"provider": "anthropic",
+			"baseUrl": "https://api.anthropic.com",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": true,
+			"contextWindow": 200000,
+			"maxTokens": 8192
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "user",
+					"content": "think",
+					"timestamp": 0
+				}
+			],
+			"tools": []
+		},
+		"options": {
+			"apiKey": "sk-ant-api03-test",
+			"env": {},
+			"headers": {},
+			"identity": null,
+			"sessionId": null,
+			"signal": null,
+			"maxRetries": 0,
+			"thinkingEnabled": true,
+			"thinkingBudgetTokens": 2048,
+			"temperature": 0.3
+		},
+		"request": {
+			"url": "https://api.anthropic.com/v1/messages?beta=true",
+			"method": "POST",
+			"headers": {
+				"accept": "application/json",
+				"anthropic-beta": "interleaved-thinking-2025-05-14",
+				"anthropic-dangerous-direct-browser-access": "true",
+				"anthropic-version": "2023-06-01",
+				"content-type": "application/json",
+				"user-agent": "pi/1.5.0 (darwin; node/v26.13.0; arm64)",
+				"x-api-key": "sk-ant-api03-test"
+			},
+			"body": "{\"model\":\"claude-test\",\"messages\":[{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"think\",\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"max_tokens\":8192,\"stream\":true,\"thinking\":{\"type\":\"enabled\",\"budget_tokens\":2048,\"display\":\"summarized\"}}"
+		}
+	},
+	{
+		"name": "thinking-budget-default",
+		"model": {
+			"id": "claude-test",
+			"name": "Test",
+			"api": "anthropic-messages",
+			"provider": "anthropic",
+			"baseUrl": "https://api.anthropic.com",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": true,
+			"contextWindow": 200000,
+			"maxTokens": 8192
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "user",
+					"content": "think",
+					"timestamp": 0
+				}
+			],
+			"tools": []
+		},
+		"options": {
+			"apiKey": "sk-ant-api03-test",
+			"env": {},
+			"headers": {},
+			"identity": null,
+			"sessionId": null,
+			"signal": null,
+			"maxRetries": 0,
+			"thinkingEnabled": true,
+			"interleavedThinking": false
+		},
+		"request": {
+			"url": "https://api.anthropic.com/v1/messages?beta=true",
+			"method": "POST",
+			"headers": {
+				"accept": "application/json",
+				"anthropic-dangerous-direct-browser-access": "true",
+				"anthropic-version": "2023-06-01",
+				"content-type": "application/json",
+				"user-agent": "pi/1.5.0 (darwin; node/v26.13.0; arm64)",
+				"x-api-key": "sk-ant-api03-test"
+			},
+			"body": "{\"model\":\"claude-test\",\"messages\":[{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"think\",\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"max_tokens\":8192,\"stream\":true,\"thinking\":{\"type\":\"enabled\",\"budget_tokens\":1024,\"display\":\"summarized\"}}"
+		}
+	},
+	{
+		"name": "thinking-adaptive-effort",
+		"model": {
+			"id": "claude-test",
+			"name": "Test",
+			"api": "anthropic-messages",
+			"provider": "anthropic",
+			"baseUrl": "https://api.anthropic.com",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": true,
+			"contextWindow": 200000,
+			"maxTokens": 8192,
+			"compat": {
+				"forceAdaptiveThinking": true
+			}
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "user",
+					"content": "think",
+					"timestamp": 0
+				}
+			],
+			"tools": []
+		},
+		"options": {
+			"apiKey": "sk-ant-api03-test",
+			"env": {},
+			"headers": {},
+			"identity": null,
+			"sessionId": null,
+			"signal": null,
+			"maxRetries": 0,
+			"thinkingEnabled": true,
+			"effort": "medium",
+			"thinkingDisplay": "omitted"
+		},
+		"request": {
+			"url": "https://api.anthropic.com/v1/messages?beta=true",
+			"method": "POST",
+			"headers": {
+				"accept": "application/json",
+				"anthropic-dangerous-direct-browser-access": "true",
+				"anthropic-version": "2023-06-01",
+				"content-type": "application/json",
+				"user-agent": "pi/1.5.0 (darwin; node/v26.13.0; arm64)",
+				"x-api-key": "sk-ant-api03-test"
+			},
+			"body": "{\"model\":\"claude-test\",\"messages\":[{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"think\",\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"max_tokens\":8192,\"stream\":true,\"thinking\":{\"type\":\"adaptive\",\"display\":\"omitted\"},\"output_config\":{\"effort\":\"medium\"}}"
+		}
+	},
+	{
+		"name": "thinking-disabled",
+		"model": {
+			"id": "claude-test",
+			"name": "Test",
+			"api": "anthropic-messages",
+			"provider": "anthropic",
+			"baseUrl": "https://api.anthropic.com",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": true,
+			"contextWindow": 200000,
+			"maxTokens": 8192
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "user",
+					"content": "no thinking",
+					"timestamp": 0
+				}
+			],
+			"tools": []
+		},
+		"options": {
+			"apiKey": "sk-ant-api03-test",
+			"env": {},
+			"headers": {},
+			"identity": null,
+			"sessionId": null,
+			"signal": null,
+			"maxRetries": 0,
+			"thinkingEnabled": false
+		},
+		"request": {
+			"url": "https://api.anthropic.com/v1/messages?beta=true",
+			"method": "POST",
+			"headers": {
+				"accept": "application/json",
+				"anthropic-dangerous-direct-browser-access": "true",
+				"anthropic-version": "2023-06-01",
+				"content-type": "application/json",
+				"user-agent": "pi/1.5.0 (darwin; node/v26.13.0; arm64)",
+				"x-api-key": "sk-ant-api03-test"
+			},
+			"body": "{\"model\":\"claude-test\",\"messages\":[{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"no thinking\",\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"max_tokens\":8192,\"stream\":true,\"thinking\":{\"type\":\"disabled\"}}"
+		}
+	},
+	{
+		"name": "managed-effort",
+		"model": {
+			"id": "claude-test",
+			"name": "Test",
+			"api": "anthropic-messages",
+			"provider": "anthropic",
+			"baseUrl": "https://api.anthropic.com",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": true,
+			"contextWindow": 200000,
+			"maxTokens": 8192,
+			"compat": {
+				"supportsMidConvoEffort": true
+			}
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "user",
+					"content": "one",
+					"timestamp": 0
+				},
+				{
+					"role": "assistant",
+					"content": [
+						{
+							"type": "text",
+							"text": "earlier"
+						}
+					],
+					"api": "anthropic-messages",
+					"provider": "anthropic",
+					"model": "claude-test",
+					"providerThinkingLevel": "medium",
+					"usage": {
+						"input": 0,
+						"output": 0,
+						"cacheRead": 0,
+						"cacheWrite": 0,
+						"totalTokens": 0,
+						"cost": {
+							"input": 0,
+							"output": 0,
+							"cacheRead": 0,
+							"cacheWrite": 0,
+							"total": 0
+						}
+					},
+					"stopReason": "stop",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "two",
+					"timestamp": 0
+				}
+			],
+			"tools": []
+		},
+		"options": {
+			"apiKey": "sk-ant-api03-test",
+			"env": {},
+			"headers": {},
+			"identity": null,
+			"sessionId": null,
+			"signal": null,
+			"maxRetries": 0,
+			"effort": "xhigh",
+			"temperature": 0.5
+		},
+		"request": {
+			"url": "https://api.anthropic.com/v1/messages?beta=true",
+			"method": "POST",
+			"headers": {
+				"accept": "application/json",
+				"anthropic-beta": "mid-conversation-output-config-2026-07-01,thinking-binding-controls-2026-08-01",
+				"anthropic-dangerous-direct-browser-access": "true",
+				"anthropic-version": "2023-06-01",
+				"content-type": "application/json",
+				"user-agent": "pi/1.5.0 (darwin; node/v26.13.0; arm64)",
+				"x-api-key": "sk-ant-api03-test"
+			},
+			"body": "{\"model\":\"claude-test\",\"messages\":[{\"role\":\"user\",\"content\":\"one\"},{\"role\":\"system\",\"content\":[],\"output_config\":{\"effort\":\"medium\"}},{\"role\":\"assistant\",\"content\":[{\"type\":\"text\",\"text\":\"earlier\"}]},{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"two\",\"cache_control\":{\"type\":\"ephemeral\"}}]},{\"role\":\"system\",\"content\":[],\"output_config\":{\"effort\":\"xhigh\"}}],\"max_tokens\":8192,\"stream\":true,\"thinking\":{\"type\":\"adaptive\",\"display\":\"summarized\",\"block_binding\":{\"prefix_mismatch_behavior\":\"drop_block\"}},\"output_config\":{\"effort\":\"low\"}}"
+		}
+	},
+	{
+		"name": "native-tool-changes",
+		"model": {
+			"id": "claude-test",
+			"name": "Test",
+			"api": "anthropic-messages",
+			"provider": "anthropic",
+			"baseUrl": "https://api.anthropic.com",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": true,
+			"contextWindow": 200000,
+			"maxTokens": 8192,
+			"compat": {
+				"supportsMidConvoSystemMessages": true,
+				"supportsMidConvoToolChanges": true
+			}
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"toolsAdded": [
+						{
+							"name": "Read",
+							"description": "Read tool",
+							"parameters": {
+								"type": "object",
+								"properties": {
+									"path": {
+										"type": "string"
+									},
+									"limit": {
+										"type": "number",
+										"minimum": 1
+									}
+								},
+								"required": [
+									"path"
+								]
+							}
+						}
+					],
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "one",
+					"timestamp": 0
+				},
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"toolsAdded": [
+						{
+							"name": "Grep",
+							"description": "Grep tool",
+							"parameters": {
+								"type": "object",
+								"properties": {
+									"path": {
+										"type": "string"
+									},
+									"limit": {
+										"type": "number",
+										"minimum": 1
+									}
+								},
+								"required": [
+									"path"
+								]
+							}
+						}
+					],
+					"toolsRemoved": [
+						{
+							"name": "Read"
+						}
+					],
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "two",
+					"timestamp": 0
+				}
+			],
+			"tools": []
+		},
+		"options": {
+			"apiKey": "sk-ant-api03-test",
+			"env": {},
+			"headers": {},
+			"identity": null,
+			"sessionId": null,
+			"signal": null,
+			"maxRetries": 0
+		},
+		"request": {
+			"url": "https://api.anthropic.com/v1/messages?beta=true",
+			"method": "POST",
+			"headers": {
+				"accept": "application/json",
+				"anthropic-beta": "inline-tools-2026-09-15",
+				"anthropic-dangerous-direct-browser-access": "true",
+				"anthropic-version": "2023-06-01",
+				"content-type": "application/json",
+				"user-agent": "pi/1.5.0 (darwin; node/v26.13.0; arm64)",
+				"x-api-key": "sk-ant-api03-test"
+			},
+			"body": "{\"model\":\"claude-test\",\"messages\":[{\"role\":\"user\",\"content\":\"one\"},{\"role\":\"user\",\"content\":\"two\"},{\"role\":\"system\",\"content\":[{\"type\":\"text\",\"text\":\"You are helpful.\"},{\"type\":\"tool_removal\",\"tool\":{\"type\":\"tool_reference\",\"name\":\"Read\"}},{\"type\":\"tool_addition\",\"tool\":{\"type\":\"tool_definition\",\"definition\":{\"name\":\"Grep\",\"description\":\"Grep tool\",\"eager_input_streaming\":true,\"input_schema\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"},\"limit\":{\"type\":\"number\",\"minimum\":1}},\"required\":[\"path\"]}}},\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"max_tokens\":8192,\"stream\":true,\"system\":[{\"type\":\"text\",\"text\":\"You are helpful.\",\"cache_control\":{\"type\":\"ephemeral\"}}],\"tools\":[{\"name\":\"Read\",\"description\":\"Read tool\",\"eager_input_streaming\":true,\"input_schema\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"},\"limit\":{\"type\":\"number\",\"minimum\":1}},\"required\":[\"path\"]},\"cache_control\":{\"type\":\"ephemeral\"}},{\"name\":\"__pi_deferred_placeholder__\",\"description\":\"Reserved placeholder. Never available. Never call this.\",\"input_schema\":{\"type\":\"object\",\"properties\":{},\"required\":[]},\"defer_loading\":true}]}"
+		}
+	},
+	{
+		"name": "strict-tools-prefer",
+		"model": {
+			"id": "claude-test",
+			"name": "Test",
+			"api": "anthropic-messages",
+			"provider": "anthropic",
+			"baseUrl": "https://api.anthropic.com",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": true,
+			"contextWindow": 200000,
+			"maxTokens": 8192,
+			"compat": {
+				"supportsStrictTools": true
+			}
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"toolsAdded": [
+						{
+							"name": "Read",
+							"description": "Read tool",
+							"parameters": {
+								"type": "object",
+								"properties": {
+									"path": {
+										"type": "string"
+									},
+									"limit": {
+										"type": "number",
+										"minimum": 1
+									}
+								},
+								"required": [
+									"path"
+								]
+							},
+							"constrainedSampling": {
+								"type": "json_schema",
+								"strict": "prefer"
+							}
+						},
+						{
+							"name": "Write",
+							"description": "write",
+							"parameters": {
+								"type": "object",
+								"properties": {
+									"path": {
+										"type": "string"
+									}
+								}
+							},
+							"constrainedSampling": {
+								"type": "json_schema",
+								"strict": "prefer"
+							}
+						}
+					],
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "strict",
+					"timestamp": 0
+				}
+			],
+			"tools": []
+		},
+		"options": {
+			"apiKey": "sk-ant-api03-test",
+			"env": {},
+			"headers": {},
+			"identity": null,
+			"sessionId": null,
+			"signal": null,
+			"maxRetries": 0
+		},
+		"request": {
+			"url": "https://api.anthropic.com/v1/messages?beta=true",
+			"method": "POST",
+			"headers": {
+				"accept": "application/json",
+				"anthropic-dangerous-direct-browser-access": "true",
+				"anthropic-version": "2023-06-01",
+				"content-type": "application/json",
+				"user-agent": "pi/1.5.0 (darwin; node/v26.13.0; arm64)",
+				"x-api-key": "sk-ant-api03-test"
+			},
+			"body": "{\"model\":\"claude-test\",\"messages\":[{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"strict\",\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"max_tokens\":8192,\"stream\":true,\"system\":[{\"type\":\"text\",\"text\":\"You are helpful.\",\"cache_control\":{\"type\":\"ephemeral\"}}],\"tools\":[{\"name\":\"Read\",\"description\":\"Read tool\",\"eager_input_streaming\":true,\"input_schema\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"},\"limit\":{\"type\":\"number\",\"minimum\":1}},\"required\":[\"path\"]}},{\"name\":\"Write\",\"description\":\"write\",\"eager_input_streaming\":true,\"strict\":true,\"input_schema\":{\"type\":\"object\",\"properties\":{\"path\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]}},\"required\":[\"path\"],\"additionalProperties\":false},\"cache_control\":{\"type\":\"ephemeral\"}}]}"
+		}
+	},
+	{
+		"name": "strict-tools-require-unsupported",
+		"model": {
+			"id": "claude-test",
+			"name": "Test",
+			"api": "anthropic-messages",
+			"provider": "anthropic",
+			"baseUrl": "https://api.anthropic.com",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": true,
+			"contextWindow": 200000,
+			"maxTokens": 8192
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"toolsAdded": [
+						{
+							"name": "Read",
+							"description": "Read tool",
+							"parameters": {
+								"type": "object",
+								"properties": {
+									"path": {
+										"type": "string"
+									},
+									"limit": {
+										"type": "number",
+										"minimum": 1
+									}
+								},
+								"required": [
+									"path"
+								]
+							},
+							"constrainedSampling": {
+								"type": "json_schema",
+								"strict": "require"
+							}
+						}
+					],
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "strict",
+					"timestamp": 0
+				}
+			],
+			"tools": []
+		},
+		"options": {
+			"apiKey": "sk-ant-api03-test",
+			"env": {},
+			"headers": {},
+			"identity": null,
+			"sessionId": null,
+			"signal": null,
+			"maxRetries": 0
+		},
+		"request": {
+			"error": "Tool \"Read\" requires JSON-schema constrained sampling, but strict tools are unsupported."
+		}
+	},
+	{
+		"name": "metadata-tool-choice-fallbacks",
+		"model": {
+			"id": "claude-test",
+			"name": "Test",
+			"api": "anthropic-messages",
+			"provider": "anthropic",
+			"baseUrl": "https://api.anthropic.com",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": true,
+			"contextWindow": 200000,
+			"maxTokens": 8192,
+			"compat": {
+				"allowedFallbackModels": [
+					{
+						"provider": "anthropic",
+						"model": "claude-fallback"
+					}
+				]
+			}
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"toolsAdded": [
+						{
+							"name": "Read",
+							"description": "Read tool",
+							"parameters": {
+								"type": "object",
+								"properties": {
+									"path": {
+										"type": "string"
+									},
+									"limit": {
+										"type": "number",
+										"minimum": 1
+									}
+								},
+								"required": [
+									"path"
+								]
+							}
+						}
+					],
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "pick",
+					"timestamp": 0
+				}
+			],
+			"tools": []
+		},
+		"options": {
+			"apiKey": "sk-ant-api03-test",
+			"env": {},
+			"headers": {},
+			"identity": null,
+			"sessionId": null,
+			"signal": null,
+			"maxRetries": 0,
+			"metadata": {
+				"user_id": "u-1",
+				"other": 1
+			},
+			"toolChoice": {
+				"type": "tool",
+				"name": "Read"
+			}
+		},
+		"request": {
+			"url": "https://api.anthropic.com/v1/messages?beta=true",
+			"method": "POST",
+			"headers": {
+				"accept": "application/json",
+				"anthropic-beta": "server-side-fallback-2026-07-01",
+				"anthropic-dangerous-direct-browser-access": "true",
+				"anthropic-version": "2023-06-01",
+				"content-type": "application/json",
+				"user-agent": "pi/1.5.0 (darwin; node/v26.13.0; arm64)",
+				"x-api-key": "sk-ant-api03-test"
+			},
+			"body": "{\"model\":\"claude-test\",\"messages\":[{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"pick\",\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"max_tokens\":8192,\"stream\":true,\"system\":[{\"type\":\"text\",\"text\":\"You are helpful.\",\"cache_control\":{\"type\":\"ephemeral\"}}],\"tools\":[{\"name\":\"Read\",\"description\":\"Read tool\",\"eager_input_streaming\":true,\"input_schema\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"},\"limit\":{\"type\":\"number\",\"minimum\":1}},\"required\":[\"path\"]},\"cache_control\":{\"type\":\"ephemeral\"}}],\"metadata\":{\"user_id\":\"u-1\"},\"tool_choice\":{\"type\":\"tool\",\"name\":\"Read\"},\"fallbacks\":[{\"model\":\"claude-fallback\"}]}"
+		}
+	},
+	{
+		"name": "configured-beta-header",
+		"model": {
+			"id": "claude-test",
+			"name": "Test",
+			"api": "anthropic-messages",
+			"provider": "anthropic",
+			"baseUrl": "https://api.anthropic.com",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": true,
+			"contextWindow": 200000,
+			"maxTokens": 8192
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "user",
+					"content": "beta",
+					"timestamp": 0
+				}
+			],
+			"tools": []
+		},
+		"options": {
+			"apiKey": "sk-ant-api03-test",
+			"env": {},
+			"headers": {
+				"Anthropic-Beta": "a-1, b-2,a-1",
+				"x-extra": "1"
+			},
+			"identity": null,
+			"sessionId": null,
+			"signal": null,
+			"maxRetries": 0,
+			"thinkingEnabled": true
+		},
+		"request": {
+			"url": "https://api.anthropic.com/v1/messages?beta=true",
+			"method": "POST",
+			"headers": {
+				"accept": "application/json",
+				"anthropic-beta": "a-1,b-2",
+				"anthropic-dangerous-direct-browser-access": "true",
+				"anthropic-version": "2023-06-01",
+				"content-type": "application/json",
+				"user-agent": "pi/1.5.0 (darwin; node/v26.13.0; arm64)",
+				"x-api-key": "sk-ant-api03-test",
+				"x-extra": "1"
+			},
+			"body": "{\"model\":\"claude-test\",\"messages\":[{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"beta\",\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"max_tokens\":8192,\"stream\":true,\"thinking\":{\"type\":\"enabled\",\"budget_tokens\":1024,\"display\":\"summarized\"}}"
+		}
+	},
+	{
+		"name": "configured-beta-null",
+		"model": {
+			"id": "claude-test",
+			"name": "Test",
+			"api": "anthropic-messages",
+			"provider": "anthropic",
+			"baseUrl": "https://api.anthropic.com",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": true,
+			"contextWindow": 200000,
+			"maxTokens": 8192
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "user",
+					"content": "beta",
+					"timestamp": 0
+				}
+			],
+			"tools": []
+		},
+		"options": {
+			"apiKey": "sk-ant-api03-test",
+			"env": {},
+			"headers": {
+				"anthropic-beta": null
+			},
+			"identity": null,
+			"sessionId": null,
+			"signal": null,
+			"maxRetries": 0,
+			"thinkingEnabled": true
+		},
+		"request": {
+			"url": "https://api.anthropic.com/v1/messages?beta=true",
+			"method": "POST",
+			"headers": {
+				"accept": "application/json",
+				"anthropic-dangerous-direct-browser-access": "true",
+				"anthropic-version": "2023-06-01",
+				"content-type": "application/json",
+				"user-agent": "pi/1.5.0 (darwin; node/v26.13.0; arm64)",
+				"x-api-key": "sk-ant-api03-test"
+			},
+			"body": "{\"model\":\"claude-test\",\"messages\":[{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"beta\",\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"max_tokens\":8192,\"stream\":true,\"thinking\":{\"type\":\"enabled\",\"budget_tokens\":1024,\"display\":\"summarized\"}}"
+		}
+	},
+	{
+		"name": "simple-no-reasoning",
+		"simple": true,
+		"model": {
+			"id": "claude-test",
+			"name": "Test",
+			"api": "anthropic-messages",
+			"provider": "anthropic",
+			"baseUrl": "https://api.anthropic.com",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": true,
+			"contextWindow": 200000,
+			"maxTokens": 8192
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "user",
+					"content": "simple",
+					"timestamp": 0
+				}
+			],
+			"tools": []
+		},
+		"options": {
+			"apiKey": "sk-ant-api03-test",
+			"env": {},
+			"headers": {},
+			"identity": null,
+			"sessionId": null,
+			"signal": null,
+			"maxRetries": 0,
+			"toolChoice": "auto"
+		},
+		"request": {
+			"url": "https://api.anthropic.com/v1/messages?beta=true",
+			"method": "POST",
+			"headers": {
+				"accept": "application/json",
+				"anthropic-dangerous-direct-browser-access": "true",
+				"anthropic-version": "2023-06-01",
+				"content-type": "application/json",
+				"user-agent": "pi/1.5.0 (darwin; node/v26.13.0; arm64)",
+				"x-api-key": "sk-ant-api03-test"
+			},
+			"body": "{\"model\":\"claude-test\",\"messages\":[{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"simple\",\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"max_tokens\":8192,\"stream\":true,\"thinking\":{\"type\":\"disabled\"},\"tool_choice\":{\"type\":\"auto\"}}"
+		}
+	},
+	{
+		"name": "simple-reasoning-budget",
+		"simple": true,
+		"model": {
+			"id": "claude-test",
+			"name": "Test",
+			"api": "anthropic-messages",
+			"provider": "anthropic",
+			"baseUrl": "https://api.anthropic.com",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": true,
+			"contextWindow": 200000,
+			"maxTokens": 8192
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "user",
+					"content": "simple",
+					"timestamp": 0
+				}
+			],
+			"tools": []
+		},
+		"options": {
+			"apiKey": "sk-ant-api03-test",
+			"env": {},
+			"headers": {},
+			"identity": null,
+			"sessionId": null,
+			"signal": null,
+			"maxRetries": 0,
+			"reasoning": "high",
+			"maxTokens": 4000
+		},
+		"request": {
+			"url": "https://api.anthropic.com/v1/messages?beta=true",
+			"method": "POST",
+			"headers": {
+				"accept": "application/json",
+				"anthropic-beta": "interleaved-thinking-2025-05-14",
+				"anthropic-dangerous-direct-browser-access": "true",
+				"anthropic-version": "2023-06-01",
+				"content-type": "application/json",
+				"user-agent": "pi/1.5.0 (darwin; node/v26.13.0; arm64)",
+				"x-api-key": "sk-ant-api03-test"
+			},
+			"body": "{\"model\":\"claude-test\",\"messages\":[{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"simple\",\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"max_tokens\":8192,\"stream\":true,\"thinking\":{\"type\":\"enabled\",\"budget_tokens\":7168,\"display\":\"summarized\"}}"
+		}
+	},
+	{
+		"name": "simple-reasoning-adaptive",
+		"simple": true,
+		"model": {
+			"id": "claude-test",
+			"name": "Test",
+			"api": "anthropic-messages",
+			"provider": "anthropic",
+			"baseUrl": "https://api.anthropic.com",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": true,
+			"contextWindow": 200000,
+			"maxTokens": 8192,
+			"thinkingLevelMap": {
+				"minimal": "low",
+				"xhigh": "xhigh"
+			},
+			"compat": {
+				"forceAdaptiveThinking": true
+			}
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "user",
+					"content": "simple",
+					"timestamp": 0
+				}
+			],
+			"tools": []
+		},
+		"options": {
+			"apiKey": "sk-ant-api03-test",
+			"env": {},
+			"headers": {},
+			"identity": null,
+			"sessionId": null,
+			"signal": null,
+			"maxRetries": 0,
+			"reasoning": "xhigh"
+		},
+		"request": {
+			"url": "https://api.anthropic.com/v1/messages?beta=true",
+			"method": "POST",
+			"headers": {
+				"accept": "application/json",
+				"anthropic-dangerous-direct-browser-access": "true",
+				"anthropic-version": "2023-06-01",
+				"content-type": "application/json",
+				"user-agent": "pi/1.5.0 (darwin; node/v26.13.0; arm64)",
+				"x-api-key": "sk-ant-api03-test"
+			},
+			"body": "{\"model\":\"claude-test\",\"messages\":[{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"simple\",\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"max_tokens\":8192,\"stream\":true,\"thinking\":{\"type\":\"adaptive\",\"display\":\"summarized\"},\"output_config\":{\"effort\":\"xhigh\"}}"
+		}
 	}
 ]

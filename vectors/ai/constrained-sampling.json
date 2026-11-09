@@ -1,0 +1,877 @@
+{
+  "generator": {
+    "script": "scripts/parity/generate-constrained-sampling.ts",
+    "node": "v26.13.0"
+  },
+  "cases": [
+    {
+      "name": "strict-flat-required",
+      "kind": "makeStrict",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "path"
+        ]
+      },
+      "result": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "strict-flat-optional",
+      "kind": "makeStrict",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "path"
+        ]
+      },
+      "result": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "limit": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "path",
+          "limit"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "strict-optional-nullable",
+      "kind": "makeStrict",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "a": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "b": {
+            "enum": [
+              "x",
+              null
+            ]
+          },
+          "c": {
+            "const": null
+          }
+        }
+      },
+      "result": {
+        "type": "object",
+        "properties": {
+          "a": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "b": {
+            "enum": [
+              "x",
+              null
+            ]
+          },
+          "c": {
+            "const": null
+          }
+        },
+        "required": [
+          "a",
+          "b",
+          "c"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "strict-nested-object",
+      "kind": "makeStrict",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "inner": {
+            "type": "object",
+            "properties": {
+              "x": {
+                "type": "integer"
+              }
+            }
+          }
+        },
+        "required": [
+          "inner"
+        ]
+      },
+      "result": {
+        "type": "object",
+        "properties": {
+          "inner": {
+            "type": "object",
+            "properties": {
+              "x": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "x"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "inner"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "strict-array-items",
+      "kind": "makeStrict",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "list": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "k": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "result": {
+        "type": "object",
+        "properties": {
+          "list": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "k": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "k"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "list"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "strict-any-of-scalars",
+      "kind": "makeStrict",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "v": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          }
+        }
+      },
+      "result": {
+        "type": "object",
+        "properties": {
+          "v": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "v"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "strict-any-of-object",
+      "kind": "makeStrict",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "v": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {}
+              },
+              {
+                "type": "string"
+              }
+            ]
+          }
+        }
+      },
+      "error": "object and array unions are unsupported"
+    },
+    {
+      "name": "strict-any-of-empty",
+      "kind": "makeStrict",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "v": {
+            "anyOf": []
+          }
+        }
+      },
+      "error": "anyOf must contain at least one schema"
+    },
+    {
+      "name": "strict-tuple",
+      "kind": "makeStrict",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "t": {
+            "type": "array",
+            "items": [
+              {
+                "type": "string"
+              }
+            ]
+          }
+        }
+      },
+      "error": "tuple schemas are unsupported"
+    },
+    {
+      "name": "strict-ref",
+      "kind": "makeStrict",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "r": {
+            "$ref": "#/$defs/x"
+          }
+        },
+        "$defs": {
+          "x": {
+            "type": "string"
+          }
+        }
+      },
+      "error": "$defs schemas are unsupported"
+    },
+    {
+      "name": "strict-one-of",
+      "kind": "makeStrict",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "v": {
+            "oneOf": [
+              {
+                "type": "string"
+              }
+            ]
+          }
+        }
+      },
+      "error": "oneOf schemas are unsupported"
+    },
+    {
+      "name": "strict-additional-true",
+      "kind": "makeStrict",
+      "schema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": true
+      },
+      "error": "schema-valued or true additionalProperties is unsupported"
+    },
+    {
+      "name": "strict-additional-false",
+      "kind": "makeStrict",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "a": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "required": []
+      },
+      "result": {
+        "type": "object",
+        "properties": {
+          "a": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "a"
+        ]
+      }
+    },
+    {
+      "name": "strict-properties-without-object",
+      "kind": "makeStrict",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "inner": {
+            "properties": {}
+          }
+        }
+      },
+      "error": "properties require type object"
+    },
+    {
+      "name": "strict-required-unknown",
+      "kind": "makeStrict",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "a": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "b"
+        ]
+      },
+      "error": "required contains an unknown property"
+    },
+    {
+      "name": "strict-required-not-strings",
+      "kind": "makeStrict",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "a": {
+            "type": "string"
+          }
+        },
+        "required": [
+          1
+        ]
+      },
+      "error": "object required must be a string array"
+    },
+    {
+      "name": "strict-root-not-object",
+      "kind": "makeStrict",
+      "schema": {
+        "type": "string"
+      },
+      "error": "root schema must have type object"
+    },
+    {
+      "name": "strict-boolean-property",
+      "kind": "makeStrict",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "a": true
+        }
+      },
+      "error": "boolean schemas are unsupported"
+    },
+    {
+      "name": "strict-key-order-kept",
+      "kind": "makeStrict",
+      "schema": {
+        "description": "d",
+        "type": "object",
+        "required": [],
+        "properties": {
+          "b": {
+            "type": "string"
+          },
+          "a": {
+            "type": "string"
+          }
+        },
+        "title": "t"
+      },
+      "result": {
+        "description": "d",
+        "type": "object",
+        "required": [
+          "b",
+          "a"
+        ],
+        "properties": {
+          "b": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "a": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "title": "t",
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "resolve-none-supported",
+      "kind": "resolve",
+      "tool": {
+        "name": "probe",
+        "description": "probe",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "path"
+          ]
+        }
+      },
+      "supportsStrictMode": true,
+      "result": null
+    },
+    {
+      "name": "resolve-none-unsupported",
+      "kind": "resolve",
+      "tool": {
+        "name": "probe",
+        "description": "probe",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "path"
+          ]
+        }
+      },
+      "supportsStrictMode": false,
+      "result": null
+    },
+    {
+      "name": "resolve-disabled-supported",
+      "kind": "resolve",
+      "tool": {
+        "name": "probe",
+        "description": "probe",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "path"
+          ]
+        },
+        "constrainedSampling": false
+      },
+      "supportsStrictMode": true,
+      "result": null
+    },
+    {
+      "name": "resolve-disabled-unsupported",
+      "kind": "resolve",
+      "tool": {
+        "name": "probe",
+        "description": "probe",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "path"
+          ]
+        },
+        "constrainedSampling": false
+      },
+      "supportsStrictMode": false,
+      "result": null
+    },
+    {
+      "name": "resolve-grammar-supported",
+      "kind": "resolve",
+      "tool": {
+        "name": "probe",
+        "description": "probe",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "path"
+          ]
+        },
+        "constrainedSampling": {
+          "type": "grammar",
+          "variants": {}
+        }
+      },
+      "supportsStrictMode": true,
+      "result": null
+    },
+    {
+      "name": "resolve-grammar-unsupported",
+      "kind": "resolve",
+      "tool": {
+        "name": "probe",
+        "description": "probe",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "path"
+          ]
+        },
+        "constrainedSampling": {
+          "type": "grammar",
+          "variants": {}
+        }
+      },
+      "supportsStrictMode": false,
+      "result": null
+    },
+    {
+      "name": "resolve-prefer-ok-supported",
+      "kind": "resolve",
+      "tool": {
+        "name": "probe",
+        "description": "probe",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string"
+            },
+            "limit": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "path"
+          ]
+        },
+        "constrainedSampling": {
+          "type": "json_schema",
+          "strict": "prefer"
+        }
+      },
+      "supportsStrictMode": true,
+      "result": true
+    },
+    {
+      "name": "resolve-prefer-ok-unsupported",
+      "kind": "resolve",
+      "tool": {
+        "name": "probe",
+        "description": "probe",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string"
+            },
+            "limit": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "path"
+          ]
+        },
+        "constrainedSampling": {
+          "type": "json_schema",
+          "strict": "prefer"
+        }
+      },
+      "supportsStrictMode": false,
+      "result": null
+    },
+    {
+      "name": "resolve-prefer-unsupported-supported",
+      "kind": "resolve",
+      "tool": {
+        "name": "probe",
+        "description": "probe",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "r": {
+              "$ref": "#/$defs/x"
+            }
+          },
+          "$defs": {
+            "x": {
+              "type": "string"
+            }
+          }
+        },
+        "constrainedSampling": {
+          "type": "json_schema",
+          "strict": "prefer"
+        }
+      },
+      "supportsStrictMode": true,
+      "result": null
+    },
+    {
+      "name": "resolve-prefer-unsupported-unsupported",
+      "kind": "resolve",
+      "tool": {
+        "name": "probe",
+        "description": "probe",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "r": {
+              "$ref": "#/$defs/x"
+            }
+          },
+          "$defs": {
+            "x": {
+              "type": "string"
+            }
+          }
+        },
+        "constrainedSampling": {
+          "type": "json_schema",
+          "strict": "prefer"
+        }
+      },
+      "supportsStrictMode": false,
+      "result": null
+    },
+    {
+      "name": "resolve-require-ok-supported",
+      "kind": "resolve",
+      "tool": {
+        "name": "probe",
+        "description": "probe",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string"
+            },
+            "limit": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "path"
+          ]
+        },
+        "constrainedSampling": {
+          "type": "json_schema",
+          "strict": "require"
+        }
+      },
+      "supportsStrictMode": true,
+      "result": true
+    },
+    {
+      "name": "resolve-require-ok-unsupported",
+      "kind": "resolve",
+      "tool": {
+        "name": "probe",
+        "description": "probe",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string"
+            },
+            "limit": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "path"
+          ]
+        },
+        "constrainedSampling": {
+          "type": "json_schema",
+          "strict": "require"
+        }
+      },
+      "supportsStrictMode": false,
+      "error": "Tool \"probe\" requires JSON-schema constrained sampling, but strict tools are unsupported."
+    },
+    {
+      "name": "resolve-require-unsupported-supported",
+      "kind": "resolve",
+      "tool": {
+        "name": "probe",
+        "description": "probe",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "r": {
+              "$ref": "#/$defs/x"
+            }
+          },
+          "$defs": {
+            "x": {
+              "type": "string"
+            }
+          }
+        },
+        "constrainedSampling": {
+          "type": "json_schema",
+          "strict": "require"
+        }
+      },
+      "supportsStrictMode": true,
+      "error": "Tool \"probe\" requires JSON-schema constrained sampling, but $defs schemas are unsupported."
+    },
+    {
+      "name": "resolve-require-unsupported-unsupported",
+      "kind": "resolve",
+      "tool": {
+        "name": "probe",
+        "description": "probe",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "r": {
+              "$ref": "#/$defs/x"
+            }
+          },
+          "$defs": {
+            "x": {
+              "type": "string"
+            }
+          }
+        },
+        "constrainedSampling": {
+          "type": "json_schema",
+          "strict": "require"
+        }
+      },
+      "supportsStrictMode": false,
+      "error": "Tool \"probe\" requires JSON-schema constrained sampling, but strict tools are unsupported."
+    }
+  ]
+}

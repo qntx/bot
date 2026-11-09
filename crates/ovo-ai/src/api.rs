@@ -4,3 +4,4 @@
 
 /// `anthropic-messages` — the Anthropic Messages API adapter.
 pub mod anthropic_messages;
+pub mod constrained_sampling;

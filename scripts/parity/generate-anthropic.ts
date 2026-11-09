@@ -18,12 +18,14 @@ type StreamFn = (
   options: Record<string, unknown>,
 ) => { result: () => Promise<unknown> };
 
-function isStreamModule(value: unknown): value is { stream: StreamFn } {
+function isStreamModule(value: unknown): value is { stream: StreamFn; streamSimple: StreamFn } {
   return (
     typeof value === "object" &&
     value !== null &&
     "stream" in value &&
-    typeof value.stream === "function"
+    typeof value.stream === "function" &&
+    "streamSimple" in value &&
+    typeof value.streamSimple === "function"
   );
 }
 
@@ -34,6 +36,7 @@ if (!isStreamModule(anthropicModule)) {
   throw new Error("anthropic-messages dist module has no stream export");
 }
 const streamAnthropic = anthropicModule.stream;
+const streamAnthropicSimple = anthropicModule.streamSimple;
 
 const SSE = [
   "event: message_start",
@@ -99,6 +102,179 @@ const ctx = (messages: unknown[], systemPrompt?: string, tools?: unknown[]) => (
   messages,
   tools: tools ?? [],
 });
+
+const tool = (name: string, constrainedSampling?: unknown) => ({
+  name,
+  description: `${name} tool`,
+  parameters: {
+    type: "object",
+    properties: { path: { type: "string" }, limit: { type: "number", minimum: 1 } },
+    required: ["path"],
+  },
+  ...(constrainedSampling === undefined ? {} : { constrainedSampling }),
+});
+const withCompat = (compat: Record<string, unknown>, extra: Record<string, unknown> = {}) => ({
+  ...BASE_MODEL,
+  ...extra,
+  compat,
+});
+const system = (toolsAdded?: unknown[], toolsRemoved?: unknown[]) => ({
+  role: "system",
+  content: "You are helpful.",
+  ...(toolsAdded === undefined ? {} : { toolsAdded }),
+  ...(toolsRemoved === undefined ? {} : { toolsRemoved }),
+  timestamp: 0,
+});
+const assistantWithLevel = (level: string) => ({
+  role: "assistant",
+  content: [{ type: "text", text: "earlier" }],
+  api: "anthropic-messages",
+  provider: "anthropic",
+  model: "claude-test",
+  providerThinkingLevel: level,
+  usage: {
+    input: 0,
+    output: 0,
+    cacheRead: 0,
+    cacheWrite: 0,
+    totalTokens: 0,
+    cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
+  },
+  stopReason: "stop",
+  timestamp: 0,
+});
+
+const THINKING_CASES = [
+  {
+    name: "thinking-budget",
+    model: BASE_MODEL,
+    context: ctx([user("think")]),
+    options: {
+      ...BASE_OPTIONS,
+      thinkingEnabled: true,
+      thinkingBudgetTokens: 2048,
+      temperature: 0.3,
+    },
+  },
+  {
+    name: "thinking-budget-default",
+    model: BASE_MODEL,
+    context: ctx([user("think")]),
+    options: { ...BASE_OPTIONS, thinkingEnabled: true, interleavedThinking: false },
+  },
+  {
+    name: "thinking-adaptive-effort",
+    model: withCompat({ forceAdaptiveThinking: true }),
+    context: ctx([user("think")]),
+    options: {
+      ...BASE_OPTIONS,
+      thinkingEnabled: true,
+      effort: "medium",
+      thinkingDisplay: "omitted",
+    },
+  },
+  {
+    name: "thinking-disabled",
+    model: BASE_MODEL,
+    context: ctx([user("no thinking")]),
+    options: { ...BASE_OPTIONS, thinkingEnabled: false },
+  },
+  {
+    name: "managed-effort",
+    model: withCompat({ supportsMidConvoEffort: true }),
+    context: ctx([user("one"), assistantWithLevel("medium"), user("two")]),
+    options: { ...BASE_OPTIONS, effort: "xhigh", temperature: 0.5 },
+  },
+  {
+    name: "native-tool-changes",
+    model: withCompat({ supportsMidConvoSystemMessages: true, supportsMidConvoToolChanges: true }),
+    context: ctx([
+      system([tool("Read")]),
+      user("one"),
+      system([tool("Grep")], [{ name: "Read" }]),
+      user("two"),
+    ]),
+    options: BASE_OPTIONS,
+  },
+  {
+    name: "strict-tools-prefer",
+    model: withCompat({ supportsStrictTools: true }),
+    context: ctx([
+      system([
+        tool("Read", { type: "json_schema", strict: "prefer" }),
+        {
+          name: "Write",
+          description: "write",
+          parameters: { type: "object", properties: { path: { type: "string" } } },
+          constrainedSampling: { type: "json_schema", strict: "prefer" },
+        },
+      ]),
+      user("strict"),
+    ]),
+    options: BASE_OPTIONS,
+  },
+  {
+    name: "strict-tools-require-unsupported",
+    model: BASE_MODEL,
+    context: ctx([
+      system([tool("Read", { type: "json_schema", strict: "require" })]),
+      user("strict"),
+    ]),
+    options: BASE_OPTIONS,
+  },
+  {
+    name: "metadata-tool-choice-fallbacks",
+    model: withCompat({
+      allowedFallbackModels: [{ provider: "anthropic", model: "claude-fallback" }],
+    }),
+    context: ctx([system([tool("Read")]), user("pick")]),
+    options: {
+      ...BASE_OPTIONS,
+      metadata: { user_id: "u-1", other: 1 },
+      toolChoice: { type: "tool", name: "Read" },
+    },
+  },
+  {
+    name: "configured-beta-header",
+    model: BASE_MODEL,
+    context: ctx([user("beta")]),
+    options: {
+      ...BASE_OPTIONS,
+      thinkingEnabled: true,
+      headers: { "Anthropic-Beta": "a-1, b-2,a-1", "x-extra": "1" },
+    },
+  },
+  {
+    name: "configured-beta-null",
+    model: BASE_MODEL,
+    context: ctx([user("beta")]),
+    options: { ...BASE_OPTIONS, thinkingEnabled: true, headers: { "anthropic-beta": null } },
+  },
+  {
+    name: "simple-no-reasoning",
+    simple: true,
+    model: BASE_MODEL,
+    context: ctx([user("simple")]),
+    options: { ...BASE_OPTIONS, toolChoice: "auto" },
+  },
+  {
+    name: "simple-reasoning-budget",
+    simple: true,
+    model: BASE_MODEL,
+    context: ctx([user("simple")]),
+    options: { ...BASE_OPTIONS, reasoning: "high", maxTokens: 4000 },
+  },
+  {
+    name: "simple-reasoning-adaptive",
+    simple: true,
+    model: withCompat(
+      { forceAdaptiveThinking: true },
+      { thinkingLevelMap: { minimal: "low", xhigh: "xhigh" } },
+    ),
+    context: ctx([user("simple")]),
+    options: { ...BASE_OPTIONS, reasoning: "xhigh" },
+  },
+];
 
 const CASES = [
   {
@@ -349,10 +525,12 @@ const CASES = [
     ]),
     options: { ...BASE_OPTIONS, temperature: 0.5 },
   },
+  ...THINKING_CASES,
 ];
 
 const results: Array<{
   name: string;
+  simple?: boolean;
   model: unknown;
   context: unknown;
   options: unknown;
@@ -365,13 +543,14 @@ for (const testCase of CASES) {
   const origFetch = globalThis.fetch;
   globalThis.fetch = fetch;
   try {
-    const stream = streamAnthropic(testCase.model, testCase.context, {
-      ...testCase.options,
-      customFetch: fetch,
-    });
+    const run = "simple" in testCase && testCase.simple ? streamAnthropicSimple : streamAnthropic;
+    const stream = run(testCase.model, testCase.context, { ...testCase.options, fetch });
     // Cases run one at a time: each swaps the global fetch.
     // oxlint-disable-next-line no-await-in-loop -- sequential by design (global fetch swap)
-    await stream.result();
+    const message = await stream.result();
+    if (typeof message === "object" && message !== null && "errorMessage" in message) {
+      failure = String(message.errorMessage);
+    }
   } catch (error) {
     failure = error instanceof Error ? error.message : String(error);
   } finally {
@@ -379,6 +558,7 @@ for (const testCase of CASES) {
   }
   results.push({
     name: testCase.name,
+    ...("simple" in testCase && testCase.simple ? { simple: true } : {}),
     model: testCase.model,
     context: testCase.context,
     options: testCase.options,
