@@ -179,9 +179,9 @@
     {
       "id": "AI-API-ANTHROPIC",
       "upstream": ["packages/ai/src/api/anthropic-messages.ts"],
-      "vectors": ["vectors/ai/anthropic-request.json"],
-      "rust": ["crates/ovo-ai/tests/it/anthropic.rs"],
-      "classes": ["sdk-headers"]
+      "vectors": ["vectors/ai/anthropic-request.json", "vectors/ai/anthropic-stream.json"],
+      "rust": ["crates/ovo-ai/tests/it/anthropic.rs", "crates/ovo-ai/tests/it/anthropic_stream.rs"],
+      "classes": ["sdk-headers", "key-order", "wall-clock"]
     }
   ],
   "classes": {

@@ -393,6 +393,11 @@ const SERVER_SIDE_FALLBACK_BETA: &str = "server-side-fallback-2026-07-01";
 const MID_CONVERSATION_OUTPUT_CONFIG_BETA: &str = "mid-conversation-output-config-2026-07-01";
 const THINKING_BINDING_CONTROLS_BETA: &str = "thinking-binding-controls-2026-08-01";
 pub mod convert;
+#[cfg(feature = "http")]
+pub mod stream;
+
+#[cfg(feature = "http")]
+pub use stream::AnthropicMessagesApi;
 
 impl std::fmt::Debug for AnthropicOptions {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

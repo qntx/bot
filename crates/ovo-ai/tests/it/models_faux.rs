@@ -6,13 +6,15 @@
 /// parity: AI-FAUX
 use std::sync::Arc;
 
+use ovo_ai::cost::{clamp_thinking_level, get_supported_thinking_levels};
 use ovo_ai::faux::{
     FauxOptions, FauxResponseStep, faux_assistant_message, faux_provider, faux_text,
 };
 use ovo_ai::models::{
-    CreateModelsOptions, ModelsRefreshOptions, clamp_thinking_level, create_models,
-    get_supported_thinking_levels, has_api, merge_headers, models_are_equal,
+    CreateModelsOptions, ModelsRefreshOptions, create_models, has_api, merge_headers,
+    models_are_equal,
 };
+use ovo_ai::types::model::ModelThinkingLevel;
 
 use ovo_ai::auth::AuthResolutionOverrides;
 use ovo_ai::options::StreamOptions;
@@ -52,8 +54,11 @@ fn registry_lookups_and_filters() {
         &ovo_ai::types::model::AnyModel::Chat(Box::new(faux.models[0].clone())),
     ));
     let levels = get_supported_thinking_levels(&faux.models[0]);
-    assert_eq!(levels, ["off"]);
-    assert_eq!(clamp_thinking_level(&faux.models[0], "high"), "off");
+    assert_eq!(levels, [ModelThinkingLevel::Off]);
+    assert_eq!(
+        clamp_thinking_level(&faux.models[0], ModelThinkingLevel::High),
+        ModelThinkingLevel::Off
+    );
 }
 
 #[test]

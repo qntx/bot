@@ -16,6 +16,7 @@
 - npm packages and crates are versioned lockstep: `[workspace.package].version` equals every published package.json version, members inherit `version.workspace = true`, internal `crates/` path deps pin `=<version>`, and `bump.config.ts` + `scripts/check-version.ts` keep everything in sync.
 - Every wire format (session files, RPC records, catalogs) is read and written through `ovo_ai::json` (`to_string`, `to_vec`, `from_str`), never `serde_json` directly, so bytes match `JSON.stringify`/`JSON.parse`.
 - Parity: `parity.json` lists each capability with its vectors and Rust test (marked `/// parity: <ID>`); `vectors/**` is byte-frozen, regenerated only by `bun run vectors` (runs on Node) when upstream or Node changes, and `bun run lint` validates it.
+- Vector generators run under Node only (`node scripts/parity/generate-*.ts`), never bun: engine semantics must match pi's runtime. Resolve installed packages with `import.meta.resolve` / `require.resolve(pkg)`, not `pkg/package.json` subpaths or package-manager store paths.
 - TOML is formatted by taplo (`.taplo.toml`, aligned `=`); run `taplo fmt` and keep `taplo fmt --check` green in `bun run lint`.
 
 ## Commands
