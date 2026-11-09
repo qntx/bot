@@ -24,6 +24,8 @@ pub mod models_error;
 pub mod options;
 pub mod overflow;
 pub mod provider;
+#[cfg(feature = "http")]
+pub mod providers;
 pub mod retry;
 pub mod schema;
 pub mod simple_options;

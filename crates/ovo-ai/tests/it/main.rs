@@ -39,6 +39,8 @@ mod openai_completions_stream;
 mod openai_responses;
 #[cfg(feature = "http")]
 mod openai_responses_stream;
+#[cfg(feature = "http")]
+mod providers;
 mod schema;
 mod stream;
 mod streaming_json;

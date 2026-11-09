@@ -1,0 +1,573 @@
+{
+  "generator": {
+    "script": "scripts/parity/generate-providers.ts",
+    "node": "v26.13.0"
+  },
+  "cases": [
+    {
+      "id": "anthropic",
+      "name": "Anthropic",
+      "baseUrl": "https://api.anthropic.com",
+      "headers": null,
+      "apiKeyAuth": "Anthropic API key",
+      "oauth": "Anthropic (Claude Pro/Max)",
+      "resolutions": [
+        {
+          "name": "none",
+          "env": {},
+          "credential": null,
+          "result": null
+        },
+        {
+          "name": "empty-value",
+          "env": {
+            "ANTHROPIC_API_KEY": ""
+          },
+          "credential": null,
+          "result": null
+        },
+        {
+          "name": "env-key",
+          "env": {
+            "ANTHROPIC_API_KEY": "from-env"
+          },
+          "credential": null,
+          "result": {
+            "auth": {
+              "apiKey": "from-env"
+            },
+            "source": "ANTHROPIC_API_KEY"
+          }
+        },
+        {
+          "name": "stored-key",
+          "env": {
+            "ANTHROPIC_API_KEY": "from-env"
+          },
+          "credential": {
+            "type": "api_key",
+            "key": "stored",
+            "env": {
+              "REGION": "eu"
+            }
+          },
+          "result": {
+            "auth": {
+              "apiKey": "stored"
+            },
+            "env": {
+              "REGION": "eu"
+            },
+            "source": "stored credential"
+          }
+        },
+        {
+          "name": "stored-without-key",
+          "env": {
+            "ANTHROPIC_API_KEY": "from-env"
+          },
+          "credential": {
+            "type": "api_key"
+          },
+          "result": {
+            "auth": {
+              "apiKey": "from-env"
+            },
+            "source": "ANTHROPIC_API_KEY"
+          }
+        },
+        {
+          "name": "auth-token",
+          "env": {
+            "ANTHROPIC_AUTH_TOKEN": "tok",
+            "ANTHROPIC_API_KEY": "key"
+          },
+          "credential": null,
+          "result": {
+            "auth": {
+              "headers": {
+                "Authorization": "Bearer tok"
+              }
+            },
+            "source": "ANTHROPIC_AUTH_TOKEN"
+          }
+        },
+        {
+          "name": "oauth-token-before-api-key",
+          "env": {
+            "ANTHROPIC_OAUTH_TOKEN": "oat",
+            "ANTHROPIC_API_KEY": "key"
+          },
+          "credential": null,
+          "result": {
+            "auth": {
+              "apiKey": "oat"
+            },
+            "source": "ANTHROPIC_OAUTH_TOKEN"
+          }
+        },
+        {
+          "name": "api-key",
+          "env": {
+            "ANTHROPIC_API_KEY": "key"
+          },
+          "credential": null,
+          "result": {
+            "auth": {
+              "apiKey": "key"
+            },
+            "source": "ANTHROPIC_API_KEY"
+          }
+        },
+        {
+          "name": "empty-auth-token",
+          "env": {
+            "ANTHROPIC_AUTH_TOKEN": "",
+            "ANTHROPIC_API_KEY": "key"
+          },
+          "credential": null,
+          "result": {
+            "auth": {
+              "apiKey": "key"
+            },
+            "source": "ANTHROPIC_API_KEY"
+          }
+        },
+        {
+          "name": "federation",
+          "env": {
+            "ANTHROPIC_FEDERATION_RULE_ID": "rule",
+            "ANTHROPIC_ORGANIZATION_ID": "org",
+            "ANTHROPIC_IDENTITY_TOKEN_FILE": "/token"
+          },
+          "credential": null,
+          "result": {
+            "auth": {},
+            "env": {
+              "ANTHROPIC_FEDERATION_RULE_ID": "rule",
+              "ANTHROPIC_ORGANIZATION_ID": "org",
+              "ANTHROPIC_IDENTITY_TOKEN_FILE": "/token"
+            },
+            "source": "workload identity federation"
+          }
+        },
+        {
+          "name": "federation-with-optional-ids",
+          "env": {
+            "ANTHROPIC_FEDERATION_RULE_ID": "rule",
+            "ANTHROPIC_ORGANIZATION_ID": "org",
+            "ANTHROPIC_IDENTITY_TOKEN_FILE": "/token",
+            "ANTHROPIC_SERVICE_ACCOUNT_ID": "sa",
+            "ANTHROPIC_WORKSPACE_ID": ""
+          },
+          "credential": null,
+          "result": {
+            "auth": {},
+            "env": {
+              "ANTHROPIC_FEDERATION_RULE_ID": "rule",
+              "ANTHROPIC_ORGANIZATION_ID": "org",
+              "ANTHROPIC_IDENTITY_TOKEN_FILE": "/token",
+              "ANTHROPIC_SERVICE_ACCOUNT_ID": "sa"
+            },
+            "source": "workload identity federation"
+          }
+        },
+        {
+          "name": "federation-incomplete",
+          "env": {
+            "ANTHROPIC_FEDERATION_RULE_ID": "rule",
+            "ANTHROPIC_IDENTITY_TOKEN_FILE": "/t"
+          },
+          "credential": null,
+          "result": null
+        },
+        {
+          "name": "api-key-before-federation",
+          "env": {
+            "ANTHROPIC_API_KEY": "key",
+            "ANTHROPIC_FEDERATION_RULE_ID": "rule",
+            "ANTHROPIC_ORGANIZATION_ID": "org",
+            "ANTHROPIC_IDENTITY_TOKEN_FILE": "/token"
+          },
+          "credential": null,
+          "result": {
+            "auth": {
+              "apiKey": "key"
+            },
+            "source": "ANTHROPIC_API_KEY"
+          }
+        }
+      ]
+    },
+    {
+      "id": "deepseek",
+      "name": "DeepSeek",
+      "baseUrl": "https://api.deepseek.com",
+      "headers": null,
+      "apiKeyAuth": "DeepSeek API key",
+      "oauth": null,
+      "resolutions": [
+        {
+          "name": "none",
+          "env": {},
+          "credential": null,
+          "result": null
+        },
+        {
+          "name": "empty-value",
+          "env": {
+            "DEEPSEEK_API_KEY": ""
+          },
+          "credential": null,
+          "result": null
+        },
+        {
+          "name": "env-key",
+          "env": {
+            "DEEPSEEK_API_KEY": "from-env"
+          },
+          "credential": null,
+          "result": {
+            "auth": {
+              "apiKey": "from-env"
+            },
+            "source": "DEEPSEEK_API_KEY"
+          }
+        },
+        {
+          "name": "stored-key",
+          "env": {
+            "DEEPSEEK_API_KEY": "from-env"
+          },
+          "credential": {
+            "type": "api_key",
+            "key": "stored",
+            "env": {
+              "REGION": "eu"
+            }
+          },
+          "result": {
+            "auth": {
+              "apiKey": "stored"
+            },
+            "env": {
+              "REGION": "eu"
+            },
+            "source": "stored credential"
+          }
+        },
+        {
+          "name": "stored-without-key",
+          "env": {
+            "DEEPSEEK_API_KEY": "from-env"
+          },
+          "credential": {
+            "type": "api_key"
+          },
+          "result": {
+            "auth": {
+              "apiKey": "from-env"
+            },
+            "source": "DEEPSEEK_API_KEY"
+          }
+        }
+      ]
+    },
+    {
+      "id": "groq",
+      "name": "Groq",
+      "baseUrl": "https://api.groq.com/openai/v1",
+      "headers": null,
+      "apiKeyAuth": "Groq API key",
+      "oauth": null,
+      "resolutions": [
+        {
+          "name": "none",
+          "env": {},
+          "credential": null,
+          "result": null
+        },
+        {
+          "name": "empty-value",
+          "env": {
+            "GROQ_API_KEY": ""
+          },
+          "credential": null,
+          "result": null
+        },
+        {
+          "name": "env-key",
+          "env": {
+            "GROQ_API_KEY": "from-env"
+          },
+          "credential": null,
+          "result": {
+            "auth": {
+              "apiKey": "from-env"
+            },
+            "source": "GROQ_API_KEY"
+          }
+        },
+        {
+          "name": "stored-key",
+          "env": {
+            "GROQ_API_KEY": "from-env"
+          },
+          "credential": {
+            "type": "api_key",
+            "key": "stored",
+            "env": {
+              "REGION": "eu"
+            }
+          },
+          "result": {
+            "auth": {
+              "apiKey": "stored"
+            },
+            "env": {
+              "REGION": "eu"
+            },
+            "source": "stored credential"
+          }
+        },
+        {
+          "name": "stored-without-key",
+          "env": {
+            "GROQ_API_KEY": "from-env"
+          },
+          "credential": {
+            "type": "api_key"
+          },
+          "result": {
+            "auth": {
+              "apiKey": "from-env"
+            },
+            "source": "GROQ_API_KEY"
+          }
+        }
+      ]
+    },
+    {
+      "id": "openai",
+      "name": "OpenAI",
+      "baseUrl": "https://api.openai.com/v1",
+      "headers": null,
+      "apiKeyAuth": "OpenAI API key",
+      "oauth": "OpenAI (ChatGPT subscription)",
+      "resolutions": [
+        {
+          "name": "none",
+          "env": {},
+          "credential": null,
+          "result": null
+        },
+        {
+          "name": "empty-value",
+          "env": {
+            "OPENAI_API_KEY": ""
+          },
+          "credential": null,
+          "result": null
+        },
+        {
+          "name": "env-key",
+          "env": {
+            "OPENAI_API_KEY": "from-env"
+          },
+          "credential": null,
+          "result": {
+            "auth": {
+              "apiKey": "from-env"
+            },
+            "source": "OPENAI_API_KEY"
+          }
+        },
+        {
+          "name": "stored-key",
+          "env": {
+            "OPENAI_API_KEY": "from-env"
+          },
+          "credential": {
+            "type": "api_key",
+            "key": "stored",
+            "env": {
+              "REGION": "eu"
+            }
+          },
+          "result": {
+            "auth": {
+              "apiKey": "stored"
+            },
+            "env": {
+              "REGION": "eu"
+            },
+            "source": "stored credential"
+          }
+        },
+        {
+          "name": "stored-without-key",
+          "env": {
+            "OPENAI_API_KEY": "from-env"
+          },
+          "credential": {
+            "type": "api_key"
+          },
+          "result": {
+            "auth": {
+              "apiKey": "from-env"
+            },
+            "source": "OPENAI_API_KEY"
+          }
+        }
+      ]
+    },
+    {
+      "id": "openrouter",
+      "name": "OpenRouter",
+      "baseUrl": "https://openrouter.ai/api/v1",
+      "headers": null,
+      "apiKeyAuth": "OpenRouter API key",
+      "oauth": "OpenRouter OAuth",
+      "resolutions": [
+        {
+          "name": "none",
+          "env": {},
+          "credential": null,
+          "result": null
+        },
+        {
+          "name": "empty-value",
+          "env": {
+            "OPENROUTER_API_KEY": ""
+          },
+          "credential": null,
+          "result": null
+        },
+        {
+          "name": "env-key",
+          "env": {
+            "OPENROUTER_API_KEY": "from-env"
+          },
+          "credential": null,
+          "result": {
+            "auth": {
+              "apiKey": "from-env"
+            },
+            "source": "OPENROUTER_API_KEY"
+          }
+        },
+        {
+          "name": "stored-key",
+          "env": {
+            "OPENROUTER_API_KEY": "from-env"
+          },
+          "credential": {
+            "type": "api_key",
+            "key": "stored",
+            "env": {
+              "REGION": "eu"
+            }
+          },
+          "result": {
+            "auth": {
+              "apiKey": "stored"
+            },
+            "env": {
+              "REGION": "eu"
+            },
+            "source": "stored credential"
+          }
+        },
+        {
+          "name": "stored-without-key",
+          "env": {
+            "OPENROUTER_API_KEY": "from-env"
+          },
+          "credential": {
+            "type": "api_key"
+          },
+          "result": {
+            "auth": {
+              "apiKey": "from-env"
+            },
+            "source": "OPENROUTER_API_KEY"
+          }
+        }
+      ]
+    },
+    {
+      "id": "xai",
+      "name": "xAI",
+      "baseUrl": "https://api.x.ai/v1",
+      "headers": null,
+      "apiKeyAuth": "xAI API key",
+      "oauth": "xAI (Grok/X subscription)",
+      "resolutions": [
+        {
+          "name": "none",
+          "env": {},
+          "credential": null,
+          "result": null
+        },
+        {
+          "name": "empty-value",
+          "env": {
+            "XAI_API_KEY": ""
+          },
+          "credential": null,
+          "result": null
+        },
+        {
+          "name": "env-key",
+          "env": {
+            "XAI_API_KEY": "from-env"
+          },
+          "credential": null,
+          "result": {
+            "auth": {
+              "apiKey": "from-env"
+            },
+            "source": "XAI_API_KEY"
+          }
+        },
+        {
+          "name": "stored-key",
+          "env": {
+            "XAI_API_KEY": "from-env"
+          },
+          "credential": {
+            "type": "api_key",
+            "key": "stored",
+            "env": {
+              "REGION": "eu"
+            }
+          },
+          "result": {
+            "auth": {
+              "apiKey": "stored"
+            },
+            "env": {
+              "REGION": "eu"
+            },
+            "source": "stored credential"
+          }
+        },
+        {
+          "name": "stored-without-key",
+          "env": {
+            "XAI_API_KEY": "from-env"
+          },
+          "credential": {
+            "type": "api_key"
+          },
+          "result": {
+            "auth": {
+              "apiKey": "from-env"
+            },
+            "source": "XAI_API_KEY"
+          }
+        }
+      ]
+    }
+  ]
+}
