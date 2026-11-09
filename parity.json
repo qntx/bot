@@ -89,7 +89,7 @@
       "id": "AI-RETRY-POLICY",
       "upstream": ["packages/ai/src/utils/retry.ts"],
       "vectors": ["vectors/ai/retry.json"],
-      "rust": ["crates/ovo-ai/tests/it/ai_utils.rs"],
+      "rust": ["crates/ovo-ai/tests/it/ai_utils.rs", "crates/ovo-ai/tests/it/http_policy.rs"],
       "classes": []
     },
     {
@@ -119,6 +119,31 @@
       "vectors": ["vectors/ai/schema-validate.json"],
       "rust": ["crates/ovo-ai/tests/it/schema.rs"],
       "classes": ["schema-formats"]
+    },
+    {
+      "id": "AI-HTTP-RETRY",
+      "upstream": [
+        "packages/ai/src/utils/provider-retry.ts",
+        "node_modules/@anthropic-ai/sdk@0.129.0",
+        "node_modules/openai@7.19.0"
+      ],
+      "vectors": ["vectors/ai/http-retry.json"],
+      "rust": ["crates/ovo-ai/tests/it/http_policy.rs"],
+      "classes": []
+    },
+    {
+      "id": "AI-ERROR-BODY",
+      "upstream": ["packages/ai/src/utils/error-body.ts"],
+      "vectors": ["vectors/ai/http-error-body.json"],
+      "rust": ["crates/ovo-ai/tests/it/http_policy.rs"],
+      "classes": []
+    },
+    {
+      "id": "AI-HTTP-PROXY",
+      "upstream": ["packages/ai/src/utils/node-http-proxy.ts"],
+      "vectors": ["vectors/ai/http-proxy.json"],
+      "rust": ["crates/ovo-ai/tests/it/http_policy.rs"],
+      "classes": []
     }
   ],
   "classes": {

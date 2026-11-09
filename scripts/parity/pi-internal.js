@@ -25,3 +25,14 @@ export {
   thinkingBudgetForLevel,
   DEFAULT_THINKING_BUDGETS,
 } from "../../node_modules/@earendil-works/pi-ai/dist/api/simple-options.js";
+export { retryProviderRequest } from "../../node_modules/@earendil-works/pi-ai/dist/utils/provider-retry.js";
+export {
+  formatProviderError,
+  normalizeProviderError,
+  truncateErrorText,
+} from "../../node_modules/@earendil-works/pi-ai/dist/utils/error-body.js";
+export { providerHeadersToRecord } from "../../node_modules/@earendil-works/pi-ai/dist/utils/headers.js";
+export {
+  resolveHttpProxyUrlForTarget,
+  UNSUPPORTED_PROXY_PROTOCOL_MESSAGE,
+} from "../../node_modules/@earendil-works/pi-ai/dist/utils/node-http-proxy.js";

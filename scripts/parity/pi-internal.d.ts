@@ -55,3 +55,43 @@ export declare function adjustMaxTokensForThinking(
 ): unknown;
 
 export declare const DEFAULT_THINKING_BUDGETS: unknown;
+
+export declare function retryProviderRequest(
+  request: () => Promise<unknown>,
+  options?: {
+    maxRetries?: number | undefined;
+    maxRetryDelayMs?: number | undefined;
+    signal?: AbortSignal | undefined;
+    noRetryStatuses?: ReadonlyArray<number> | undefined;
+  },
+): Promise<unknown>;
+
+export declare function normalizeProviderError(value: unknown): {
+  status?: number;
+  body?: string;
+  message: string;
+  messageCarriesBody: boolean;
+};
+
+export declare function formatProviderError(
+  norm: {
+    status?: number;
+    body?: string;
+    message: string;
+    messageCarriesBody: boolean;
+  },
+  prefix?: string,
+): string;
+
+export declare function truncateErrorText(text: string, maxChars: number): string;
+
+export declare function providerHeadersToRecord(
+  ...headerSources: Array<Record<string, unknown> | undefined>
+): Record<string, string> | undefined;
+
+export declare function resolveHttpProxyUrlForTarget(
+  targetUrl: string,
+  env?: Record<string, string>,
+): { href: string } | undefined;
+
+export declare const UNSUPPORTED_PROXY_PROTOCOL_MESSAGE: string;
