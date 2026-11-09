@@ -7,6 +7,7 @@ use crate::stream::event::{AssistantMessageEvent, DoneReason, ErrorReason};
 use crate::types::content::{AssistantContentBlock, TextContent, ThinkingContent, ToolCall};
 use crate::types::deferred::DeferredHandle;
 use crate::types::diagnostic::AssistantMessageDiagnostic;
+use crate::types::message::AssistantMessage;
 use crate::types::usage::Usage;
 
 /// One open tool call's fold state (shared with the accumulator).
@@ -74,6 +75,11 @@ pub(crate) enum Item {
         index: usize,
         text: String,
     },
+    /// A forwarded inner stream's final message — `forwardStream`'s
+    /// `target.end(result)` replaces the folded message wholesale, so the
+    /// outer stream's result carries every field the inner accumulator
+    /// learned outside wire events (usage, signatures, response ids).
+    Message(Box<AssistantMessage>),
 }
 
 /// The producer half of `AssistantStream::channel`.
@@ -494,6 +500,15 @@ impl AssistantStreamSender {
     pub async fn metadata(&self, metadata: Metadata) -> Result<(), StreamClosed> {
         self.sender
             .send(Item::Meta(metadata))
+            .await
+            .map_err(|_| StreamClosed)
+    }
+
+    /// The forwarded inner stream's final message, applied wholesale by
+    /// the consumer — `forwardStream`'s `target.end(result)`.
+    pub(crate) async fn send_final(&self, message: AssistantMessage) -> Result<(), StreamClosed> {
+        self.sender
+            .send(Item::Message(Box::new(message)))
             .await
             .map_err(|_| StreamClosed)
     }

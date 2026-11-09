@@ -28,6 +28,7 @@ mod anthropic_stream;
 mod auth;
 mod catalog;
 mod constrained_sampling;
+mod faux;
 mod http_client;
 mod http_policy;
 mod http_sse;

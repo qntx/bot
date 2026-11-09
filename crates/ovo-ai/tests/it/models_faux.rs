@@ -23,7 +23,8 @@ use ovo_ai::types::context::Context;
 
 fn seeded_models() -> (Arc<ovo_ai::models::Models>, ovo_ai::faux::FauxProvider) {
     let models = create_models(CreateModelsOptions::default());
-    let faux = faux_provider(FauxOptions::default());
+    let faux =
+        faux_provider(FauxOptions::default()).unwrap_or_else(|e| panic!("faux provider: {e}"));
     models.set_provider(Arc::clone(&faux.provider));
     models.set_provider(Arc::clone(&faux.provider));
     (models, faux)
@@ -129,7 +130,8 @@ async fn refresh_static_provider_no_op() {
 /// `fetch_deferred` replays the eventual message.
 #[tokio::test]
 async fn stream_deferred_then_fetch() {
-    let faux = faux_provider(FauxOptions::default());
+    let faux =
+        faux_provider(FauxOptions::default()).unwrap_or_else(|e| panic!("faux provider: {e}"));
     let models = create_models(CreateModelsOptions::default());
     models.set_provider(Arc::clone(&faux.provider));
     faux.set_responses(vec![FauxResponseStep::Deferred {
@@ -152,7 +154,8 @@ async fn stream_deferred_then_fetch() {
 #[tokio::test]
 async fn stream_invokes_on_response() {
     let calls = Arc::new(std::sync::Mutex::new(Vec::<u16>::new()));
-    let faux = faux_provider(FauxOptions::default());
+    let faux =
+        faux_provider(FauxOptions::default()).unwrap_or_else(|e| panic!("faux provider: {e}"));
     let models = create_models(CreateModelsOptions::default());
     models.set_provider(Arc::clone(&faux.provider));
     faux.set_responses(vec![FauxResponseStep::Message(Box::new(
@@ -186,7 +189,8 @@ async fn stream_invokes_on_response() {
 /// `models-entry`'s `withClientIdentity` — request identity merges.
 #[tokio::test]
 async fn with_client_identity_carries() {
-    let faux = faux_provider(FauxOptions::default());
+    let faux =
+        faux_provider(FauxOptions::default()).unwrap_or_else(|e| panic!("faux provider: {e}"));
     let models = create_models(CreateModelsOptions::default());
     models.set_provider(Arc::clone(&faux.provider));
     let identity = ovo_ai::identity::ClientIdentity {
@@ -201,7 +205,8 @@ async fn with_client_identity_carries() {
 /// `models-runtime`'s `getAuth` — ambient env key resolves.
 #[tokio::test]
 async fn get_auth_resolves_env_key() {
-    let faux = faux_provider(FauxOptions::default());
+    let faux =
+        faux_provider(FauxOptions::default()).unwrap_or_else(|e| panic!("faux provider: {e}"));
     let mut env = std::collections::HashMap::new();
     env.insert(String::from("FAUX_API_KEY"), String::from("k-1"));
     let models = create_models(CreateModelsOptions {

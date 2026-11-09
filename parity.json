@@ -223,6 +223,14 @@
       "rust": ["crates/ovo-ai/tests/it/providers.rs"],
       "classes": []
     },
+
+    {
+      "id": "AI-FAUX",
+      "upstream": ["packages/ai/src/providers/faux.ts"],
+      "vectors": [],
+      "rust": ["crates/ovo-ai/tests/it/faux.rs", "crates/ovo-ai/tests/it/models_faux.rs"],
+      "classes": []
+    },
     {
       "id": "AI-SHORT-HASH",
       "upstream": ["packages/ai/src/utils/hash.ts", "packages/ai/src/api/openai-prompt-cache.ts"],
@@ -448,10 +456,7 @@
     "packages/ai/test/env-api-keys.test.ts": ["AI-AUTH-APIKEY"],
     "packages/ai/test/error-body.test.ts": ["AI-ERROR-BODY"],
     "packages/ai/test/event-stream.test.ts": ["AI-STREAM-PROTOCOL"],
-    "packages/ai/test/faux-provider.test.ts": {
-      "milestone": "M1",
-      "capability": "AI-FAUX"
-    },
+    "packages/ai/test/faux-provider.test.ts": ["AI-FAUX"],
     "packages/ai/test/fetch-option.test.ts": {
       "excluded": "tests the JavaScript fetch injection option; ovo injects its HTTP client instead"
     },
