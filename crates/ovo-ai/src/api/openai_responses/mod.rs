@@ -6,8 +6,6 @@
 //! `OpenAI` SDK's merge order. [`convert`](crate::api::openai_responses::convert)
 //! holds the input and tool conversion other Responses transports share;
 //! [`stream`](crate::api::openai_responses::stream) is the streaming side.
-//!
-//! Not yet ported: `onPayload`.
 
 use std::collections::BTreeMap;
 

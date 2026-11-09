@@ -5,8 +5,8 @@
 //! the headers in the SDK's merge order. The streaming side lives in
 //! the `stream` module (feature `http`).
 //!
-//! Not yet ported: workload identity federation, GitHub Copilot dynamic
-//! headers, session affinity headers, `onPayload`.
+//! Not yet ported (M5): workload identity federation, GitHub Copilot
+//! dynamic headers.
 
 use serde_json::{Map, Value, json};
 
@@ -71,6 +71,11 @@ pub struct AnthropicMessagesCompat {
     pub force_adaptive_thinking: bool,
     /// Effort is set per reply through effort markers.
     pub supports_mid_convo_effort: bool,
+    /// `sendSessionAffinityHeaders` — default: `OpenRouter` endpoints only.
+    pub send_session_affinity_headers: bool,
+    /// `sessionAffinityFormat` — `openrouter` sends `x-session-id`; anything
+    /// else sends `x-session-affinity`. Default: `openrouter` on `OpenRouter`.
+    pub session_affinity_format: Option<String>,
     /// Models the provider may answer with instead (`allowedFallbackModels`).
     pub allowed_fallback_models: Vec<String>,
 }
@@ -86,6 +91,8 @@ impl AnthropicMessagesCompat {
                 .and_then(Value::as_bool)
                 .unwrap_or(default)
         };
+        let is_openrouter =
+            model.provider.as_str() == "openrouter" || model.base_url.contains("openrouter.ai");
         let allowed_fallback_models = compat
             .and_then(|c| c.get("allowedFallbackModels"))
             .and_then(Value::as_array)
@@ -108,6 +115,12 @@ impl AnthropicMessagesCompat {
             supports_mid_convo_tool_changes: flag("supportsMidConvoToolChanges", false),
             force_adaptive_thinking: flag("forceAdaptiveThinking", false),
             supports_mid_convo_effort: flag("supportsMidConvoEffort", false),
+            send_session_affinity_headers: flag("sendSessionAffinityHeaders", is_openrouter),
+            session_affinity_format: compat
+                .and_then(|c| c.get("sessionAffinityFormat"))
+                .and_then(Value::as_str)
+                .map(str::to_owned)
+                .or_else(|| is_openrouter.then(|| String::from("openrouter"))),
             allowed_fallback_models,
         }
     }
@@ -473,6 +486,7 @@ pub fn build_request(
     assemble_request(
         model,
         base,
+        &compat,
         &betas.join(","),
         params,
         has_preferred_strict_tools,
@@ -484,6 +498,7 @@ pub fn build_request(
 fn assemble_request(
     model: &Model,
     base: &StreamOptions,
+    compat: &AnthropicMessagesCompat,
     betas: &str,
     params: Map<String, Value>,
     has_preferred_strict_tools: bool,
@@ -495,7 +510,13 @@ fn assemble_request(
         "{}/v1/messages?beta=true",
         model.base_url.trim_end_matches('/')
     );
-    let headers = request_headers(model, base, betas);
+    // `cacheRetention: none` suppresses the session-affinity headers like
+    // upstream's `cacheSessionId` (`resolveCacheRetention` at stream start).
+    let session_id = match resolve_cache_retention(base.cache_retention, base.env.as_ref()) {
+        CacheRetention::None => None,
+        _ => base.session_id.as_deref(),
+    };
+    let headers = request_headers(model, base, betas, session_id, compat);
     Ok(AnthropicRequest {
         url,
         headers,
@@ -668,7 +689,13 @@ fn deferred_tool_placeholder() -> Value {
 /// (`createClient`: identity or Claude Code headers, then `model.headers`,
 /// then the request headers), then the per-request `anthropic-beta`. Later
 /// sources win case-insensitively and `null` removes a header.
-fn request_headers(model: &Model, base: &StreamOptions, betas: &str) -> Map<String, Value> {
+fn request_headers(
+    model: &Model,
+    base: &StreamOptions,
+    betas: &str,
+    session_id: Option<&str>,
+    compat: &AnthropicMessagesCompat,
+) -> Map<String, Value> {
     let api_key = base.api_key.as_deref().unwrap_or_default();
     let oauth = is_oauth_token(api_key);
     let mut sdk = Map::new();
@@ -705,6 +732,15 @@ fn request_headers(model: &Model, base: &StreamOptions, betas: &str) -> Map<Stri
         );
         defaults.insert("x-app".into(), Value::from("cli"));
     }
+    let mut affinity = Map::new();
+    if let (Some(id), true) = (session_id, compat.send_session_affinity_headers) {
+        let header = if compat.session_affinity_format.as_deref() == Some("openrouter") {
+            "x-session-id"
+        } else {
+            "x-session-affinity"
+        };
+        affinity.insert(header.into(), Value::from(id));
+    }
     let mut beta = Map::new();
     if !betas.is_empty() {
         beta.insert("anthropic-beta".into(), Value::from(betas));
@@ -712,6 +748,7 @@ fn request_headers(model: &Model, base: &StreamOptions, betas: &str) -> Map<Stri
     crate::http::headers::provider_headers_to_record(&[
         Some(&sdk),
         Some(&defaults),
+        Some(&affinity),
         model.headers.as_ref(),
         base.headers.as_ref(),
         Some(&beta),

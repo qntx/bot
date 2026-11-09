@@ -5,7 +5,6 @@
 //! pi decodes SSE itself and delivers a record left pending at end of
 //! stream, which is [`EndOfStream::Flush`].
 //!
-//! Not yet ported: `input_transformations` diagnostics.
 
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -203,7 +202,11 @@ async fn run(
     if signal.is_cancelled() {
         return Err(String::from("Request was aborted"));
     }
-    state.outcome()
+    let reason = state.outcome()?;
+    if let Some(diagnostic) = state.input_transformations_diagnostic() {
+        send(sender, Metadata::Diagnostic(diagnostic)).await?;
+    }
+    Ok(reason)
 }
 
 /// The Anthropic SDK's `APIError` message (`makeMessage`): status plus the
@@ -352,6 +355,7 @@ struct EventState<'a> {
     error_message: Option<String>,
     content_len: usize,
     open: HashMap<u64, OpenBlock>,
+    input_transformations: Option<Vec<Value>>,
 }
 
 impl<'a> EventState<'a> {
@@ -366,6 +370,7 @@ impl<'a> EventState<'a> {
             error_message: None,
             content_len: 0,
             open: HashMap::new(),
+            input_transformations: None,
         }
     }
 
@@ -391,6 +396,9 @@ impl<'a> EventState<'a> {
         sender: &AssistantStreamSender,
     ) -> Result<(), String> {
         let message = event.get("message").unwrap_or(&Value::Null);
+        if let Some(Value::Array(items)) = message.get("input_transformations") {
+            self.input_transformations = Some(items.clone());
+        }
         if let Some(id) = message.get("id").and_then(Value::as_str) {
             send(sender, Metadata::ResponseId(id.to_owned())).await?;
         }
@@ -551,6 +559,9 @@ impl<'a> EventState<'a> {
         event: &Value,
         sender: &AssistantStreamSender,
     ) -> Result<(), String> {
+        if let Some(Value::Array(items)) = event.get("input_transformations") {
+            self.input_transformations = Some(items.clone());
+        }
         let delta = event.get("delta").unwrap_or(&Value::Null);
         if let Some(reason) = delta
             .get("stop_reason")
@@ -608,6 +619,31 @@ impl<'a> EventState<'a> {
     }
 
     /// The terminal decision upstream makes after the event loop.
+    /// `appendAssistantMessageDiagnostic` at stream end — emitted only when
+    /// transformations were reported (upstream :902-912).
+    fn input_transformations_diagnostic(&self) -> Option<AssistantMessageDiagnostic> {
+        let transformations = self
+            .input_transformations
+            .as_ref()?
+            .iter()
+            .map(transformation_entry)
+            .collect::<Vec<_>>();
+        if transformations.is_empty() {
+            return None;
+        }
+        let mut details = Map::new();
+        details.insert(
+            String::from("transformations"),
+            Value::Array(transformations),
+        );
+        Some(AssistantMessageDiagnostic {
+            kind: String::from("anthropic_input_transformations"),
+            timestamp: wall_ms(),
+            error: None,
+            details: Some(details),
+        })
+    }
+
     fn outcome(&self) -> Result<DoneReason, String> {
         match self.stop_reason {
             StopReason::Pending => {
@@ -623,6 +659,18 @@ impl<'a> EventState<'a> {
             StopReason::Deferred => Ok(DoneReason::Deferred),
         }
     }
+}
+
+/// `input_transformations` entry → `{type?, path?, reason?}` — upstream
+/// keeps only non-null fields.
+fn transformation_entry(item: &Value) -> Value {
+    let mut entry = Map::new();
+    for key in ["type", "path", "reason"] {
+        if let Some(value) = item.get(key).filter(|v| !v.is_null()) {
+            entry.insert(String::from(key), value.clone());
+        }
+    }
+    Value::Object(entry)
 }
 
 /// `mapStopReason`: Anthropic stop reason to pi's, with the error text for

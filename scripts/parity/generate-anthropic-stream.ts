@@ -76,6 +76,31 @@ const messageDelta = (
     usage,
   });
 const stop = record("message_stop", { type: "message_stop" });
+const startWithTransformations = (transformations: unknown) =>
+  record("message_start", {
+    type: "message_start",
+    message: {
+      id: "msg_1",
+      type: "message",
+      role: "assistant",
+      model: "claude-test",
+      content: [],
+      usage: BASE_USAGE,
+      input_transformations: transformations,
+    },
+  });
+const deltaWithTransformations = (transformations: unknown) =>
+  record("message_delta", {
+    type: "message_delta",
+    delta: { stop_reason: "end_turn", stop_sequence: null },
+    usage: DELTA_USAGE,
+    input_transformations: transformations,
+  });
+const TRANSFORMATIONS = [
+  { type: "cache_control", path: "messages[0].content", reason: "provider does not support ttl" },
+  { type: "thinking" },
+];
+const DELTA_TRANSFORMATIONS = [{ path: "messages[1]", reason: "replaced by delta" }];
 const ping = record("ping", { type: "ping" });
 
 const text = (index: number, parts: string[]) => [
@@ -257,6 +282,39 @@ const CASES: Case[] = [
       stop,
     ].join(""),
   },
+  {
+    name: "input-transformations-message-start",
+    sse: [
+      startWithTransformations(TRANSFORMATIONS),
+      ...text(0, ["ok"]),
+      messageDelta("end_turn"),
+      stop,
+    ].join(""),
+  },
+  {
+    name: "input-transformations-message-delta",
+    sse: [start(), ...text(0, ["ok"]), deltaWithTransformations(DELTA_TRANSFORMATIONS), stop].join(
+      "",
+    ),
+  },
+  {
+    name: "input-transformations-both",
+    sse: [
+      startWithTransformations(TRANSFORMATIONS),
+      ...text(0, ["ok"]),
+      deltaWithTransformations(DELTA_TRANSFORMATIONS),
+      stop,
+    ].join(""),
+  },
+  {
+    name: "input-transformations-empty",
+    sse: [
+      startWithTransformations([]),
+      ...text(0, ["ok"]),
+      deltaWithTransformations([]),
+      stop,
+    ].join(""),
+  },
 ];
 
 function respond(testCase: Case): Response {
@@ -308,6 +366,13 @@ for (const testCase of CASES) {
   }
   // oxlint-disable-next-line no-await-in-loop -- sequential by design
   const { timestamp: _timestamp, durationMs: _durationMs, ...message } = await stream.result();
+  // Diagnostic timestamps are wall-clock, like `timestamp`/`durationMs`.
+  const { diagnostics } = message as { diagnostics?: Array<Record<string, unknown>> };
+  if (Array.isArray(diagnostics)) {
+    for (const diagnostic of diagnostics) {
+      delete diagnostic["timestamp"];
+    }
+  }
   results.push({ ...testCase, events, providerEvents, message });
 }
 

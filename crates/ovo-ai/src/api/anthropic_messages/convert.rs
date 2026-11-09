@@ -5,9 +5,8 @@
 //! upstream object-literal key order; `sanitize_surrogates` runs on
 //! every text upstream sanitizes.
 //!
-//! Not yet ported (checkpoint B): `insertThinkingLevelMessages`,
-//! `tool_addition`/`tool_removal` native-change blocks, pending-system
-//! flush ordering details, federation/copilot/`onPayload`.
+//! Not yet ported (M5): workload identity federation, GitHub Copilot
+//! dynamic headers.
 
 use serde_json::{Map, Value, json};
 

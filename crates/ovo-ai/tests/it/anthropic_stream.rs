@@ -119,6 +119,13 @@ async fn anthropic_stream_replays_upstream_events() {
             object.remove("timestamp");
             object.remove("durationMs");
         }
+        if let Some(Value::Array(diagnostics)) = message.get_mut("diagnostics") {
+            for diagnostic in diagnostics {
+                if let Some(object) = diagnostic.as_object_mut() {
+                    object.remove("timestamp");
+                }
+            }
+        }
         let events = Value::Array(events);
         assert!(
             js_value_eq(&events, &case["events"]),
