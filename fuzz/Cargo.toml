@@ -26,4 +26,10 @@ path = "fuzz_targets/schema_coerce.rs"
 test = false
 doc  = false
 
+[[bin]]
+name = "sse_parser"
+path = "fuzz_targets/sse_parser.rs"
+test = false
+doc  = false
+
 [workspace]

@@ -160,15 +160,18 @@ pub trait Provider: Send + Sync + 'static {
     }
     /// `auth` (required upstream).
     fn auth(&self) -> &ProviderAuth;
-    /// `getModels()` — current chat catalog; never fails.
-    fn get_models(&self) -> Vec<Model>;
+    /// `getModels()` — current chat catalog; never fails. A shared
+    /// snapshot: repeated calls without a publication return the same
+    /// `Arc` instead of re-merging the catalog.
+    fn get_models(&self) -> Arc<[Model]>;
     /// `getAllModels()` — every type; defaults to [`Self::get_models`] when
     /// the provider only has chat models.
-    fn get_all_models(&self) -> Vec<AnyModel> {
+    fn get_all_models(&self) -> Arc<[AnyModel]> {
         self.get_models()
-            .into_iter()
-            .map(|m| AnyModel::Chat(Box::new(m)))
-            .collect()
+            .iter()
+            .map(|m| AnyModel::Chat(Box::new(m.clone())))
+            .collect::<Vec<_>>()
+            .into()
     }
     /// `refreshModels` — dynamic providers only; `None` for static
     /// lists (upstream `fetchModels ? fn : undefined`).
@@ -489,7 +492,20 @@ impl std::fmt::Debug for RefreshModelsContext {
 /// `SpecProvider`: the declarative provider `create_provider` builds.
 pub struct SpecProvider {
     spec: ProviderSpec,
-    dynamic: Arc<Mutex<Vec<AnyModel>>>,
+    /// Overlay plus its cached snapshots — one mutex so a
+    /// publication replaces the overlay and invalidates the
+    /// snapshots atomically.
+    state: Arc<Mutex<SpecState>>,
+}
+
+/// The `dynamic` overlay and the merged `get_models`/
+/// `get_all_models` snapshots built from it; snapshots are `None`
+/// until built or after the overlay is replaced.
+#[derive(Default)]
+struct SpecState {
+    dynamic: Vec<AnyModel>,
+    all: Option<Arc<[AnyModel]>>,
+    chat: Option<Arc<[Model]>>,
 }
 
 impl std::fmt::Debug for SpecProvider {
@@ -522,25 +538,57 @@ pub fn create_provider(spec: ProviderSpec) -> Result<SpecProvider, ModelsError> 
     }
     Ok(SpecProvider {
         spec,
-        dynamic: Arc::new(Mutex::new(Vec::new())),
+        state: Arc::new(Mutex::new(SpecState::default())),
     })
 }
 
 impl SpecProvider {
     /// `currentModels()` — baseline plus the dynamic overlay merged
-    /// by `(type, id)` (upstream `currentModels`).
-    fn current_models(&self) -> Vec<AnyModel> {
-        let mut merged = self.spec.models.clone();
-        {
-            let overlay = self
-                .dynamic
+    /// by `(type, id)` (upstream `currentModels`). The merge runs
+    /// once per publication; reads return the cached `Arc`.
+    fn current_models(&self) -> Arc<[AnyModel]> {
+        self.merged_all(
+            &mut self
+                .state
                 .lock()
-                .unwrap_or_else(std::sync::PoisonError::into_inner);
-            for model in overlay.iter() {
-                merge_one(&mut merged, model.clone());
-            }
+                .unwrap_or_else(std::sync::PoisonError::into_inner),
+        )
+    }
+
+    /// The merged `all` snapshot, built while `state` is held.
+    fn merged_all(&self, state: &mut SpecState) -> Arc<[AnyModel]> {
+        if let Some(snapshot) = &state.all {
+            return Arc::clone(snapshot);
         }
-        merged
+        let mut merged = self.spec.models.clone();
+        for model in &state.dynamic {
+            merge_one(&mut merged, model.clone());
+        }
+        let snapshot: Arc<[AnyModel]> = merged.into();
+        state.all = Some(Arc::clone(&snapshot));
+        snapshot
+    }
+
+    /// `get_models` snapshot — derived from `current_models`, cached.
+    fn chat_snapshot(&self) -> Arc<[Model]> {
+        let mut state = self
+            .state
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        if let Some(snapshot) = &state.chat {
+            return Arc::clone(snapshot);
+        }
+        let all = self.merged_all(&mut state);
+        let snapshot: Arc<[Model]> = all
+            .iter()
+            .filter_map(|m| match m {
+                AnyModel::Chat(c) => Some(c.as_ref().clone()),
+                _ => None,
+            })
+            .collect::<Vec<_>>()
+            .into();
+        state.chat = Some(Arc::clone(&snapshot));
+        snapshot
     }
 
     /// `apiFor(model)` — `None` when no implementation covers the api.
@@ -580,13 +628,16 @@ impl SpecProvider {
         context: &RefreshModelsContext,
         restored: Vec<AnyModel>,
     ) -> Result<bool, ModelsError> {
-        let dynamic = Arc::clone(&self.dynamic);
+        let state = Arc::clone(&self.state);
         (context.publish)(ModelsPublication {
             persist: PersistAction::Unchanged,
             update: Some(Box::new(move || {
-                *dynamic
+                let mut state = state
                     .lock()
-                    .unwrap_or_else(std::sync::PoisonError::into_inner) = restored;
+                    .unwrap_or_else(std::sync::PoisonError::into_inner);
+                state.dynamic = restored;
+                state.all = None;
+                state.chat = None;
             })),
         })
         .await
@@ -599,7 +650,7 @@ impl SpecProvider {
         context: &RefreshModelsContext,
         refreshed: Vec<AnyModel>,
     ) -> Result<(), ModelsError> {
-        let dynamic = Arc::clone(&self.dynamic);
+        let state = Arc::clone(&self.state);
         let for_store = refreshed.clone();
         (context.publish)(ModelsPublication {
             persist: PersistAction::Write(ModelsStoreEntry {
@@ -612,9 +663,12 @@ impl SpecProvider {
                 .unwrap_or(0),
             }),
             update: Some(Box::new(move || {
-                *dynamic
+                let mut state = state
                     .lock()
-                    .unwrap_or_else(std::sync::PoisonError::into_inner) = for_store;
+                    .unwrap_or_else(std::sync::PoisonError::into_inner);
+                state.dynamic = for_store;
+                state.all = None;
+                state.chat = None;
             })),
         })
         .await?;
@@ -643,17 +697,11 @@ impl Provider for SpecProvider {
         &self.spec.auth
     }
 
-    fn get_models(&self) -> Vec<Model> {
-        self.current_models()
-            .into_iter()
-            .filter_map(|m| match m {
-                AnyModel::Chat(c) => Some(*c),
-                _ => None,
-            })
-            .collect()
+    fn get_models(&self) -> Arc<[Model]> {
+        self.chat_snapshot()
     }
 
-    fn get_all_models(&self) -> Vec<AnyModel> {
+    fn get_all_models(&self) -> Arc<[AnyModel]> {
         self.current_models()
     }
 

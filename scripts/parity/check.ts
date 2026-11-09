@@ -99,7 +99,9 @@ export function checkParity(parity: unknown, fs: ParityFs, upstream = false): st
         continue;
       }
       const text = fs.fileText(path) ?? "";
-      if (!text.includes(`parity: ${id}`)) {
+      const escaped = id.replaceAll(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
+      const marker = new RegExp(`parity: ${escaped}(?![A-Z0-9-])`);
+      if (!marker.test(text)) {
         errors.push(`${id}: rust file lacks "parity: ${id}" marker: ${path}`);
       }
     }

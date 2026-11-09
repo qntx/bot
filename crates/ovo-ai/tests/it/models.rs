@@ -124,19 +124,21 @@ impl Provider for TestProvider {
     fn auth(&self) -> &ProviderAuth {
         &self.auth
     }
-    fn get_models(&self) -> Vec<Model> {
+    fn get_models(&self) -> Arc<[Model]> {
         self.models
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner)
             .clone()
+            .into()
     }
-    fn get_all_models(&self) -> Vec<AnyModel> {
-        self.all_models.clone().unwrap_or_else(|| {
+    fn get_all_models(&self) -> Arc<[AnyModel]> {
+        let models = self.all_models.clone().unwrap_or_else(|| {
             self.get_models()
-                .into_iter()
-                .map(|m| AnyModel::Chat(Box::new(m)))
-                .collect()
-        })
+                .iter()
+                .map(|m| AnyModel::Chat(Box::new(m.clone())))
+                .collect::<Vec<_>>()
+        });
+        models.into()
     }
     fn refresh_models(&self) -> Option<&dyn ovo_ai::provider::RefreshModels> {
         if self.refresh.is_some() {
@@ -198,8 +200,8 @@ impl Provider for Handwritten {
     fn auth(&self) -> &ProviderAuth {
         self.faux.provider.auth()
     }
-    fn get_models(&self) -> Vec<Model> {
-        self.faux.models.clone()
+    fn get_models(&self) -> Arc<[Model]> {
+        self.faux.models.clone().into()
     }
     fn stream(
         &self,
@@ -2433,6 +2435,28 @@ async fn store_failures_surface_in_refresh_errors() {
     }
 }
 
+struct NoopChat;
+
+impl ovo_ai::provider::ChatApi for NoopChat {
+    fn stream(
+        &self,
+        model: &Model,
+        _context: TranscriptContext,
+        _options: StreamOptions,
+    ) -> AssistantStream {
+        AssistantStream::spawn(
+            ovo_ai::types::message::AssistantMessage::empty(model, 0),
+            8,
+            |sender| async move {
+                sender
+                    .error(ovo_ai::stream::ErrorReason::Error, String::from("noop"))
+                    .await
+                    .ok();
+            },
+        )
+    }
+}
+
 /// B3 — a credential-store read failure surfaces `Auth` from
 /// `check_auth`.
 #[tokio::test]
@@ -2556,4 +2580,61 @@ async fn cancelled_refresh_leaves_no_controller_or_errors() {
         "second refresh must publish"
     );
     let _ = gate;
+}
+
+/// D3 — repeated `get_all_models` calls share one snapshot until a
+/// publication replaces the overlay.
+#[tokio::test]
+async fn catalog_snapshots_are_shared_until_publication() {
+    let spec = ovo_ai::provider::ProviderSpec {
+        id: String::from("snapshot"),
+        name: None,
+        base_url: None,
+        headers: None,
+        auth: ProviderAuth {
+            api_key: Some(ApiKeyAuth::custom(
+                "Test",
+                Arc::new(|_| {
+                    Box::pin(async {
+                        Ok(Some(AuthResult {
+                            auth: ModelAuth::default(),
+                            env: None,
+                            source: None,
+                        }))
+                    })
+                }),
+            )),
+            oauth: None,
+        },
+        models: vec![AnyModel::Chat(Box::new(test_model("snapshot", "base")))],
+        api: Some(ovo_ai::provider::ApiDispatch::Single(Arc::new(NoopChat))),
+        images: std::collections::BTreeMap::new(),
+        classifiers: std::collections::BTreeMap::new(),
+        fetch_models: Some(Arc::new(|_context| {
+            Box::pin(async move { vec![AnyModel::Chat(Box::new(test_model("snapshot", "new")))] })
+        })),
+        filter_models: None,
+        filter_all_models: None,
+    };
+    let provider: Arc<dyn Provider> =
+        Arc::new(ovo_ai::provider::create_provider(spec).unwrap_or_else(|e| panic!("spec: {e}")));
+    let models = models();
+    models.set_provider(Arc::clone(&provider));
+    let arc1 = provider.get_all_models();
+    let arc2 = provider.get_all_models();
+    assert!(Arc::ptr_eq(&arc1, &arc2), "snapshot must be shared");
+    let result = models.refresh(ModelsRefreshOptions::default()).await;
+    assert!(result.errors.is_empty(), "{:?}", result.errors);
+    let arc3 = provider.get_all_models();
+    assert!(
+        !Arc::ptr_eq(&arc1, &arc3),
+        "publication must rebuild the snapshot"
+    );
+    assert!(
+        arc3.iter().any(|m| match m {
+            AnyModel::Chat(m) => m.id == "new",
+            _ => false,
+        }),
+        "new model must appear after publish"
+    );
 }

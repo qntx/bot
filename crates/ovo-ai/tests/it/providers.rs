@@ -148,16 +148,13 @@ async fn builtin_providers_dispatch_every_api() {
     for provider in builtin_providers(&http()).unwrap_or_else(|e| panic!("providers: {e}")) {
         let id = provider.id().to_owned();
         let mut apis: Vec<String> = Vec::new();
-        for model in provider.get_models() {
+        for model in provider.get_models().iter() {
             let api = model.api.as_str().to_owned();
             if apis.contains(&api) {
                 continue;
             }
-            let mut stream = provider.stream(
-                &model,
-                normalize_context(&context),
-                StreamOptions::default(),
-            );
+            let mut stream =
+                provider.stream(model, normalize_context(&context), StreamOptions::default());
             let mut error = None;
             while let Some(event) = stream.next().await {
                 if let AssistantMessageEvent::Error { error_message, .. } = event {

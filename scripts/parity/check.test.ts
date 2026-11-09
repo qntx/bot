@@ -57,6 +57,26 @@ describe("checkParity", () => {
     ]);
   });
 
+  test("rejects a longer marker sharing the id as a prefix", () => {
+    const files = {
+      ...FILES,
+      "crates/ovo-ai/tests/it/json.rs": "/// parity: AI-JSON-JS-STREAM\n#[test] fn t() {}",
+    };
+    const errors = checkParity(parity(), fsWith(files));
+    expect(errors).toStrictEqual([
+      'AI-JSON-JS: rust file lacks "parity: AI-JSON-JS" marker: crates/ovo-ai/tests/it/json.rs',
+    ]);
+  });
+
+  test("accepts an exact marker next to a longer one", () => {
+    const files = {
+      ...FILES,
+      "crates/ovo-ai/tests/it/json.rs":
+        "/// parity: AI-JSON-JS-STREAM\n/// parity: AI-JSON-JS\n#[test] fn t() {}",
+    };
+    expect(checkParity(parity(), fsWith(files))).toStrictEqual([]);
+  });
+
   test("rejects a missing rust file and a missing parity marker", () => {
     const files = { ...FILES };
     delete files["crates/ovo-ai/tests/it/json.rs"];
