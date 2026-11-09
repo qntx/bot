@@ -13,8 +13,7 @@
 
 use std::collections::HashMap;
 use std::future::Future;
-use std::pin::Pin;
-use std::sync::{Arc, Mutex, RwLock};
+use std::sync::{Arc, Mutex, RwLock, Weak};
 
 use tokio_util::sync::CancellationToken;
 
@@ -53,18 +52,15 @@ pub trait ModelsStore: Send + Sync {
     fn read<'a>(
         &'a self,
         provider_id: &'a str,
-    ) -> Pin<Box<dyn Future<Output = Result<Option<ModelsStoreEntry>, ModelsError>> + Send + 'a>>;
+    ) -> BoxFuture<'a, Result<Option<ModelsStoreEntry>, ModelsError>>;
     /// `write(providerId, entry)`.
     fn write<'a>(
         &'a self,
         provider_id: &'a str,
         entry: &'a ModelsStoreEntry,
-    ) -> Pin<Box<dyn Future<Output = Result<(), ModelsError>> + Send + 'a>>;
+    ) -> BoxFuture<'a, Result<(), ModelsError>>;
     /// `delete(providerId)`.
-    fn delete<'a>(
-        &'a self,
-        provider_id: &'a str,
-    ) -> Pin<Box<dyn Future<Output = Result<(), ModelsError>> + Send + 'a>>;
+    fn delete<'a>(&'a self, provider_id: &'a str) -> BoxFuture<'a, Result<(), ModelsError>>;
 }
 
 /// `InMemoryModelsStore` — the upstream default.
@@ -85,8 +81,7 @@ impl ModelsStore for InMemoryModelsStore {
     fn read<'a>(
         &'a self,
         provider_id: &'a str,
-    ) -> Pin<Box<dyn Future<Output = Result<Option<ModelsStoreEntry>, ModelsError>> + Send + 'a>>
-    {
+    ) -> BoxFuture<'a, Result<Option<ModelsStoreEntry>, ModelsError>> {
         Box::pin(async move {
             Ok(self
                 .entries
@@ -101,7 +96,7 @@ impl ModelsStore for InMemoryModelsStore {
         &'a self,
         provider_id: &'a str,
         entry: &'a ModelsStoreEntry,
-    ) -> Pin<Box<dyn Future<Output = Result<(), ModelsError>> + Send + 'a>> {
+    ) -> BoxFuture<'a, Result<(), ModelsError>> {
         Box::pin(async move {
             self.entries
                 .lock()
@@ -111,10 +106,7 @@ impl ModelsStore for InMemoryModelsStore {
         })
     }
 
-    fn delete<'a>(
-        &'a self,
-        provider_id: &'a str,
-    ) -> Pin<Box<dyn Future<Output = Result<(), ModelsError>> + Send + 'a>> {
+    fn delete<'a>(&'a self, provider_id: &'a str) -> BoxFuture<'a, Result<(), ModelsError>> {
         Box::pin(async move {
             self.entries
                 .lock()
@@ -550,14 +542,20 @@ impl Models {
         }
         let selected: Option<std::collections::HashSet<String>> =
             options.providers.map(|p| p.into_iter().collect());
+        // Only providers with a `refreshModels` hook run — static
+        // providers get no generation bump, controller, or store
+        // read (upstream `fetchModels ? … : undefined`).
         let refreshable: Vec<Arc<dyn Provider>> = self
             .get_providers()
             .into_iter()
             .filter(|p| selected.as_ref().is_none_or(|s| s.contains(p.id())))
+            .filter(|p| p.refresh_models().is_some())
             .collect();
-        for provider in refreshable {
-            // `AbortSignal.any([callerSignal, controller.signal])` —
-            // a child token is cancelled by either.
+        // `AbortSignal.any([callerSignal, controller.signal])` — a
+        // child token is cancelled by either. Generations and
+        // controllers are set up before the concurrent run.
+        let mut signals = Vec::with_capacity(refreshable.len());
+        for provider in &refreshable {
             let signal = caller.child_token();
             let generation = self.supersede_provider_refresh(provider.id());
             self.registry
@@ -565,47 +563,87 @@ impl Models {
                 .lock()
                 .unwrap_or_else(std::sync::PoisonError::into_inner)
                 .insert(provider.id().to_owned(), signal.clone());
-            let outcome = self
-                .refresh_operation(&provider, allow_network, options.force, generation, &signal)
-                .await;
-            //  — via the
-            // generation counter (a supersede bumps it).
-            let still_mine = self
-                .registry
-                .refresh_generations
-                .lock()
-                .unwrap_or_else(std::sync::PoisonError::into_inner)
-                .get(provider.id())
-                .copied()
-                == Some(generation);
-            if still_mine {
-                self.registry
-                    .refresh_controllers
-                    .lock()
-                    .unwrap_or_else(std::sync::PoisonError::into_inner)
-                    .remove(provider.id());
+            signals.push((generation, signal));
+        }
+        let operations =
+            refreshable
+                .iter()
+                .zip(&signals)
+                .map(|(provider, (generation, signal))| {
+                    self.refresh_operation(
+                        provider,
+                        allow_network,
+                        options.force,
+                        *generation,
+                        signal,
+                    )
+                });
+        // Upstream races the whole join against the caller signal.
+        let join = futures::future::join_all(operations);
+        tokio::select! {
+            outcomes = join => {
+                for ((provider, (generation, signal)), outcome) in
+                    refreshable.iter().zip(&signals).zip(outcomes)
+                {
+                    // Cleanup is generation-checked — a supersede
+                    // bumps it and owns the new controller slot.
+                    let still_mine = self
+                        .registry
+                        .refresh_generations
+                        .lock()
+                        .unwrap_or_else(std::sync::PoisonError::into_inner)
+                        .get(provider.id())
+                        .copied()
+                        == Some(*generation);
+                    if still_mine {
+                        self.registry
+                            .refresh_controllers
+                            .lock()
+                            .unwrap_or_else(std::sync::PoisonError::into_inner)
+                            .remove(provider.id());
+                    }
+                    // A cancellation is not a provider error.
+                    if let Err(error) = outcome
+                        && !signal.is_cancelled()
+                    {
+                        errors.insert(provider.id().to_owned(), error);
+                    }
+                }
             }
-            // A cancellation is not a provider error.
-            if let Err(error) = outcome
-                && !signal.is_cancelled()
-            {
-                errors.insert(provider.id().to_owned(), error);
-            }
-            if caller.is_cancelled() {
-                break;
-            }
+            () = caller.cancelled() => {}
         }
         ModelsRefreshResult {
             aborted: caller.is_cancelled(),
             errors,
         }
     }
-
     /// One provider's refresh operation (models.ts:577-601): stored
     /// credential → offline restore phase → `resolveRefreshCredential`
     /// → network phase. `raceWithAbortSignal` is a `tokio::select!` on
     /// the linked signal — a stuck provider does not block refresh.
     async fn refresh_operation(
+        &self,
+        provider: &Arc<dyn Provider>,
+        allow_network: bool,
+        force: Option<bool>,
+        generation: u64,
+        signal: &CancellationToken,
+    ) -> Result<(), ModelsError> {
+        // Upstream races the *whole* operation against the linked
+        // signal — a cancel resolves `Ok(())` and cleanup always runs.
+        let body = async {
+            self.refresh_operation_body(provider, allow_network, force, generation, signal)
+                .await
+        };
+        tokio::select! {
+            result = body => result,
+            () = signal.cancelled() => Ok(()),
+        }
+    }
+
+    /// The refresh body — credential read, offline phase, credential
+    /// resolution, network phase.
+    async fn refresh_operation_body(
         &self,
         provider: &Arc<dyn Provider>,
         allow_network: bool,
@@ -620,12 +658,9 @@ impl Models {
                 format!("Credential store read failed for {}: {e}", provider.id()),
             )
         });
-        let stored = self
-            .registry
-            .store
-            .read(provider.id())
-            .await
-            .unwrap_or(None);
+        // Store failures propagate unchanged into `errors` — the
+        // provider's whole refresh operation fails.
+        let stored = self.registry.store.read(provider.id()).await?;
         self.refresh_phase(
             provider,
             RefreshPhase {
@@ -638,6 +673,8 @@ impl Models {
             },
         )
         .await?;
+        // Upstream reports the credential-read failure only after
+        // the offline phase ran (models.ts:582-591).
         if let Some(error) = credential_error {
             return Err(error);
         }
@@ -684,7 +721,10 @@ impl Models {
             signal,
         } = phase;
         let publish = self.publish_for(provider.id(), generation, signal.clone());
-        let run = provider.refresh_models(RefreshModelsContext {
+        let Some(hook) = provider.refresh_models() else {
+            return Ok(());
+        };
+        let run = hook.refresh(RefreshModelsContext {
             credential,
             stored,
             publish,
@@ -749,37 +789,19 @@ impl Models {
         provider_id: &str,
         generation: u64,
         signal: CancellationToken,
-    ) -> Arc<dyn Fn(ModelsPublication) -> BoxFuture<'static, bool> + Send + Sync> {
+    ) -> Arc<dyn Fn(ModelsPublication) -> BoxFuture<'static, Result<bool, ModelsError>> + Send + Sync>
+    {
         let provider_id = provider_id.to_owned();
-        let models_store = Arc::clone(&self.registry.store);
-        let gen_snapshot = self
-            .registry
-            .refresh_generations
-            .lock()
-            .unwrap_or_else(std::sync::PoisonError::into_inner)
-            .clone();
-        let generations_cell = Arc::new(tokio::sync::Mutex::new(gen_snapshot));
-        let chain = Arc::clone(
-            self.registry
-                .publication_chains
-                .lock()
-                .unwrap_or_else(std::sync::PoisonError::into_inner)
-                .entry(provider_id.clone())
-                .or_insert_with(|| Arc::new(tokio::sync::Mutex::new(()))),
-        );
+        let registry = Arc::downgrade(&self.registry);
         Arc::new(move |publication| {
             let provider_id = provider_id.clone();
-            let models_store = Arc::clone(&models_store);
-            let generations = Arc::clone(&generations_cell);
-            let chain = Arc::clone(&chain);
+            let registry = Weak::clone(&registry);
             let signal = signal.clone();
             Box::pin(publish_one(
                 provider_id,
                 generation,
                 publication,
-                models_store,
-                generations,
-                chain,
+                registry,
                 signal,
             ))
         })
@@ -934,12 +956,6 @@ impl Models {
         options: Option<&RequestOptions>,
     ) -> Result<(AnyModel, RequestParts), ModelsError> {
         let provider_id = model_ids(model).0;
-        if self.get_provider(provider_id).is_none() {
-            return Err(ModelsError::new(
-                ModelsErrorCode::Provider,
-                format!("Unknown provider: {provider_id}"),
-            ));
-        }
         let provider = self.require_provider(model)?;
         let fresh = CancellationToken::new();
         let resolution = self
@@ -1044,13 +1060,22 @@ impl Models {
         })
     }
 
-    /// `stream` — normalize context, resolve auth, delegate.
-    #[must_use]
-    pub fn stream(
+    /// Shared `stream`/`streamSimple` scaffold — transcript
+    /// normalization, provider lookup, `applyAuth`, and the lazy
+    /// stream; `call` assembles the per-flavor request options.
+    fn stream_chat(
         self: &Arc<Self>,
         model: &Model,
         context: &Context,
-        options: Option<StreamOptions>,
+        auth_options: Option<RequestOptions>,
+        call: impl FnOnce(
+            Arc<dyn Provider>,
+            Box<Model>,
+            crate::transcript::TranscriptContext,
+            RequestParts,
+        ) -> AssistantStream
+        + Send
+        + 'static,
     ) -> AssistantStream {
         let transcript = normalize_context(context);
         let model = model.clone();
@@ -1063,10 +1088,9 @@ impl Models {
         let models = Arc::clone(self);
         let request_model = model.clone();
         lazy_stream(&model, async move {
-            let auth_options = options.as_ref().map(request_options);
             let (applied_model, parts) = models
                 .apply_auth(
-                    &AnyModel::Chat(Box::new(request_model.clone())),
+                    &AnyModel::Chat(Box::new(request_model)),
                     auth_options.as_ref(),
                 )
                 .await?;
@@ -1076,14 +1100,32 @@ impl Models {
                     "not a chat model",
                 ));
             };
-            let mut stream_options = options.unwrap_or_default();
-            stream_options.transform_headers = None;
-            stream_options.api_key = parts.api_key;
-            stream_options.headers = parts.headers;
-            stream_options.env = parts.env;
-            stream_options.identity = parts.identity;
-            Ok(provider.stream(&applied, transcript, stream_options))
+            Ok(call(provider, applied, transcript, parts))
         })
+    }
+
+    /// `stream` — normalize context, resolve auth, delegate.
+    #[must_use]
+    pub fn stream(
+        self: &Arc<Self>,
+        model: &Model,
+        context: &Context,
+        options: Option<StreamOptions>,
+    ) -> AssistantStream {
+        self.stream_chat(
+            model,
+            context,
+            options.as_ref().map(request_options),
+            move |provider, applied, transcript, parts| {
+                let mut stream_options = options.unwrap_or_default();
+                stream_options.transform_headers = None;
+                stream_options.api_key = parts.api_key;
+                stream_options.headers = parts.headers;
+                stream_options.env = parts.env;
+                stream_options.identity = parts.identity;
+                provider.stream(&applied, transcript, stream_options)
+            },
+        )
     }
 
     /// `complete` — `stream().result()`.
@@ -1105,47 +1147,29 @@ impl Models {
         context: &Context,
         options: Option<SimpleStreamOptions>,
     ) -> AssistantStream {
-        let transcript = normalize_context(context);
-        let model = model.clone();
-        let provider = match self.require_provider(&AnyModel::Chat(Box::new(model.clone()))) {
-            Ok(p) => p,
-            Err(error) => {
-                return lazy_stream_error(&model, error.to_string());
-            }
-        };
-        let models = Arc::clone(self);
-        let request_model = model.clone();
-        let simple_options = options.clone();
-        lazy_stream(&model, async move {
-            let auth_options = options.as_ref().map(|o| request_options(&o.base));
-            let (applied_model, parts) = models
-                .apply_auth(
-                    &AnyModel::Chat(Box::new(request_model.clone())),
-                    auth_options.as_ref(),
-                )
-                .await?;
-            let AnyModel::Chat(applied) = applied_model else {
-                return Err(ModelsError::new(
-                    ModelsErrorCode::Provider,
-                    "not a chat model",
-                ));
-            };
-            let mut base = build_base_options(
-                &applied,
-                &transcript,
-                simple_options.as_ref(),
-                parts
-                    .api_key
-                    .as_ref()
-                    .map(secrecy::ExposeSecret::expose_secret),
-            );
-            base.headers = parts.headers;
-            base.env = parts.env;
-            base.identity = parts.identity;
-            let mut request_options = simple_options.unwrap_or_default();
-            request_options.base = base;
-            Ok(provider.stream_simple(&applied, transcript, request_options))
-        })
+        let auth_options = options.as_ref().map(|o| request_options(&o.base));
+        self.stream_chat(
+            model,
+            context,
+            auth_options,
+            move |provider, applied, transcript, parts| {
+                let mut base = build_base_options(
+                    &applied,
+                    &transcript,
+                    options.as_ref(),
+                    parts
+                        .api_key
+                        .as_ref()
+                        .map(secrecy::ExposeSecret::expose_secret),
+                );
+                base.headers = parts.headers;
+                base.env = parts.env;
+                base.identity = parts.identity;
+                let mut request_options = options.unwrap_or_default();
+                request_options.base = base;
+                provider.stream_simple(&applied, transcript, request_options)
+            },
+        )
     }
 
     /// `completeSimple` — `streamSimple().result()`.
@@ -1384,26 +1408,14 @@ impl Models {
             .credentials
             .read(provider_id)
             .await
-            .unwrap_or(None);
-        if let Some(Credential::OAuth(_)) = credential {
-            Ok(provider.auth().oauth.as_ref().map(|_| AuthCheck {
-                source: Some(String::from("OAuth")),
-                kind: AuthType::OAuth,
-            }))
-        } else {
-            let resolution = self
-                .resolve_provider_auth(
-                    provider.as_ref(),
-                    &AuthResolutionOverrides::default(),
-                    &CancellationToken::new(),
+            .map_err(|e| {
+                ModelsError::new(
+                    ModelsErrorCode::Auth,
+                    format!("Credential store read failed for {provider_id}: {e}"),
                 )
-                .await
-                .map_err(Self::auth_wrap)?;
-            Ok(resolution.map(|r| AuthCheck {
-                source: r.source,
-                kind: AuthType::ApiKey,
-            }))
-        }
+            })?;
+        self.check_provider_auth(provider.as_ref(), credential.as_ref())
+            .await
     }
 
     /// `getAvailable(providerId?)` — models of configured providers.
@@ -1446,18 +1458,30 @@ impl Models {
             || self.get_providers(),
             |id| self.get_provider(id).into_iter().collect(),
         );
-        let mut out = Vec::new();
-        for provider in providers {
+        // Credential read + auth check run concurrently per
+        // provider; `join_all` keeps provider order (upstream
+        // `getAuthenticatedProviders`).
+        let checks = providers.into_iter().map(|provider| async move {
             let credential = self
                 .registry
                 .credentials
                 .read(provider.id())
                 .await
-                .unwrap_or(None);
+                .map_err(|e| {
+                    ModelsError::new(
+                        ModelsErrorCode::Auth,
+                        format!("Credential store read failed for {}: {e}", provider.id()),
+                    )
+                })?;
             let check = self
                 .check_provider_auth(provider.as_ref(), credential.as_ref())
                 .await?;
-            if check.is_some() {
+            Ok::<_, ModelsError>((provider, check.is_some().then_some(credential)))
+        });
+        let mut out = Vec::new();
+        for result in futures::future::join_all(checks).await {
+            let (provider, credential) = result?;
+            if let Some(credential) = credential {
                 out.push((provider, credential));
             }
         }
@@ -1542,39 +1566,77 @@ fn overrides_for(options: Option<&RequestOptions>) -> AuthResolutionOverrides {
 
 /// One `publishProviderModels` execution — serialized per provider,
 /// persistence before `update`, superseded/cancelled → `false`.
+/// One `publish` call — serialized per provider through the chain
+/// mutex fetched at publish time, persistence before `update`. The
+/// generation and signal are checked live against the registry
+/// before persisting and again before `update` (upstream L525/L533):
+/// a superseded or cancelled publication returns `false` without
+/// writing.
 async fn publish_one(
     provider_id: String,
     generation: u64,
     publication: ModelsPublication,
-    store: Arc<dyn ModelsStore>,
-    generations: Arc<tokio::sync::Mutex<HashMap<String, u64>>>,
-    chain: Arc<tokio::sync::Mutex<()>>,
+    registry: Weak<Registry>,
     signal: CancellationToken,
-) -> bool {
-    let _guard = chain.lock().await;
-    if signal.is_cancelled()
-        || generations.lock().await.get(provider_id.as_str()) != Some(&generation)
-    {
-        return false;
-    }
-    match publication.persist {
-        PersistAction::Delete => {
-            store.delete(&provider_id).await.ok();
+) -> Result<bool, ModelsError> {
+    let Some(registry) = registry.upgrade() else {
+        return Ok(false);
+    };
+    // Fetch (or create) this provider's chain at publish time — the
+    // map entry is the single ordering point for all publications.
+    let chain = Arc::clone(
+        registry
+            .publication_chains
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
+            .entry(provider_id.clone())
+            .or_insert_with(|| Arc::new(tokio::sync::Mutex::new(()))),
+    );
+    let body = async {
+        let _guard = chain.lock().await;
+        let live = || {
+            !signal.is_cancelled()
+                && registry
+                    .refresh_generations
+                    .lock()
+                    .unwrap_or_else(std::sync::PoisonError::into_inner)
+                    .get(provider_id.as_str())
+                    .copied()
+                    == Some(generation)
+        };
+        if !live() {
+            return Ok(false);
         }
-        PersistAction::Write(entry) => {
-            store.write(&provider_id, &entry).await.ok();
+        // Store failures reject the publish — the provider's refresh
+        // fails with the store's `model_source` error.
+        match publication.persist {
+            PersistAction::Delete => registry.store.delete(&provider_id).await?,
+            PersistAction::Write(entry) => registry.store.write(&provider_id, &entry).await?,
+            PersistAction::Unchanged => {}
         }
-        PersistAction::Unchanged => {}
-    }
-    if signal.is_cancelled()
-        || generations.lock().await.get(provider_id.as_str()) != Some(&generation)
+        if !live() {
+            return Ok(false);
+        }
+        if let Some(update) = publication.update {
+            update();
+        }
+        Ok(true)
+    };
+    let result = body.await;
+    // Settled tail cleanup — remove the entry only when it is still
+    // ours and nobody else holds a clone (map + ours = refcount 2).
+    let mut chains = registry
+        .publication_chains
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    if chains
+        .get(provider_id.as_str())
+        .is_some_and(|c| Arc::ptr_eq(c, &chain) && Arc::strong_count(c) == 2)
     {
-        return false;
+        chains.remove(provider_id.as_str());
     }
-    if let Some(update) = publication.update {
-        update();
-    }
-    true
+    drop(chains);
+    result
 }
 
 fn default_credentials() -> Arc<dyn CredentialStore> {
@@ -1681,4 +1743,231 @@ pub fn with_client_identity(models: &Models, identity: ClientIdentity) -> Arc<Mo
         registry: Arc::clone(&models.registry),
         identity: merge_client_identity(&[models.identity.as_ref(), Some(&identity)]),
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::options::{SimpleStreamOptions, StreamOptions};
+    use crate::provider::{Provider, ProviderAuth, RefreshModels, RefreshModelsContext};
+    use crate::stream::AssistantStream;
+    use crate::transcript::TranscriptContext;
+    use crate::types::model::Model;
+
+    /// B3 — a publication from a superseded generation returns
+    /// `false` and does not write, even when its token was not
+    /// cancelled. `publish_for` is exercised directly — through
+    /// `refresh` a supersede drops the in-flight hook future in the
+    /// `select`, so the publish never executes.
+    #[tokio::test]
+    async fn superseded_publication_returns_false_without_writing() {
+        let models = create_models(CreateModelsOptions::default());
+        let signal = CancellationToken::new();
+        let publish = models.publish_for("p", 1, signal);
+        // Bump the generation without touching the publish's token.
+        models
+            .registry
+            .refresh_generations
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
+            .insert(String::from("p"), 2);
+        let result = publish(ModelsPublication {
+            persist: PersistAction::Write(ModelsStoreEntry {
+                models: Vec::new(),
+                checked_at: 0,
+            }),
+            update: None,
+        })
+        .await;
+        assert!(result.is_ok(), "{result:?}");
+        assert!(
+            !result.unwrap_or(true),
+            "superseded publish must return false"
+        );
+        let entry = models.registry.store.read("p").await;
+        assert!(entry.is_ok(), "{entry:?}");
+        assert!(
+            entry.ok().flatten().is_none(),
+            "superseded publish must not write"
+        );
+    }
+
+    /// A provider with a `refreshModels` hook that publishes once.
+    struct Refreshing {
+        auth: ProviderAuth,
+    }
+
+    impl Provider for Refreshing {
+        fn id(&self) -> &'static str {
+            "static"
+        }
+        fn name(&self) -> &'static str {
+            "Static"
+        }
+        fn auth(&self) -> &ProviderAuth {
+            &self.auth
+        }
+        fn get_models(&self) -> Vec<Model> {
+            Vec::new()
+        }
+        fn stream(
+            &self,
+            model: &Model,
+            _context: TranscriptContext,
+            _options: StreamOptions,
+        ) -> AssistantStream {
+            lazy_stream_error(model, String::from("no streams in this test"))
+        }
+        fn stream_simple(
+            &self,
+            model: &Model,
+            _context: TranscriptContext,
+            _options: SimpleStreamOptions,
+        ) -> AssistantStream {
+            lazy_stream_error(model, String::from("no streams in this test"))
+        }
+        fn refresh_models(&self) -> Option<&dyn RefreshModels> {
+            Some(self)
+        }
+    }
+
+    impl RefreshModels for Refreshing {
+        fn refresh(&self, context: RefreshModelsContext) -> BoxFuture<'_, Result<(), ModelsError>> {
+            Box::pin(async move {
+                (context.publish)(ModelsPublication {
+                    persist: PersistAction::Unchanged,
+                    update: None,
+                })
+                .await?;
+                Ok(())
+            })
+        }
+    }
+
+    fn fail_once(failed: &Mutex<bool>) -> Result<(), ModelsError> {
+        let mut failed = failed
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        if std::mem::replace(&mut *failed, false) {
+            Err(ModelsError::new(
+                ModelsErrorCode::ModelSource,
+                "write failed",
+            ))
+        } else {
+            Ok(())
+        }
+    }
+
+    /// A store that fails `write` once — exercises the error path's
+    /// chain cleanup.
+    struct FailOnce {
+        failed: Mutex<bool>,
+    }
+
+    impl ModelsStore for FailOnce {
+        fn read<'a>(
+            &'a self,
+            _provider_id: &'a str,
+        ) -> BoxFuture<'a, Result<Option<ModelsStoreEntry>, ModelsError>> {
+            Box::pin(async { Ok(None) })
+        }
+        fn write<'a>(
+            &'a self,
+            _provider_id: &'a str,
+            _entry: &'a ModelsStoreEntry,
+        ) -> BoxFuture<'a, Result<(), ModelsError>> {
+            Box::pin(async move { fail_once(&self.failed) })
+        }
+        fn delete<'a>(&'a self, _provider_id: &'a str) -> BoxFuture<'a, Result<(), ModelsError>> {
+            Box::pin(async { Ok(()) })
+        }
+    }
+
+    fn push_tag(order: Arc<Mutex<Vec<u8>>>, tag: u8) -> impl Fn() + Send + 'static {
+        move || {
+            order
+                .lock()
+                .unwrap_or_else(std::sync::PoisonError::into_inner)
+                .push(tag);
+        }
+    }
+
+    /// B3 — queued publications run strictly in order and the map
+    /// empties afterwards, including after a store-error publish.
+    #[tokio::test]
+    async fn publication_chains_serialize_and_clear() {
+        let order = Arc::new(Mutex::new(Vec::<u8>::new()));
+        let models = create_models(CreateModelsOptions {
+            models_store: Some(Arc::new(FailOnce {
+                failed: Mutex::new(true),
+            })),
+            ..CreateModelsOptions::default()
+        });
+        models
+            .registry
+            .refresh_generations
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
+            .insert(String::from("p"), 1);
+        let publish = |tag: u8| {
+            models.publish_for("p", 1, CancellationToken::new())(ModelsPublication {
+                persist: PersistAction::Unchanged,
+                update: Some(Box::new(push_tag(Arc::clone(&order), tag))),
+            })
+        };
+        // A runs, B and C wait on the same chain — updates must be
+        // strictly ordered.
+        let (a, b, c) = futures::future::join3(publish(1), publish(2), publish(3)).await;
+        assert!(a.is_ok(), "{a:?}");
+        assert!(b.is_ok(), "{b:?}");
+        assert!(c.is_ok(), "{c:?}");
+        assert_eq!(
+            *order
+                .lock()
+                .unwrap_or_else(std::sync::PoisonError::into_inner),
+            vec![1, 2, 3]
+        );
+        // A store-error publication also clears its tail.
+        let failing = models.publish_for("p", 1, CancellationToken::new())(ModelsPublication {
+            persist: PersistAction::Write(ModelsStoreEntry {
+                models: Vec::new(),
+                checked_at: 0,
+            }),
+            update: None,
+        });
+        let result = failing.await;
+        assert!(result.is_err(), "{result:?}");
+        assert!(
+            models
+                .registry
+                .publication_chains
+                .lock()
+                .unwrap_or_else(std::sync::PoisonError::into_inner)
+                .is_empty(),
+            "chains must be empty after all publications settle"
+        );
+    }
+
+    /// B3 — `publication_chains` empties once the last tail settles.
+    #[tokio::test]
+    async fn publication_chains_clear_after_refresh_settles() {
+        let models = create_models(CreateModelsOptions::default());
+        models.set_provider(Arc::new(Refreshing {
+            auth: ProviderAuth {
+                api_key: None,
+                oauth: None,
+            },
+        }));
+        let result = models.refresh(ModelsRefreshOptions::default()).await;
+        assert!(result.errors.is_empty(), "{:?}", result.errors);
+        assert!(
+            models
+                .registry
+                .publication_chains
+                .lock()
+                .unwrap_or_else(std::sync::PoisonError::into_inner)
+                .is_empty(),
+            "publication_chains must be empty after refresh settles"
+        );
+    }
 }

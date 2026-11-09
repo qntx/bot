@@ -133,6 +133,13 @@ impl std::fmt::Debug for ProviderAuth {
     }
 }
 
+/// `refreshModels(context)` — restores `context.stored`, optionally
+/// fetches a newer list, and publishes through `context.publish`.
+pub trait RefreshModels: Send + Sync {
+    /// Run one refresh phase.
+    fn refresh(&self, context: RefreshModelsContext) -> BoxFuture<'_, Result<(), ModelsError>>;
+}
+
 /// `Provider` — the concrete runtime unit (pi `Provider` interface).
 ///
 /// Sync accessors mirror `getModels`/`getAllModels` (never fail).
@@ -163,14 +170,10 @@ pub trait Provider: Send + Sync + 'static {
             .map(|m| AnyModel::Chat(Box::new(m)))
             .collect()
     }
-    /// `refreshModels(context)` — dynamic providers only. Restores
-    /// `context.stored`, optionally fetches a newer list, and
-    /// publishes through `context.publish`.
-    fn refresh_models(
-        &self,
-        _context: RefreshModelsContext,
-    ) -> BoxFuture<'_, Result<(), ModelsError>> {
-        Box::pin(async { Ok(()) })
+    /// `refreshModels` — dynamic providers only; `None` for static
+    /// lists (upstream `fetchModels ? fn : undefined`).
+    fn refresh_models(&self) -> Option<&dyn RefreshModels> {
+        None
     }
     /// `filterModels` — credential-specific chat availability.
     fn filter_models(&self, models: &[Model], _credential: Option<&Credential>) -> Vec<Model> {
@@ -461,7 +464,10 @@ pub struct RefreshModelsContext {
     /// Immutable stored catalog snapshot.
     pub stored: Option<ModelsStoreEntry>,
     /// `publish(publication)` — generation-checked.
-    pub publish: Arc<dyn Fn(ModelsPublication) -> BoxFuture<'static, bool> + Send + Sync>,
+    /// `false` when superseded/cancelled; store failures reject.
+    pub publish: Arc<
+        dyn Fn(ModelsPublication) -> BoxFuture<'static, Result<bool, ModelsError>> + Send + Sync,
+    >,
     /// `allowNetwork` — `false` during offline init.
     pub allow_network: bool,
     /// `force` — bypass freshness checks.
@@ -573,7 +579,7 @@ impl SpecProvider {
         &self,
         context: &RefreshModelsContext,
         restored: Vec<AnyModel>,
-    ) -> bool {
+    ) -> Result<bool, ModelsError> {
         let dynamic = Arc::clone(&self.dynamic);
         (context.publish)(ModelsPublication {
             persist: PersistAction::Unchanged,
@@ -588,10 +594,14 @@ impl SpecProvider {
 
     /// `refreshModels`'s network `publish` — persists the fetched
     /// entry and applies `update`.
-    async fn publish_refresh(&self, context: &RefreshModelsContext, refreshed: Vec<AnyModel>) {
+    async fn publish_refresh(
+        &self,
+        context: &RefreshModelsContext,
+        refreshed: Vec<AnyModel>,
+    ) -> Result<(), ModelsError> {
         let dynamic = Arc::clone(&self.dynamic);
         let for_store = refreshed.clone();
-        let _ = (context.publish)(ModelsPublication {
+        (context.publish)(ModelsPublication {
             persist: PersistAction::Write(ModelsStoreEntry {
                 models: refreshed,
                 checked_at: u64::try_from(
@@ -607,7 +617,8 @@ impl SpecProvider {
                     .unwrap_or_else(std::sync::PoisonError::into_inner) = for_store;
             })),
         })
-        .await;
+        .await?;
+        Ok(())
     }
 }
 
@@ -646,40 +657,12 @@ impl Provider for SpecProvider {
         self.current_models()
     }
 
-    #[expect(
-        clippy::excessive_nesting,
-        reason = "mirrors upstream `refreshModels`'s restore/publish phases"
-    )]
-    fn refresh_models(
-        &self,
-        context: RefreshModelsContext,
-    ) -> BoxFuture<'_, Result<(), ModelsError>> {
-        Box::pin(async move {
-            let Some(fetch) = &self.spec.fetch_models else {
-                return Ok(());
-            };
-            if let Some(stored) = &context.stored {
-                let restored: Vec<AnyModel> = stored
-                    .models
-                    .iter()
-                    .filter(|m| model_ids(m).0 == self.spec.id)
-                    .cloned()
-                    .collect();
-                if !self.publish_restore(&context, restored).await {
-                    return Ok(());
-                }
-            }
-            if !context.allow_network || context.signal.is_cancelled() {
-                return Ok(());
-            }
-            let fetched = fetch(&context).await;
-            if context.signal.is_cancelled() {
-                return Ok(());
-            }
-            let refreshed: Vec<AnyModel> = fetched.into_iter().collect();
-            self.publish_refresh(&context, refreshed).await;
-            Ok(())
-        })
+    fn refresh_models(&self) -> Option<&dyn RefreshModels> {
+        if self.spec.fetch_models.is_some() {
+            Some(self)
+        } else {
+            None
+        }
     }
 
     fn stream(
@@ -744,6 +727,40 @@ impl Provider for SpecProvider {
     ) -> Option<BoxFuture<'static, ClassifierResult>> {
         let implementation = Arc::clone(self.spec.classifiers.get(model.api.as_str())?);
         Some(implementation.classify(&model.clone(), context, options))
+    }
+}
+
+impl RefreshModels for SpecProvider {
+    #[expect(
+        clippy::excessive_nesting,
+        reason = "mirrors upstream `refreshModels`'s restore/publish phases"
+    )]
+    fn refresh(&self, context: RefreshModelsContext) -> BoxFuture<'_, Result<(), ModelsError>> {
+        Box::pin(async move {
+            let Some(fetch) = &self.spec.fetch_models else {
+                return Ok(());
+            };
+            if let Some(stored) = &context.stored {
+                let restored: Vec<AnyModel> = stored
+                    .models
+                    .iter()
+                    .filter(|m| model_ids(m).0 == self.spec.id)
+                    .cloned()
+                    .collect();
+                if !self.publish_restore(&context, restored).await? {
+                    return Ok(());
+                }
+            }
+            if !context.allow_network || context.signal.is_cancelled() {
+                return Ok(());
+            }
+            let fetched = fetch(&context).await;
+            if context.signal.is_cancelled() {
+                return Ok(());
+            }
+            let refreshed: Vec<AnyModel> = fetched.into_iter().collect();
+            self.publish_refresh(&context, refreshed).await
+        })
     }
 }
 
