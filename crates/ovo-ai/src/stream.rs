@@ -23,6 +23,8 @@ pub use event::{AssistantMessageEvent, DoneReason, ErrorReason};
 pub use sender::{AssistantStreamSender, Metadata, StreamClosed};
 
 use crate::types::content::StopReason;
+use std::future::Future;
+
 use accumulator::is_terminal;
 use sender::Item;
 
@@ -33,6 +35,7 @@ pub struct AssistantStream {
     receiver: mpsc::Receiver<Item>,
     acc: AssistantMessageAccumulator,
     done: bool,
+    producer: Option<tokio::task::JoinHandle<()>>,
 }
 
 impl AssistantStream {
@@ -49,8 +52,26 @@ impl AssistantStream {
                 receiver,
                 acc: AssistantMessageAccumulator::new(base),
                 done: false,
+                producer: None,
             },
         )
+    }
+
+    /// `spawn`: channel + a producer task on the current runtime.
+    /// Dropping the stream aborts the producer; the producer is not
+    /// awaited (panics are outside the contract).
+    #[must_use]
+    pub fn spawn<Fut>(
+        base: AssistantMessage,
+        capacity: usize,
+        producer: impl FnOnce(AssistantStreamSender) -> Fut + Send + 'static,
+    ) -> Self
+    where
+        Fut: Future<Output = ()> + Send + 'static,
+    {
+        let (sender, mut stream) = Self::channel(base, capacity);
+        stream.producer = Some(tokio::spawn(producer(sender)));
+        stream
     }
 
     /// The message folded through the last yielded event.

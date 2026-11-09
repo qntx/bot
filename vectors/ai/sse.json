@@ -1,0 +1,430 @@
+[
+  {
+    "name": "simple-crlf",
+    "bytes_hex": "646174613a2068656c6c6f0d0a0d0a",
+    "splits": [
+      6,
+      9,
+      12
+    ],
+    "expected": [
+      {
+        "event": null,
+        "data": "hello",
+        "raw": [
+          "data: hello"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "lf-only",
+    "bytes_hex": "646174613a20610a646174613a20620a0a6576656e743a20650a646174613a20630a0a",
+    "splits": [
+      6,
+      9,
+      18,
+      23
+    ],
+    "expected": [
+      {
+        "event": null,
+        "data": "a\nb",
+        "raw": [
+          "data: a",
+          "data: b"
+        ]
+      },
+      {
+        "event": "e",
+        "data": "c",
+        "raw": [
+          "event: e",
+          "data: c"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "cr-only",
+    "bytes_hex": "646174613a20780d646174613a20790d0d",
+    "splits": [
+      10,
+      14
+    ],
+    "expected": [
+      {
+        "event": null,
+        "data": "x\ny",
+        "raw": [
+          "data: x",
+          "data: y"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "lone-cr-at-chunk-end",
+    "bytes_hex": "646174613a20610d646174613a20620d646174613a20630d0d",
+    "splits": [
+      6,
+      7,
+      11,
+      18,
+      22
+    ],
+    "expected": [
+      {
+        "event": null,
+        "data": "a\nb\nc",
+        "raw": [
+          "data: a",
+          "data: b",
+          "data: c"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "comments",
+    "bytes_hex": "3a2068690a646174613a20610a0a3a206279650a0a",
+    "splits": [
+      4,
+      10,
+      14
+    ],
+    "expected": [
+      {
+        "event": null,
+        "data": "a",
+        "raw": [
+          ": hi",
+          "data: a"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "comment-only-block",
+    "bytes_hex": "3a206f6e6c790a3a206d6f72650a0a646174613a207265616c0a0a",
+    "splits": [
+      0,
+      16
+    ],
+    "expected": [
+      {
+        "event": null,
+        "data": "real",
+        "raw": [
+          ": only",
+          ": more",
+          "data: real"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "multi-line-data",
+    "bytes_hex": "646174613a206f6e650a646174613a2074776f0a646174613a2074687265650a0a",
+    "splits": [
+      1,
+      15,
+      27
+    ],
+    "expected": [
+      {
+        "event": null,
+        "data": "one\ntwo\nthree",
+        "raw": [
+          "data: one",
+          "data: two",
+          "data: three"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "missing-final-blank",
+    "bytes_hex": "6576656e743a206c6173740a646174613a207461696c",
+    "splits": [
+      0,
+      13
+    ],
+    "expected_anthropic": [],
+    "expected_openai": [
+      {
+        "event": "last",
+        "data": "tail",
+        "raw": [
+          "event: last",
+          "data: tail"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "utf8-split",
+    "bytes_hex": "646174613a2068c3a96c6c6f2077c3b6726c6420e29c930a0a",
+    "splits": [
+      1,
+      4,
+      6,
+      13,
+      19
+    ],
+    "expected": [
+      {
+        "event": null,
+        "data": "héllo wörld ✓",
+        "raw": [
+          "data: héllo wörld ✓"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "colon-in-data",
+    "bytes_hex": "646174613a20613a623a630a0a",
+    "splits": [
+      0,
+      2
+    ],
+    "expected": [
+      {
+        "event": null,
+        "data": "a:b:c",
+        "raw": [
+          "data: a:b:c"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "no-space-after-colon",
+    "bytes_hex": "646174613a76616c75650a0a",
+    "splits": [
+      5,
+      10
+    ],
+    "expected": [
+      {
+        "event": null,
+        "data": "value",
+        "raw": [
+          "data:value"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "double-space",
+    "bytes_hex": "646174613a202074776f0a0a",
+    "splits": [
+      9
+    ],
+    "expected": [
+      {
+        "event": null,
+        "data": " two",
+        "raw": [
+          "data:  two"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "done-marker",
+    "bytes_hex": "646174613a205b444f4e455d0a0a",
+    "splits": [
+      4
+    ],
+    "expected": [
+      {
+        "event": null,
+        "data": "[DONE]",
+        "raw": [
+          "data: [DONE]"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "event-and-data",
+    "bytes_hex": "6576656e743a2070696e670a646174613a20706f6e670a0a",
+    "splits": [
+      0,
+      10
+    ],
+    "expected": [
+      {
+        "event": "ping",
+        "data": "pong",
+        "raw": [
+          "event: ping",
+          "data: pong"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "unknown-field",
+    "bytes_hex": "69643a2034320a72657472793a203130300a646174613a20780a0a",
+    "splits": [
+      1,
+      15
+    ],
+    "expected": [
+      {
+        "event": null,
+        "data": "x",
+        "raw": [
+          "id: 42",
+          "retry: 100",
+          "data: x"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "empty-event-line",
+    "bytes_hex": "6576656e743a0a646174613a20780a0a",
+    "splits": [
+      9
+    ],
+    "expected": [
+      {
+        "event": "",
+        "data": "x",
+        "raw": [
+          "event:",
+          "data: x"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "leading-blank-lines",
+    "bytes_hex": "0a0a0a646174613a20780a0a",
+    "splits": [
+      2,
+      7
+    ],
+    "expected": [
+      {
+        "event": null,
+        "data": "x",
+        "raw": [
+          "data: x"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "trailing-cr",
+    "bytes_hex": "646174613a20780d0a0d0a",
+    "splits": [
+      2,
+      3,
+      8
+    ],
+    "expected": [
+      {
+        "event": null,
+        "data": "x",
+        "raw": [
+          "data: x"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "no-final-newline",
+    "bytes_hex": "646174613a207061727469616c",
+    "splits": [
+      11
+    ],
+    "expected_anthropic": [],
+    "expected_openai": [
+      {
+        "event": null,
+        "data": "partial",
+        "raw": [
+          "data: partial"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "empty-stream",
+    "bytes_hex": "",
+    "splits": [],
+    "expected": []
+  },
+  {
+    "name": "blank-stream",
+    "bytes_hex": "0a0a0a",
+    "splits": [
+      1
+    ],
+    "expected": []
+  },
+  {
+    "name": "utf8-char-across-chunk",
+    "bytes_hex": "646174613a2061e29c93620a0a",
+    "splits": [],
+    "expected": [
+      {
+        "event": null,
+        "data": "a✓b",
+        "raw": [
+          "data: a✓b"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "raw-cr-in-line",
+    "bytes_hex": "646174613a20610d6d69640a0a",
+    "splits": [
+      2,
+      3,
+      3
+    ],
+    "expected": [
+      {
+        "event": null,
+        "data": "a",
+        "raw": [
+          "data: a",
+          "mid"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "multi-events",
+    "bytes_hex": "6576656e743a20610a646174613a20310a0a646174613a20320a0a",
+    "splits": [
+      2,
+      17,
+      18
+    ],
+    "expected": [
+      {
+        "event": "a",
+        "data": "1",
+        "raw": [
+          "event: a",
+          "data: 1"
+        ]
+      },
+      {
+        "event": null,
+        "data": "2",
+        "raw": [
+          "data: 2"
+        ]
+      }
+    ]
+  }
+]

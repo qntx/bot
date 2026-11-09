@@ -1,4 +1,8 @@
 //! `ovo-ai` is the Rust port of `pi-ai`, the unified multi-provider LLM API
+#![allow(
+    unused_crate_dependencies,
+    reason = "wiremock is a dev-dep used only by integration tests"
+)]
 //! used by the ovo agent harness.
 //!
 //! [`json`] is the JSON layer every wire format (session files, RPC records,

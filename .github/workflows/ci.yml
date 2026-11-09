@@ -18,7 +18,10 @@ jobs:
     uses: qntx/workflows/.github/workflows/ci-bun.yml@v2
     permissions:
       contents: read
-    # bun run lint → vp check + taplo + version lockstep
+    with:
+      # bun run lint → vp check + taplo + version lockstep +
+      # scripts/check-layers.ts (cargo tree on ovo-ai --no-default-features)
+      rust: true
     # bun run typecheck / build / test → vp run -r across the workspace
 
   rust:
