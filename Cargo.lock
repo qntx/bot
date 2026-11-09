@@ -2604,6 +2604,7 @@ dependencies = [
  "referencing",
  "regex",
  "reqwest",
+ "rustix",
  "ryu-js",
  "secrecy",
  "serde",

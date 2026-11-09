@@ -52,12 +52,31 @@ impl crate::auth::config_value::CommandRunner for ProcessCommandRunner {
         let command = command.to_owned();
         Box::pin(async move {
             let args = args_prefix.iter().cloned().chain([command]);
+            let mut cmd = tokio::process::Command::new(&shell);
+            cmd.args(args).kill_on_drop(true);
+            // Run the shell in its own process group so a timeout
+            // kills grandchildren (unix only).
+            #[cfg(unix)]
+            cmd.process_group(0);
+            let Ok(child) = cmd.spawn() else {
+                return None;
+            };
+            // `process_group(0)` made the child its own group
+            // leader — the pid doubles as the pgid for the kill.
+            #[cfg(unix)]
+            let pgid = child
+                .id()
+                .and_then(|id| rustix::process::RawPid::try_from(id).ok())
+                .and_then(rustix::process::Pid::from_raw);
             let output = tokio::time::timeout(
                 std::time::Duration::from_millis(timeout_ms),
-                tokio::process::Command::new(&shell).args(args).output(),
+                child.wait_with_output(),
             )
             .await;
             let Ok(Ok(output)) = output else {
+                // Timeout — SIGKILL the group so grandchildren die too.
+                #[cfg(unix)]
+                kill_group(pgid);
                 return None;
             };
             if !output.status.success() {
@@ -66,6 +85,15 @@ impl crate::auth::config_value::CommandRunner for ProcessCommandRunner {
             let value = String::from_utf8_lossy(&output.stdout).trim().to_owned();
             if value.is_empty() { None } else { Some(value) }
         })
+    }
+}
+
+/// `kill_process_group(SIGKILL)` on the shell's own process group —
+/// timeout cleanup for grandchildren (unix only).
+#[cfg(all(unix, feature = "host"))]
+fn kill_group(pgid: Option<rustix::process::Pid>) {
+    if let Some(pgid) = pgid {
+        rustix::process::kill_process_group(pgid, rustix::process::Signal::KILL).ok();
     }
 }
 

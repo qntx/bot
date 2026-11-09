@@ -337,3 +337,34 @@ async fn runtime_credentials_overlay() {
         Some(String::from("stored"))
     );
 }
+
+/// C4 — a timed-out `!command` kills its whole process group, not
+/// just the shell.
+#[cfg(all(unix, feature = "host"))]
+#[tokio::test]
+async fn command_timeout_kills_the_process_group() {
+    use ovo_ai::auth::config_value::CommandRunner;
+    use ovo_ai::auth::resolve::ProcessCommandRunner;
+    let tmp = std::env::temp_dir().join(format!("ovo-c4-{}", std::process::id()));
+    let runner = ProcessCommandRunner {
+        timeout_ms: 300,
+        ..ProcessCommandRunner::default()
+    };
+    let command = format!("sleep 30 & echo $! > {}; wait", tmp.display());
+    let start = std::time::Instant::now();
+    let result = runner.run(&command).await;
+    assert!(result.is_none(), "timeout must return None");
+    assert!(start.elapsed() < std::time::Duration::from_secs(2));
+    let pid = std::fs::read_to_string(&tmp)
+        .unwrap_or_else(|e| panic!("tmpfile: {e}"))
+        .trim()
+        .to_owned();
+    std::fs::remove_file(&tmp).ok();
+    // The grandchild must be gone — `kill -0` fails on a dead pid.
+    tokio::time::sleep(std::time::Duration::from_millis(200)).await;
+    let status = std::process::Command::new("kill")
+        .args(["-0", &pid])
+        .status()
+        .unwrap_or_else(|e| panic!("kill -0: {e}"));
+    assert!(!status.success(), "grandchild {pid} must be dead");
+}
