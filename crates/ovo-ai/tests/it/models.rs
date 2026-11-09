@@ -138,13 +138,11 @@ impl Provider for TestProvider {
                 .collect()
         })
     }
-    fn refresh_models(
-        &self,
-        context: RefreshModelsContext,
-    ) -> BoxFuture<'_, Result<(), ModelsError>> {
-        match &self.refresh {
-            Some(f) => f(context),
-            None => Box::pin(async { Ok(()) }),
+    fn refresh_models(&self) -> Option<&dyn ovo_ai::provider::RefreshModels> {
+        if self.refresh.is_some() {
+            Some(self)
+        } else {
+            None
         }
     }
     fn stream(
@@ -168,6 +166,15 @@ impl Provider for TestProvider {
         options: SimpleStreamOptions,
     ) -> AssistantStream {
         self.stream(model, context, options.base)
+    }
+}
+
+impl ovo_ai::provider::RefreshModels for TestProvider {
+    fn refresh(&self, context: RefreshModelsContext) -> BoxFuture<'_, Result<(), ModelsError>> {
+        match &self.refresh {
+            Some(f) => f(context),
+            None => Box::pin(async { Ok(()) }),
+        }
     }
 }
 
@@ -439,7 +446,8 @@ async fn refresh_updates_every_configured_dynamic_provider_and_reports_failures(
                             vec![test_model("dyn", "after")];
                     })),
                 })
-                .await;
+                .await
+                .ok();
                 Ok(())
             })
         }));
@@ -549,7 +557,8 @@ async fn persists_dynamic_catalogs_and_restores_them_without_network_access() {
                 }),
                 update: None,
             })
-            .await;
+            .await
+            .ok();
             Ok(())
         })
     }));
@@ -1052,7 +1061,8 @@ async fn restores_cached_models_before_waiting_for_network_auth() {
                             .unwrap_or_else(std::sync::PoisonError::into_inner) = cached;
                     })),
                 })
-                .await;
+                .await
+                .ok();
             }
             Ok(())
         })
@@ -1131,7 +1141,8 @@ async fn lets_providers_choose_persistent_deletion_and_ephemeral_publication() {
                         String::from("deleted");
                 })),
             })
-            .await;
+            .await
+            .ok();
             let state4 = Arc::clone(&shared_state);
             (context.publish)(ModelsPublication {
                 persist: PersistAction::Unchanged,
@@ -1142,7 +1153,8 @@ async fn lets_providers_choose_persistent_deletion_and_ephemeral_publication() {
                         String::from("ephemeral");
                 })),
             })
-            .await;
+            .await
+            .ok();
             Ok(())
         })
     }));
@@ -1226,7 +1238,8 @@ async fn rejects_late_publication_from_a_superseded_provider() {
                             .unwrap_or_else(std::sync::PoisonError::into_inner) = value;
                     })),
                 })
-                .await;
+                .await
+                .ok();
                 Ok(())
             })
         }));
@@ -2200,4 +2213,347 @@ async fn resolver_honors_overrides_signal() {
         .unwrap_or_else(|_| panic!("get_auth hung after signal cancel"))
         .unwrap_or_else(|e| panic!("get_auth: {e}"));
     assert!(resolution.is_none());
+}
+
+/// B2 — providers refresh concurrently: two 400ms refreshes finish
+/// in one 400ms window, not two.
+#[tokio::test(start_paused = true)]
+async fn refresh_runs_providers_concurrently() {
+    let models = models();
+    for id in ["slow-a", "slow-b"] {
+        let mut provider = TestProvider::new(id);
+        provider.refresh = Some(Arc::new(|context| {
+            Box::pin(async move {
+                if context.allow_network {
+                    tokio::time::sleep(std::time::Duration::from_millis(400)).await;
+                }
+                Ok(())
+            })
+        }));
+        models.set_provider(Arc::new(provider));
+    }
+    let start = tokio::time::Instant::now();
+    let result = models.refresh(ModelsRefreshOptions::default()).await;
+    let elapsed = start.elapsed();
+    assert!(result.errors.is_empty(), "{:?}", result.errors);
+    assert_eq!(
+        elapsed,
+        std::time::Duration::from_millis(400),
+        "{elapsed:?}"
+    );
+}
+
+/// B2 — a static provider (no `refreshModels` hook) never touches
+/// the models store.
+#[tokio::test]
+async fn static_provider_skips_store_read() {
+    struct Counting {
+        inner: InMemoryModelsStore,
+        reads: Arc<Mutex<usize>>,
+    }
+    impl ModelsStore for Counting {
+        fn read<'a>(
+            &'a self,
+            provider_id: &'a str,
+        ) -> BoxFuture<'a, Result<Option<ModelsStoreEntry>, ModelsError>> {
+            Box::pin(async move {
+                *self
+                    .reads
+                    .lock()
+                    .unwrap_or_else(std::sync::PoisonError::into_inner) += 1;
+                self.inner.read(provider_id).await
+            })
+        }
+        fn write<'a>(
+            &'a self,
+            provider_id: &'a str,
+            entry: &'a ModelsStoreEntry,
+        ) -> BoxFuture<'a, Result<(), ModelsError>> {
+            Box::pin(self.inner.write(provider_id, entry))
+        }
+        fn delete<'a>(&'a self, provider_id: &'a str) -> BoxFuture<'a, Result<(), ModelsError>> {
+            Box::pin(self.inner.delete(provider_id))
+        }
+    }
+    let reads = Arc::new(Mutex::new(0usize));
+    let store = Arc::new(Counting {
+        inner: InMemoryModelsStore::new(),
+        reads: Arc::clone(&reads),
+    });
+    let models = create_models(CreateModelsOptions {
+        models_store: Some(store),
+        ..CreateModelsOptions::default()
+    });
+    // `TestProvider::new` leaves `refresh` unset — static.
+    models.set_provider(Arc::new(TestProvider::new("static-only")));
+    let result = models.refresh(ModelsRefreshOptions::default()).await;
+    assert!(result.errors.is_empty());
+    assert_eq!(
+        *reads
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner),
+        0,
+        "static provider must not read the store"
+    );
+}
+
+/// B2 — `getAvailable` checks providers concurrently and keeps
+/// order.
+#[tokio::test(start_paused = true)]
+async fn get_available_checks_providers_concurrently() {
+    let models = models();
+    for id in ["one", "two"] {
+        let mut provider = TestProvider::new(id);
+        provider.auth = ProviderAuth {
+            api_key: Some(ApiKeyAuth::custom(
+                "Slow",
+                Arc::new(|_| {
+                    Box::pin(async {
+                        tokio::time::sleep(std::time::Duration::from_millis(400)).await;
+                        Ok(Some(AuthResult {
+                            auth: ModelAuth::default(),
+                            env: None,
+                            source: None,
+                        }))
+                    })
+                }),
+            )),
+            oauth: None,
+        };
+        models.set_provider(Arc::new(provider));
+    }
+    let start = tokio::time::Instant::now();
+    let available = models
+        .get_available(None)
+        .await
+        .unwrap_or_else(|e| panic!("get_available: {e}"));
+    assert_eq!(start.elapsed(), std::time::Duration::from_millis(400));
+    let ids: Vec<&str> = available.iter().map(|m| m.provider.as_str()).collect();
+    assert_eq!(ids, ["one", "two"]);
+}
+
+/// B3 — store read/write/delete failures propagate with the store's
+/// `model_source` code.
+#[tokio::test]
+async fn store_failures_surface_in_refresh_errors() {
+    for action in ["read", "write", "delete"] {
+        let store = {
+            struct Failing {
+                inner: InMemoryModelsStore,
+                fail: &'static str,
+            }
+            impl ModelsStore for Failing {
+                fn read<'a>(
+                    &'a self,
+                    provider_id: &'a str,
+                ) -> BoxFuture<'a, Result<Option<ModelsStoreEntry>, ModelsError>> {
+                    Box::pin(async move {
+                        if self.fail == "read" {
+                            return Err(ModelsError::new(
+                                ModelsErrorCode::ModelSource,
+                                format!("{} failed", self.fail),
+                            ));
+                        }
+                        self.inner.read(provider_id).await
+                    })
+                }
+                fn write<'a>(
+                    &'a self,
+                    provider_id: &'a str,
+                    entry: &'a ModelsStoreEntry,
+                ) -> BoxFuture<'a, Result<(), ModelsError>> {
+                    Box::pin(async move {
+                        if self.fail == "write" {
+                            return Err(ModelsError::new(
+                                ModelsErrorCode::ModelSource,
+                                format!("{} failed", self.fail),
+                            ));
+                        }
+                        self.inner.write(provider_id, entry).await
+                    })
+                }
+                fn delete<'a>(
+                    &'a self,
+                    provider_id: &'a str,
+                ) -> BoxFuture<'a, Result<(), ModelsError>> {
+                    Box::pin(async move {
+                        if self.fail == "delete" {
+                            return Err(ModelsError::new(
+                                ModelsErrorCode::ModelSource,
+                                format!("{} failed", self.fail),
+                            ));
+                        }
+                        self.inner.delete(provider_id).await
+                    })
+                }
+            }
+            Arc::new(Failing {
+                inner: InMemoryModelsStore::new(),
+                fail: action,
+            })
+        };
+        let models = create_models(CreateModelsOptions {
+            models_store: Some(store),
+            ..CreateModelsOptions::default()
+        });
+        let mut provider = TestProvider::new("failer");
+        let fail_action: &'static str = action;
+        provider.refresh = Some(Arc::new(move |context| {
+            Box::pin(async move {
+                if !context.allow_network {
+                    return Ok(());
+                }
+                let persist = match fail_action {
+                    "write" => PersistAction::Write(ModelsStoreEntry {
+                        models: vec![],
+                        checked_at: 0,
+                    }),
+                    "delete" => PersistAction::Delete,
+                    _ => PersistAction::Unchanged,
+                };
+                (context.publish)(ModelsPublication {
+                    persist,
+                    update: None,
+                })
+                .await?;
+                Ok(())
+            })
+        }));
+        models.set_provider(Arc::new(provider));
+        let result = models.refresh(ModelsRefreshOptions::default()).await;
+        let error = result
+            .errors
+            .get("failer")
+            .unwrap_or_else(|| panic!("{action}: no error recorded"));
+        assert_eq!(
+            error.code,
+            ModelsErrorCode::ModelSource,
+            "{action}: {error:?}"
+        );
+    }
+}
+
+/// B3 — a credential-store read failure surfaces `Auth` from
+/// `check_auth`.
+#[tokio::test]
+async fn credential_read_failure_surfaces_in_check_auth() {
+    struct FailingStore;
+    impl CredentialStore for FailingStore {
+        fn read<'a>(
+            &'a self,
+            _provider_id: &'a str,
+        ) -> Pin<Box<dyn Future<Output = Result<Option<Credential>, AuthError>> + Send + 'a>>
+        {
+            Box::pin(async { Err(AuthError::Io(std::io::Error::other("boom"))) })
+        }
+        fn list(
+            &self,
+        ) -> Pin<Box<dyn Future<Output = Result<Vec<CredentialInfo>, AuthError>> + Send + '_>>
+        {
+            Box::pin(async { Ok(Vec::new()) })
+        }
+        fn modify<'a>(
+            &'a self,
+            _provider_id: &'a str,
+            _f: ovo_ai::auth::store::ModifyFn<'a>,
+        ) -> Pin<Box<dyn Future<Output = Result<Option<Credential>, AuthError>> + Send + 'a>>
+        {
+            Box::pin(async { Ok(None) })
+        }
+        fn delete<'a>(
+            &'a self,
+            _provider_id: &'a str,
+        ) -> Pin<Box<dyn Future<Output = Result<(), AuthError>> + Send + 'a>> {
+            Box::pin(async { Ok(()) })
+        }
+    }
+    let models = create_models(CreateModelsOptions {
+        credentials: Some(Arc::new(FailingStore)),
+        ..CreateModelsOptions::default()
+    });
+    models.set_provider(Arc::new(TestProvider::new("p1")));
+    let error = models
+        .check_auth("p1")
+        .await
+        .expect_err("credential read failure must surface");
+    assert_eq!(error.code, ModelsErrorCode::Auth);
+    assert!(
+        error
+            .to_string()
+            .contains("Credential store read failed for p1"),
+        "{error}"
+    );
+}
+
+/// Cancelling the caller mid-refresh resolves `aborted`, records no
+/// provider error, and leaves the controller map clean so a later
+/// refresh runs and publishes normally.
+#[tokio::test]
+async fn cancelled_refresh_leaves_no_controller_or_errors() {
+    let gate = Arc::new(tokio::sync::Notify::new());
+    let blocked = Arc::new(std::sync::atomic::AtomicBool::new(true));
+    let published = Arc::new(Mutex::new(0usize));
+    let models = models();
+    let mut provider = TestProvider::new("cancellable");
+    {
+        let gate = Arc::clone(&gate);
+        let blocked = Arc::clone(&blocked);
+        let published = Arc::clone(&published);
+        provider.refresh = Some(Arc::new(move |context| {
+            let gate = Arc::clone(&gate);
+            let blocked = Arc::clone(&blocked);
+            let published = Arc::clone(&published);
+            Box::pin(async move {
+                if context.allow_network && blocked.swap(false, std::sync::atomic::Ordering::SeqCst)
+                {
+                    gate.notified().await;
+                }
+                (context.publish)(ModelsPublication {
+                    persist: PersistAction::Write(ModelsStoreEntry {
+                        models: vec![],
+                        checked_at: 0,
+                    }),
+                    update: Some(Box::new(move || {
+                        *published
+                            .lock()
+                            .unwrap_or_else(std::sync::PoisonError::into_inner) += 1;
+                    })),
+                })
+                .await?;
+                Ok(())
+            })
+        }));
+    }
+    models.set_provider(Arc::new(provider));
+    let caller = tokio_util::sync::CancellationToken::new();
+    let refresh = {
+        let models = Arc::clone(&models);
+        let caller = caller.clone();
+        tokio::spawn(async move {
+            models
+                .refresh(ModelsRefreshOptions {
+                    signal: Some(caller),
+                    ..ModelsRefreshOptions::default()
+                })
+                .await
+        })
+    };
+    tokio::time::sleep(std::time::Duration::from_millis(50)).await;
+    caller.cancel();
+    let result = refresh.await.unwrap_or_else(|e| panic!("refresh: {e}"));
+    assert!(result.aborted, "{result:?}");
+    assert!(result.errors.is_empty(), "{:?}", result.errors);
+    // A following refresh runs and publishes normally — a leaked
+    // controller would corrupt its supersede bookkeeping.
+    let second = models.refresh(ModelsRefreshOptions::default()).await;
+    assert!(!second.aborted);
+    assert!(second.errors.is_empty(), "{:?}", second.errors);
+    assert!(
+        *published
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
+            > 0,
+        "second refresh must publish"
+    );
+    let _ = gate;
 }
