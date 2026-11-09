@@ -3,9 +3,11 @@
 //! `AnthropicMessagesApi`; events and the final message must equal what the
 //! published adapter produced.
 
+use std::sync::Arc;
+
 use futures::StreamExt;
 use ovo_ai::api::anthropic_messages::AnthropicMessagesApi;
-use ovo_ai::http::client::HttpClientConfig;
+use ovo_ai::http::client::{HttpClient, HttpClientConfig};
 use ovo_ai::options::StreamOptions;
 use ovo_ai::provider::ChatApi;
 use ovo_ai::stream::AssistantMessageEvent;
@@ -77,10 +79,7 @@ async fn anthropic_stream_replays_upstream_events() {
         let mut model: Model = serde_json::from_value(vectors["model"].clone())
             .unwrap_or_else(|e| panic!("model: {e}"));
         model.base_url = server.uri();
-        let api = AnthropicMessagesApi::new(HttpClientConfig {
-            max_retries: 0,
-            ..HttpClientConfig::default()
-        });
+        let api = AnthropicMessagesApi::new(Arc::new(HttpClient::new(HttpClientConfig::default())));
         let mut options = StreamOptions::default();
         options.api_key = Some(String::from("sk-ant-api03-test"));
         options.max_retries = Some(0);

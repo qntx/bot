@@ -10,6 +10,7 @@
 //! `onProviderStreamEvent`.
 
 use std::collections::HashMap;
+use std::sync::Arc;
 
 use bytes::Bytes;
 use futures::StreamExt;
@@ -19,7 +20,7 @@ use tokio_util::sync::CancellationToken;
 use super::convert::from_claude_code_name;
 use super::{AnthropicOptions, build_request, is_oauth_token};
 use crate::cost::calculate_cost;
-use crate::http::client::{HttpClient, HttpClientConfig, HttpError, SendError};
+use crate::http::client::{HttpClient, HttpError, RequestPolicy, SendError};
 use crate::http::retry::jitter;
 use crate::http::sse::{EndOfStream, SseEvent, SseEventStream};
 use crate::json::repair::parse_json_with_repair;
@@ -49,16 +50,16 @@ const ANTHROPIC_MESSAGE_EVENTS: [&str; 6] = [
 ];
 
 /// The `anthropic-messages` chat API.
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug)]
 pub struct AnthropicMessagesApi {
-    config: HttpClientConfig,
+    http: Arc<HttpClient>,
 }
 
 impl AnthropicMessagesApi {
-    /// An adapter sending requests with `config` (proxy env, defaults).
+    /// An adapter sending requests through the shared `http` pool.
     #[must_use]
-    pub const fn new(config: HttpClientConfig) -> Self {
-        Self { config }
+    pub const fn new(http: Arc<HttpClient>) -> Self {
+        Self { http }
     }
 }
 
@@ -71,7 +72,7 @@ impl ChatApi for AnthropicMessagesApi {
     ) -> AssistantStream {
         let base = initial_message(model);
         let model = model.clone();
-        let http = HttpClient::new(request_config(&self.config, &options));
+        let http = Arc::clone(&self.http);
         AssistantStream::spawn(base, STREAM_CAPACITY, move |mut sender| async move {
             let signal = options.signal.clone().unwrap_or_default();
             let outcome = run(&http, &model, &context, &options, &signal, &mut sender).await;
@@ -103,20 +104,17 @@ fn initial_message(model: &Model) -> AssistantMessage {
     }
 }
 
-/// The per-request client config: request retry options override the
-/// adapter defaults like upstream's `retryProviderRequest` options.
-fn request_config(defaults: &HttpClientConfig, options: &StreamOptions) -> HttpClientConfig {
-    let mut config = defaults.clone();
-    if let Some(max_retries) = options.max_retries {
-        config.max_retries = max_retries;
+/// The request policy from upstream's `timeoutMs`, `maxRetries` and
+/// `maxRetryDelayMs` options; absent ones keep the SDK defaults.
+fn request_policy(options: &StreamOptions) -> RequestPolicy {
+    let defaults = RequestPolicy::default();
+    RequestPolicy {
+        timeout: options
+            .timeout_ms
+            .map_or(defaults.timeout, std::time::Duration::from_millis),
+        max_retries: options.max_retries.unwrap_or(defaults.max_retries),
+        max_retry_delay_ms: options.max_retry_delay_ms,
     }
-    if options.max_retry_delay_ms.is_some() {
-        config.max_retry_delay_ms = options.max_retry_delay_ms;
-    }
-    if let Some(timeout_ms) = options.timeout_ms {
-        config.timeout = std::time::Duration::from_millis(timeout_ms);
-    }
-    config
 }
 
 /// Emit the terminal event for `outcome` (upstream's `done` or the `catch`
@@ -169,6 +167,7 @@ async fn run(
             &request.url,
             &Bytes::from(request.body),
             &header_pairs,
+            &request_policy(options),
             signal,
             &jitter,
         )

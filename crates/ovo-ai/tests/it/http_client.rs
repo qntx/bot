@@ -4,18 +4,21 @@
 //! parity: AI-HTTP-RETRY — exercises `provider_retry_decision` inside
 //! `post_json` over a real socket (429+retry-after, give-up, cap).
 
-use ovo_ai::http::client::{HttpClient, HttpClientConfig, SendError};
+use ovo_ai::http::client::{HttpClient, HttpClientConfig, RequestPolicy, SendError};
 use tokio_util::sync::CancellationToken;
 use wiremock::matchers::{body_bytes, header, method, path};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 
-const fn client(max_retries: u32, cap: Option<f64>) -> HttpClient {
-    HttpClient::new(HttpClientConfig {
+fn client() -> HttpClient {
+    HttpClient::new(HttpClientConfig::default())
+}
+
+const fn policy(max_retries: u32, cap: Option<f64>) -> RequestPolicy {
+    RequestPolicy {
         timeout: std::time::Duration::from_secs(5),
-        env: None,
         max_retries,
         max_retry_delay_ms: cap,
-    })
+    }
 }
 
 fn json_body() -> bytes::Bytes {
@@ -36,11 +39,12 @@ async fn posts_headers_and_exact_body() {
         .expect(1)
         .mount(&server)
         .await;
-    let response = client(0, None)
+    let response = client()
         .post_json(
             &format!("{}/v1", server.uri()),
             &json_body(),
             &[("x-auth", "k")],
+            &policy(0, None),
             &CancellationToken::new(),
             &|| 0.5,
         )
@@ -64,11 +68,12 @@ async fn retries_429_then_succeeds() {
         .expect(1)
         .mount(&server)
         .await;
-    let response = client(2, None)
+    let response = client()
         .post_json(
             &format!("{}/v1", server.uri()),
             &json_body(),
             &[],
+            &policy(2, None),
             &CancellationToken::new(),
             &|| 0.5,
         )
@@ -85,11 +90,12 @@ async fn gives_up_after_max_retries() {
         .expect(2)
         .mount(&server)
         .await;
-    let err = client(1, None)
+    let err = client()
         .post_json(
             &format!("{}/v1", server.uri()),
             &json_body(),
             &[],
+            &policy(1, None),
             &CancellationToken::new(),
             &|| 0.5,
         )
@@ -108,11 +114,12 @@ async fn cap_exceeded_is_provider_error() {
         .expect(1)
         .mount(&server)
         .await;
-    let err = client(2, Some(60_000.0))
+    let err = client()
         .post_json(
             &format!("{}/v1", server.uri()),
             &json_body(),
             &[],
+            &policy(2, Some(60_000.0)),
             &CancellationToken::new(),
             &|| 0.5,
         )
@@ -133,11 +140,12 @@ async fn cancellation_during_backoff_aborts() {
     let token = CancellationToken::new();
     let token2 = token.clone();
     let handle = tokio::spawn(async move {
-        client(5, Some(0.0))
+        client()
             .post_json(
                 &format!("{}/v1", server.uri()),
                 &json_body(),
                 &[],
+                &policy(5, Some(0.0)),
                 &token2,
                 &|| 0.5,
             )
@@ -164,11 +172,12 @@ async fn error_body_is_normalized() {
         .expect(1)
         .mount(&server)
         .await;
-    let err = client(0, None)
+    let err = client()
         .post_json(
             &format!("{}/v1", server.uri()),
             &json_body(),
             &[],
+            &policy(0, None),
             &CancellationToken::new(),
             &|| 0.5,
         )
