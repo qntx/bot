@@ -423,11 +423,10 @@ async fn does_not_share_cache_across_sessions_or_requests_without_session_id() {
         message_step(vec![faux_text("second")]),
         message_step(vec![faux_text("third")]),
     ]);
-    let short = |session: &str| {
-        let mut options = StreamOptions::default();
-        options.session_id = Some(String::from(session));
-        options.cache_retention = Some(CacheRetention::Short);
-        options
+    let short = |session: &str| StreamOptions {
+        session_id: Some(String::from(session)),
+        cache_retention: Some(CacheRetention::Short),
+        ..StreamOptions::default()
     };
     let mut messages = vec![json!({"role": "user", "content": "hello", "timestamp": 0})];
     let first = models
@@ -463,11 +462,10 @@ async fn simulates_prompt_caching_per_session_id() {
         message_step(vec![faux_text("first")]),
         message_step(vec![faux_text("second")]),
     ]);
-    let options = |()| {
-        let mut options = StreamOptions::default();
-        options.session_id = Some(String::from("session-1"));
-        options.cache_retention = Some(CacheRetention::Short);
-        options
+    let options = |()| StreamOptions {
+        session_id: Some(String::from("session-1")),
+        cache_retention: Some(CacheRetention::Short),
+        ..StreamOptions::default()
     };
     let mut messages = vec![json!({"role": "user", "content": "hello", "timestamp": 0})];
     let first = models
@@ -509,11 +507,10 @@ async fn counts_cached_characters_up_to_the_first_difference_in_the_joined_promp
         message_step(vec![faux_text("b")]),
         message_step(vec![faux_text("c")]),
     ]);
-    let options = |()| {
-        let mut options = StreamOptions::default();
-        options.session_id = Some(String::from("session-1"));
-        options.cache_retention = Some(CacheRetention::Short);
-        options
+    let options = |()| StreamOptions {
+        session_id: Some(String::from("session-1")),
+        cache_retention: Some(CacheRetention::Short),
+        ..StreamOptions::default()
     };
     let user = |content: &str| json!({"role": "user", "content": content, "timestamp": 1});
     // Prompt texts: "user:hello world" (16 characters), then 16 + 2 +
@@ -559,11 +556,10 @@ async fn does_not_simulate_caching_when_cache_retention_is_none() {
         message_step(vec![faux_text("first")]),
         message_step(vec![faux_text("second")]),
     ]);
-    let options = |()| {
-        let mut options = StreamOptions::default();
-        options.session_id = Some(String::from("session-1"));
-        options.cache_retention = Some(CacheRetention::None);
-        options
+    let options = |()| StreamOptions {
+        session_id: Some(String::from("session-1")),
+        cache_retention: Some(CacheRetention::None),
+        ..StreamOptions::default()
     };
     let mut messages = vec![json!({"role": "user", "content": "hello", "timestamp": 0})];
     let _ = models
@@ -814,8 +810,10 @@ async fn supports_aborting_before_the_first_chunk() {
     )])]);
     let signal = CancellationToken::new();
     signal.cancel();
-    let mut options = StreamOptions::default();
-    options.signal = Some(signal);
+    let options = StreamOptions {
+        signal: Some(signal),
+        ..StreamOptions::default()
+    };
     let stream = models.stream(faux.get_model(), &user_context("hi"), Some(options));
     let events = collect_events(stream).await;
     assert_eq!(events.len(), 1, "{events:?}");
@@ -839,8 +837,10 @@ async fn supports_aborting_mid_text_stream_when_paced() {
         "abcdefghijklmnopqrstuvwxyz",
     )])]);
     let signal = CancellationToken::new();
-    let mut options = StreamOptions::default();
-    options.signal = Some(signal.clone());
+    let options = StreamOptions {
+        signal: Some(signal.clone()),
+        ..StreamOptions::default()
+    };
     let mut stream = models.stream(faux.get_model(), &user_context("hi"), Some(options));
     let mut types = Vec::new();
     let mut text_delta_count = 0;
@@ -872,8 +872,10 @@ async fn supports_aborting_mid_thinking_stream_when_paced() {
         faux_assistant_message(vec![faux_thinking("abcdefghijklmnopqrstuvwxyz")]),
     ))]);
     let signal = CancellationToken::new();
-    let mut options = StreamOptions::default();
-    options.signal = Some(signal.clone());
+    let options = StreamOptions {
+        signal: Some(signal.clone()),
+        ..StreamOptions::default()
+    };
     let mut stream = models.stream(faux.get_model(), &user_context("hi"), Some(options));
     let mut types = Vec::new();
     let mut thinking_delta_count = 0;
@@ -915,8 +917,10 @@ async fn supports_aborting_mid_toolcall_stream_when_paced() {
         ),
     ))]);
     let signal = CancellationToken::new();
-    let mut options = StreamOptions::default();
-    options.signal = Some(signal.clone());
+    let options = StreamOptions {
+        signal: Some(signal.clone()),
+        ..StreamOptions::default()
+    };
     let mut stream = models.stream(faux.get_model(), &user_context("hi"), Some(options));
     let mut types = Vec::new();
     let mut tool_call_delta_count = 0;

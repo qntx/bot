@@ -7,9 +7,8 @@ use serde::{Deserialize, Serialize};
 /// Base fields come from the upstream `Usage` literal; `cacheWrite1h` and
 /// `reasoning` are appended by adapters when the provider reports them
 /// (anthropic-messages.ts:723, :874) and serialize last.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[non_exhaustive]
 pub struct Usage {
     /// Input (non-cached) tokens.
     pub input: u64,
@@ -32,9 +31,8 @@ pub struct Usage {
 }
 
 /// Cost breakdown in USD for a usage record.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[non_exhaustive]
 pub struct UsageCost {
     /// Catalog-derived input cost.
     pub input: f64,

@@ -66,7 +66,7 @@ pub fn calculate_cost(model: &Model, usage: &mut Usage) -> UsageCost {
         total,
         total_from_provider: Some(false),
     };
-    usage.cost.clone()
+    usage.cost
 }
 
 /// The four rate fields shared by `ModelCost` and `ModelCostTier`.

@@ -2,9 +2,9 @@
 //! for the M1 provider scope. OAuth flows are M5; the stored-OAuth
 //! branch surfaces a `ModelsError` here.
 
-use Future;
+use std::future::Future;
+use std::pin::Pin;
 
-use crate::auth::config_value::CommandRunner;
 use crate::auth::env::{Env, env_get};
 use crate::auth::store::CredentialStore;
 use std::sync::Arc;
@@ -16,6 +16,11 @@ use crate::models_error::ModelsErrorCode;
 
 /// `ProcessCommandRunner` for `!command` values: `sh -c` on unix,
 /// `cmd /C` on Windows, 10 s timeout like upstream.
+///
+/// Only exists with the `host` feature — without it there is no
+/// default command runner and `!command` values resolve exactly as a
+/// failed command does.
+#[cfg(feature = "host")]
 #[derive(Clone, Debug)]
 pub struct ProcessCommandRunner {
     /// Shell program (`getShellConfig` is host-owned upstream; the
@@ -27,6 +32,7 @@ pub struct ProcessCommandRunner {
     pub timeout_ms: u64,
 }
 
+#[cfg(feature = "host")]
 impl Default for ProcessCommandRunner {
     fn default() -> Self {
         Self {
@@ -41,11 +47,9 @@ impl Default for ProcessCommandRunner {
     }
 }
 
-impl CommandRunner for ProcessCommandRunner {
-    fn run(
-        &self,
-        command: &str,
-    ) -> std::pin::Pin<Box<dyn Future<Output = Option<String>> + Send + '_>> {
+#[cfg(feature = "host")]
+impl crate::auth::config_value::CommandRunner for ProcessCommandRunner {
+    fn run(&self, command: &str) -> Pin<Box<dyn Future<Output = Option<String>> + Send + '_>> {
         let shell = self.shell.clone();
         let args_prefix = self.args_prefix.clone();
         let timeout_ms = self.timeout_ms;
@@ -124,10 +128,9 @@ pub fn resolve_api_key_env(
     env: &dyn Env,
 ) -> Option<AuthResult> {
     if let Some(key) = credential.and_then(|c| c.key.as_ref()) {
-        use secrecy::ExposeSecret;
         return Some(AuthResult {
             auth: ModelAuth {
-                api_key: Some(key.expose_secret().to_owned()),
+                api_key: Some(key.clone()),
                 ..ModelAuth::default()
             },
             env: credential.and_then(|c| c.env.clone()),
@@ -138,7 +141,7 @@ pub fn resolve_api_key_env(
         if let Some(value) = env_get(env, name) {
             return Some(AuthResult {
                 auth: ModelAuth {
-                    api_key: Some(value),
+                    api_key: Some(secrecy::SecretString::from(value)),
                     ..ModelAuth::default()
                 },
                 env: None,
@@ -153,7 +156,7 @@ pub fn resolve_api_key_env(
 #[derive(Clone, Debug, Default)]
 pub struct AuthResolutionOverrides {
     /// Explicit request-level key — wins over stored/ambient.
-    pub api_key: Option<String>,
+    pub api_key: Option<secrecy::SecretString>,
     /// Provider env overlay merged over `Env`.
     pub env: Option<serde_json::Map<String, serde_json::Value>>,
     /// `minOAuthValidityMs` (defaults to five minutes).
@@ -274,7 +277,7 @@ impl ApiKeyAuth {
 }
 
 /// The future `toAuth` returns.
-pub type OauthToAuthFuture = std::pin::Pin<Box<dyn std::future::Future<Output = ModelAuth> + Send>>;
+pub type OauthToAuthFuture = Pin<Box<dyn Future<Output = ModelAuth> + Send>>;
 
 /// `toAuth(credential)` — request auth from a valid credential.
 pub type OauthToAuth = Arc<dyn Fn(&OAuthCredential) -> OauthToAuthFuture + Send + Sync>;

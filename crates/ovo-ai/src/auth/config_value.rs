@@ -191,7 +191,9 @@ pub fn resolve_template(parts: &[TemplatePart], env: &dyn Env) -> Option<String>
 ///
 /// `None` on failure/empty (upstream `value || undefined`). Injected
 /// because the shell decision (`getShellConfig`) is host-owned; see
-/// [`crate::auth::resolve::ProcessCommandRunner`].
+/// `ProcessCommandRunner`. Without the `host` feature there is no
+/// default runner and `!command` values resolve exactly as a failed
+/// command does (`None`).
 pub trait CommandRunner: Send + Sync {
     /// Run `command` (the text after `!`), return trimmed stdout.
     fn run(&self, command: &str) -> Pin<Box<dyn Future<Output = Option<String>> + Send + '_>>;

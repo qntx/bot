@@ -9,6 +9,7 @@
 
 use std::collections::BTreeMap;
 
+use secrecy::ExposeSecret;
 use serde_json::{Map, Value, json};
 
 use crate::api::constrained_sampling::create_grammar_tool_input_properties;
@@ -106,7 +107,6 @@ impl ServiceTier {
 
 /// `OpenAIResponsesOptions`: the stream options plus Responses controls.
 #[derive(Clone, Default)]
-#[non_exhaustive]
 pub struct OpenAiResponsesOptions {
     /// The shared stream options.
     pub base: StreamOptions,
@@ -146,7 +146,11 @@ impl OpenAiResponsesOptions {
                 model,
                 context,
                 Some(options),
-                options.base.api_key.as_deref(),
+                options
+                    .base
+                    .api_key
+                    .as_ref()
+                    .map(ExposeSecret::expose_secret),
             ),
             reasoning_effort: options.reasoning.and_then(|level| {
                 crate::cost::clamp_thinking_level(model, level.into()).thinking()
@@ -492,8 +496,8 @@ fn is_chatgpt_sign_in(model: &Model, options: &StreamOptions) -> bool {
         && model.base_url == "https://api.openai.com/v1"
         && options
             .api_key
-            .as_deref()
-            .is_some_and(|key| !key.starts_with("sk-"))
+            .as_ref()
+            .is_some_and(|key| !key.expose_secret().starts_with("sk-"))
 }
 
 /// The session affinity headers `createClient` sets for `sessionId`.

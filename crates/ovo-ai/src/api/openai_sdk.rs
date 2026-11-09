@@ -47,7 +47,12 @@ pub fn tool_choice_value(choice: ToolChoice) -> Value {
 /// # Errors
 /// Returns upstream's message when neither is present.
 pub fn client_api_key(provider: &str, options: &StreamOptions) -> Result<String, String> {
-    if let Some(key) = options.api_key.as_deref().filter(|key| !key.is_empty()) {
+    if let Some(key) = options
+        .api_key
+        .as_ref()
+        .map(secrecy::ExposeSecret::expose_secret)
+        .filter(|key| !key.is_empty())
+    {
         return Ok(key.to_owned());
     }
     let has_header = |expected: &str| {

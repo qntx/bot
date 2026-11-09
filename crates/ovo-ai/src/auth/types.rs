@@ -7,18 +7,28 @@ use serde_json::{Map, Value};
 use crate::models_error::{ModelsError, ModelsErrorCode};
 
 /// `ModelAuth`: request auth for a single model request.
-#[expect(
-    clippy::derive_partial_eq_without_eq,
-    reason = "Map<String, Value> holds f64 — Eq is invalid"
-)]
-#[derive(Clone, Debug, Default, PartialEq)]
+#[derive(Clone, Default)]
 pub struct ModelAuth {
     /// `apiKey`.
-    pub api_key: Option<String>,
+    pub api_key: Option<SecretString>,
     /// `headers`.
     pub headers: Option<Map<String, Value>>,
     /// `baseUrl`.
     pub base_url: Option<String>,
+}
+
+impl std::fmt::Debug for ModelAuth {
+    /// `apiKey`/header values are secrets — print names only.
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ModelAuth")
+            .field("api_key", &self.api_key.as_ref().map(|_| "<redacted>"))
+            .field(
+                "headers",
+                &self.headers.as_ref().map(|h| h.keys().collect::<Vec<_>>()),
+            )
+            .field("base_url", &self.base_url)
+            .finish()
+    }
 }
 
 /// `ApiKeyCredential`: `{type: "api_key", key?, env?}`. `key` is a
@@ -201,7 +211,7 @@ pub struct CredentialInfo {
 }
 
 /// `AuthResult`: resolved request auth.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug)]
 pub struct AuthResult {
     /// The resolved request auth.
     pub auth: ModelAuth,

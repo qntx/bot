@@ -23,18 +23,20 @@ use ovo_ai::http::client::{HttpClient, HttpClientConfig};
 use ovo_ai::models::CreateModelsOptions;
 use ovo_ai::providers::builtin_models;
 use ovo_ai::stream::{AssistantMessageEvent, AssistantStream};
-use ovo_ai::types::content::{AssistantContentBlock, StopReason};
+use ovo_ai::types::content::{
+    AssistantContentBlock, StopReason, TextContent, TextOrBlocksWithImages, UserContentBlock,
+};
 use ovo_ai::types::context::Context;
-use ovo_ai::types::message::{AssistantMessage, Message};
+use ovo_ai::types::message::{AssistantMessage, Message, ToolResultMessage, UserMessage};
 use ovo_ai::types::model::Model;
 use ovo_ai::types::tool::Tool;
 use serde_json::json;
 
-fn get_time_tool() -> Result<Tool, String> {
-    serde_json::from_value(json!({
-        "name": "get_time",
-        "description": "Return the current wall-clock time in a timezone.",
-        "parameters": {
+fn get_time_tool() -> Tool {
+    Tool {
+        name: String::from("get_time"),
+        description: String::from("Return the current wall-clock time in a timezone."),
+        parameters: json!({
             "type": "object",
             "properties": {
                 "timezone": {
@@ -43,9 +45,12 @@ fn get_time_tool() -> Result<Tool, String> {
                 }
             },
             "required": ["timezone"]
-        }
-    }))
-    .map_err(|error| format!("tool schema: {error}"))
+        })
+        .as_object()
+        .cloned()
+        .unwrap_or_default(),
+        constrained_sampling: None,
+    }
 }
 
 /// `get_time` — a fixed answer keeps the example deterministic.
@@ -80,10 +85,6 @@ async fn pump(mut stream: AssistantStream) -> AssistantMessage {
     stream.result().await
 }
 
-fn message(value: serde_json::Value, what: &str) -> Result<Message, String> {
-    serde_json::from_value(value).map_err(|error| format!("{what}: {error}"))
-}
-
 async fn run(provider: &str, model_id: &str, prompt: &str) -> Result<(), String> {
     let http = Arc::new(HttpClient::new(HttpClientConfig::default()));
     let models = builtin_models(
@@ -97,11 +98,14 @@ async fn run(provider: &str, model_id: &str, prompt: &str) -> Result<(), String>
     let model: Model = models
         .get_model(provider, model_id)
         .ok_or_else(|| format!("{provider}/{model_id} is not in the catalog"))?;
-    let mut context: Context = serde_json::from_value(json!({
-        "messages": [{ "role": "user", "content": prompt, "timestamp": 0 }],
-        "tools": [serde_json::to_value(get_time_tool()?).map_err(|e| e.to_string())?]
-    }))
-    .map_err(|error| format!("context: {error}"))?;
+    let mut context = Context {
+        messages: vec![Message::User(UserMessage {
+            content: TextOrBlocksWithImages::Text(String::from(prompt)),
+            timestamp: 0,
+        })],
+        tools: Some(vec![get_time_tool()]),
+        ..Context::default()
+    };
     let reply = pump(models.stream(&model, &context, None)).await;
     match reply.stop_reason {
         StopReason::Error | StopReason::Aborted => {
@@ -121,17 +125,22 @@ async fn run(provider: &str, model_id: &str, prompt: &str) -> Result<(), String>
             for call in &calls {
                 let text = run_tool(&call.arguments);
                 println!("[tool result] {text}");
-                context.messages.push(message(
-                    json!({
-                        "role": "toolResult",
-                        "toolCallId": call.id,
-                        "toolName": call.name,
-                        "content": [{ "type": "text", "text": text }],
-                        "isError": false,
-                        "timestamp": 0
-                    }),
-                    "tool result",
-                )?);
+                context
+                    .messages
+                    .push(Message::ToolResult(ToolResultMessage {
+                        tool_call_id: call.id.clone(),
+                        tool_name: call.name.clone(),
+                        content: vec![UserContentBlock::Text(TextContent {
+                            text,
+                            text_signature: None,
+                        })],
+                        details: None,
+                        usage: None,
+                        nested_calls: None,
+                        duration_ms: None,
+                        is_error: false,
+                        timestamp: 0,
+                    }));
             }
             let follow_up = pump(models.stream(&model, &context, None)).await;
             if matches!(

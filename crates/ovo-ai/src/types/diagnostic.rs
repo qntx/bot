@@ -5,7 +5,6 @@ use serde_json::{Map, Value};
 
 /// Serialized error shape stored inside a diagnostic entry.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[non_exhaustive]
 pub struct DiagnosticErrorInfo {
     /// Error class name, e.g. `"Error"`.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -32,7 +31,6 @@ pub enum DiagnosticCode {
 
 /// A diagnostic entry for failures and recoveries during a response.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[non_exhaustive]
 pub struct AssistantMessageDiagnostic {
     /// Diagnostic kind, e.g. `"api_retry"`.
     #[serde(rename = "type")]

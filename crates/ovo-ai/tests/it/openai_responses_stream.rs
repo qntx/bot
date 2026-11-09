@@ -85,9 +85,11 @@ fn mask_engine_errors(value: &mut Value) {
 
 /// The options the generator passes: key, no retries, and the abort setup.
 fn stream_options(case: &Value) -> StreamOptions {
-    let mut options = StreamOptions::default();
-    options.api_key = Some(String::from("sk-test"));
-    options.max_retries = Some(0);
+    let mut options = StreamOptions {
+        api_key: Some(secrecy::SecretString::from(String::from("sk-test"))),
+        max_retries: Some(0),
+        ..StreamOptions::default()
+    };
     let signal = CancellationToken::new();
     match case["abort"].as_str() {
         Some("before") => signal.cancel(),
@@ -137,24 +139,28 @@ async fn openai_responses_stream_replays_upstream_events() {
             }));
         }
         let mut stream = if case["simple"].as_bool() == Some(true) {
-            let mut simple = SimpleStreamOptions::default();
-            simple.base = options;
-            simple.reasoning = case["options"].get("reasoning").map(|level| {
-                serde_json::from_value(level.clone())
-                    .unwrap_or_else(|e| panic!("{name}: reasoning: {e}"))
-            });
+            let simple = SimpleStreamOptions {
+                base: options,
+                reasoning: case["options"].get("reasoning").map(|level| {
+                    serde_json::from_value(level.clone())
+                        .unwrap_or_else(|e| panic!("{name}: reasoning: {e}"))
+                }),
+                ..SimpleStreamOptions::default()
+            };
             api.stream_simple(&model, context, simple)
         } else {
-            let mut responses = OpenAiResponsesOptions::default();
-            responses.base = options;
-            responses.reasoning_effort = case["options"].get("reasoningEffort").map(|level| {
-                serde_json::from_value(level.clone())
-                    .unwrap_or_else(|e| panic!("{name}: reasoningEffort: {e}"))
-            });
-            responses.service_tier = case["options"].get("serviceTier").map(|tier| {
-                serde_json::from_value(tier.clone())
-                    .unwrap_or_else(|e| panic!("{name}: serviceTier: {e}"))
-            });
+            let responses = OpenAiResponsesOptions {
+                base: options,
+                reasoning_effort: case["options"].get("reasoningEffort").map(|level| {
+                    serde_json::from_value(level.clone())
+                        .unwrap_or_else(|e| panic!("{name}: reasoningEffort: {e}"))
+                }),
+                service_tier: case["options"].get("serviceTier").map(|tier| {
+                    serde_json::from_value(tier.clone())
+                        .unwrap_or_else(|e| panic!("{name}: serviceTier: {e}"))
+                }),
+                ..OpenAiResponsesOptions::default()
+            };
             api.stream_with(&model, context, responses)
         };
         let mut events = Vec::new();

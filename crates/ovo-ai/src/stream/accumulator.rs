@@ -225,11 +225,6 @@ impl AssistantMessageAccumulator {
         }
     }
 
-    /// Expose `time` for the stream's dropped-sender path.
-    pub(crate) fn time_public(&mut self) {
-        self.time();
-    }
-
     fn open_block(&mut self, index: usize, event: &AssistantMessageEvent) {
         let block = match event {
             AssistantMessageEvent::TextStart { .. } => AssistantContentBlock::Text(TextContent {

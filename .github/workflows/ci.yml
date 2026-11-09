@@ -34,3 +34,11 @@ jobs:
       doc: true
       # Tauri dev-time system libraries (Linux runner).
       apt-packages: libwebkit2gtk-4.1-dev libxdo-dev libayatana-appindicator3-dev librsvg2-dev
+
+  no-default-features:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo test -p ovo-ai --no-default-features

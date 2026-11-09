@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::types::content::{StopReason, ToolCall};
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "type")]
 /// One wire event of an assistant response stream.
 pub enum AssistantMessageEvent {

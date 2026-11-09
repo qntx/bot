@@ -11,6 +11,7 @@ use std::sync::Arc;
 
 use bytes::Bytes;
 use futures::StreamExt;
+use secrecy::ExposeSecret;
 use serde_json::{Map, Value};
 use tokio_util::sync::CancellationToken;
 
@@ -122,7 +123,12 @@ async fn run(
     if !has_request_auth(base) {
         return Err(format!("No API key for provider: {}", model.provider));
     }
-    let oauth = is_oauth_token(base.api_key.as_deref().unwrap_or_default());
+    let oauth = is_oauth_token(
+        base.api_key
+            .as_ref()
+            .map(ExposeSecret::expose_secret)
+            .unwrap_or_default(),
+    );
     let mut disable_preferred_strict_tools = false;
     let response = loop {
         // `signal.throwIfAborted()` throws the signal's default reason.
@@ -236,8 +242,8 @@ fn sdk_error_message(error: &HttpError) -> String {
 fn has_request_auth(options: &StreamOptions) -> bool {
     if options
         .api_key
-        .as_deref()
-        .is_some_and(|key| !key.is_empty())
+        .as_ref()
+        .is_some_and(|key| !key.expose_secret().is_empty())
     {
         return true;
     }
@@ -615,7 +621,7 @@ impl<'a> EventState<'a> {
         if let Some(reported) = reported.filter(|_| is_openrouter_model(self.model)) {
             apply_openrouter_reported_cost(&mut self.usage, reported);
         }
-        send(sender, Metadata::Usage(self.usage.clone())).await
+        send(sender, Metadata::Usage(self.usage)).await
     }
 
     /// The terminal decision upstream makes after the event loop.

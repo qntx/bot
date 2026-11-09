@@ -24,7 +24,7 @@ const ERROR_TOOL_IMAGE_PLACEHOLDER: &str = "(image attached after the tool resul
 
 /// `SplitErrorToolResult`: an error tool result split into a text-only
 /// result and the images to send after the tool results.
-#[derive(Clone, Debug, PartialEq, serde::Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SplitErrorToolResult {
     /// The result content with each run of images replaced by a note.
@@ -194,7 +194,7 @@ pub fn transform_messages(
                     usage: None,
                     nested_calls: None,
                     is_error: true,
-                    timestamp: wall_ms(),
+                    timestamp: crate::stream::accumulator::wall_ms(),
                     duration_ms: None,
                 }));
             }
@@ -355,10 +355,4 @@ fn serialize_images<S: serde::Serializer>(
         }
         value
     }))
-}
-
-fn wall_ms() -> i64 {
-    std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .map_or(0, |d| i64::try_from(d.as_millis()).unwrap_or(i64::MAX))
 }

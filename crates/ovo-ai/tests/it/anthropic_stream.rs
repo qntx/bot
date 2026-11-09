@@ -84,9 +84,13 @@ async fn anthropic_stream_replays_upstream_events() {
                 .unwrap_or_else(|e| panic!("{name}: provider: {e}"));
         }
         let api = AnthropicMessagesApi::new(Arc::new(HttpClient::new(HttpClientConfig::default())));
-        let mut options = StreamOptions::default();
-        options.api_key = Some(String::from("sk-ant-api03-test"));
-        options.max_retries = Some(0);
+        let mut options = StreamOptions {
+            api_key: Some(secrecy::SecretString::from(String::from(
+                "sk-ant-api03-test",
+            ))),
+            max_retries: Some(0),
+            ..StreamOptions::default()
+        };
         if case["abort"].as_str() == Some("before") {
             let signal = tokio_util::sync::CancellationToken::new();
             signal.cancel();

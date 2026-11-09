@@ -1,3 +1,5 @@
+//! File-credential-store tests — `host` feature.
+#![cfg(feature = "host")]
 //! Auth vectors + `FileCredentialStore` behavior.
 //!
 //! parity: AI-AUTH-APIKEY — `get_env_api_key`/`find_env_keys` replay

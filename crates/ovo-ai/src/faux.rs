@@ -280,7 +280,9 @@ pub fn faux_assistant_message_with(
         model: String::from(DEFAULT_MODEL_ID),
         usage: default_usage(),
         stop_reason: options.stop_reason.unwrap_or(StopReason::Stop),
-        timestamp: options.timestamp.unwrap_or_else(now_ms),
+        timestamp: options
+            .timestamp
+            .unwrap_or_else(crate::stream::accumulator::wall_ms),
         provider_thinking_level: None,
         response_id: options.response_id.clone(),
         response_model: None,
@@ -315,15 +317,6 @@ const fn default_usage() -> Usage {
     }
 }
 
-fn now_ms() -> i64 {
-    i64::try_from(
-        std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .map_or(0, |d| d.as_millis()),
-    )
-    .unwrap_or(0)
-}
-
 /// `Math.random()` for chunk sizes and id suffixes — a scripted-test
 /// source, not crypto: a counter seeded once from the clock, mixed
 /// through splitmix64.
@@ -351,7 +344,11 @@ fn next_random() -> u64 {
 
 /// `randomId(prefix)` — `${prefix}:${Date.now()}:${base36 random}`.
 fn random_id(prefix: &str) -> String {
-    format!("{prefix}:{}:{:x}", now_ms(), next_random())
+    format!(
+        "{prefix}:{}:{:x}",
+        crate::stream::accumulator::wall_ms(),
+        next_random()
+    )
 }
 
 /// `estimateTokens` — `Math.ceil(text.length / 4)`; `.length` is
@@ -586,7 +583,7 @@ fn clone_message(
     cloned.provider = crate::types::api::ProviderId::from(provider.to_owned());
     model_id.clone_into(&mut cloned.model);
     if cloned.timestamp == 0 {
-        cloned.timestamp = now_ms();
+        cloned.timestamp = crate::stream::accumulator::wall_ms();
     }
     cloned
 }
@@ -784,7 +781,7 @@ async fn abort_stream(
     message: &AssistantMessage,
 ) {
     sender
-        .metadata(crate::stream::Metadata::Usage(message.usage.clone()))
+        .metadata(crate::stream::Metadata::Usage(message.usage))
         .await
         .ok();
     sender
@@ -952,7 +949,7 @@ impl ChatApi for FauxChatApi {
                 );
                 message = with_usage_estimate(message, &context, &options, &prompt_cache);
                 sender
-                    .metadata(crate::stream::Metadata::Usage(message.usage.clone()))
+                    .metadata(crate::stream::Metadata::Usage(message.usage))
                     .await
                     .ok();
                 send_error_message(sender, message).await;
@@ -1161,12 +1158,7 @@ async fn finish_deferred(
 /// The stream's base message: empty content, `pending` like upstream's
 /// `partial`, attributed to `model`.
 fn base_message(model: &Model) -> AssistantMessage {
-    let mut message = faux_assistant_message(Vec::new());
-    message.api.clone_from(&model.api);
-    message.provider.clone_from(&model.provider);
-    message.model.clone_from(&model.id);
-    message.stop_reason = StopReason::Pending;
-    message
+    AssistantMessage::empty(model, crate::stream::accumulator::wall_ms())
 }
 
 /// One `fetchDeferred` step: the scripted message and whether more fetches
@@ -1195,7 +1187,7 @@ async fn finish_message(
     message: AssistantMessage,
 ) {
     sender
-        .metadata(crate::stream::Metadata::Usage(message.usage.clone()))
+        .metadata(crate::stream::Metadata::Usage(message.usage))
         .await
         .ok();
     if let Some(handle) = message.deferred.clone() {

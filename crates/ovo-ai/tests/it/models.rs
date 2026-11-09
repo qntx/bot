@@ -31,6 +31,7 @@ use ovo_ai::types::content::StopReason;
 use ovo_ai::types::context::Context;
 use ovo_ai::types::model::ModelThinkingLevel;
 use ovo_ai::types::model::{AnyModel, Model};
+use secrecy::ExposeSecret;
 use serde_json::{Map, Value, json};
 
 fn test_model(provider: &str, id: &str) -> Model {
@@ -216,12 +217,12 @@ fn env_key_auth(key: Option<&str>) -> ApiKeyAuth {
         Arc::new(move |credential, _env| {
             let resolved = credential
                 .and_then(|c| c.key.as_ref())
-                .map(|k| secrecy::ExposeSecret::expose_secret(k).to_owned())
+                .map(|k| ExposeSecret::expose_secret(k).to_owned())
                 .or_else(|| key.clone());
             Ok(resolved.map(|found| {
                 let mut result = AuthResult {
                     auth: ModelAuth {
-                        api_key: Some(found),
+                        api_key: Some(secrecy::SecretString::from(found)),
                         ..ModelAuth::default()
                     },
                     env: None,
@@ -247,7 +248,7 @@ async fn enumerates_credential_metadata_without_exposing_secrets() {
             Box::new(|_| {
                 Box::pin(async {
                     Some(Credential::ApiKey(ApiKeyCredential {
-                        key: Some(secrecy::SecretString::from("secret")),
+                        key: Some(secrecy::SecretString::from(String::from("secret"))),
                         env: None,
                     }))
                 })
@@ -776,7 +777,7 @@ async fn merges_resolved_auth_into_stream_options_explicit_options_win() {
             Arc::new(|_, _| {
                 Ok(Some(AuthResult {
                     auth: ModelAuth {
-                        api_key: Some(String::from("resolved-key")),
+                        api_key: Some(secrecy::SecretString::from(String::from("resolved-key"))),
                         headers: Some(
                             json!({"Authorization": "Bearer resolved-key", "x-a": "auth", "x-b": "auth"})
                                 .as_object()
@@ -796,7 +797,7 @@ async fn merges_resolved_auth_into_stream_options_explicit_options_win() {
     models.set_provider(Arc::new(provider));
     let model = test_model("p1", "model-a");
     let mut options = SimpleStreamOptions::default();
-    options.base.api_key = Some(String::from("explicit-key"));
+    options.base.api_key = Some(secrecy::SecretString::from(String::from("explicit-key")));
     options.base.headers = Some(
         json!({"authorization": "Explicit token", "x-b": "explicit"})
             .as_object()
@@ -817,7 +818,10 @@ async fn merges_resolved_auth_into_stream_options_explicit_options_win() {
             recorded[0].1.headers.clone(),
         )
     };
-    assert_eq!(sent_api_key.as_deref(), Some("explicit-key"));
+    assert_eq!(
+        sent_api_key.as_ref().map(ExposeSecret::expose_secret),
+        Some("explicit-key")
+    );
     let headers = sent_headers.as_ref().expect("headers");
     assert_eq!(
         headers.get("authorization").and_then(Value::as_str),
@@ -831,7 +835,14 @@ async fn merges_resolved_auth_into_stream_options_explicit_options_win() {
     let recorded = calls
         .lock()
         .unwrap_or_else(std::sync::PoisonError::into_inner);
-    assert_eq!(recorded[1].1.api_key.as_deref(), Some("resolved-key"));
+    assert_eq!(
+        recorded[1]
+            .1
+            .api_key
+            .as_ref()
+            .map(ExposeSecret::expose_secret),
+        Some("resolved-key")
+    );
 }
 
 #[tokio::test]
@@ -850,11 +861,11 @@ async fn uses_explicit_request_api_key_and_env_during_provider_auth_resolution()
                     .or_else(|| env.get("ACCOUNT_ID"));
                 let key = credential
                     .and_then(|c| c.key.as_ref())
-                    .map(|k| secrecy::ExposeSecret::expose_secret(k).to_owned());
+                    .map(|k| ExposeSecret::expose_secret(k).to_owned());
                 Ok(match (key, account) {
                     (Some(key), Some(account)) => Some(AuthResult {
                         auth: ModelAuth {
-                            api_key: Some(key),
+                            api_key: Some(secrecy::SecretString::from(key)),
                             base_url: Some(format!("https://example.test/{account}")),
                             ..ModelAuth::default()
                         },
@@ -876,7 +887,7 @@ async fn uses_explicit_request_api_key_and_env_during_provider_auth_resolution()
     models.set_provider(Arc::new(provider));
     let model = test_model("p1", "model-a");
     let mut options = SimpleStreamOptions::default();
-    options.base.api_key = Some(String::from("explicit-key"));
+    options.base.api_key = Some(secrecy::SecretString::from(String::from("explicit-key")));
     options.base.env = Some(
         json!({"ACCOUNT_ID": "acct"})
             .as_object()
@@ -890,7 +901,14 @@ async fn uses_explicit_request_api_key_and_env_during_provider_auth_resolution()
         .lock()
         .unwrap_or_else(std::sync::PoisonError::into_inner);
     assert_eq!(recorded[0].0.base_url, "https://example.test/acct");
-    assert_eq!(recorded[0].1.api_key.as_deref(), Some("explicit-key"));
+    assert_eq!(
+        recorded[0]
+            .1
+            .api_key
+            .as_ref()
+            .map(ExposeSecret::expose_secret),
+        Some("explicit-key")
+    );
     let env = recorded[0].1.env.as_ref().expect("env");
     assert_eq!(env.get("ACCOUNT_ID").and_then(Value::as_str), Some("acct"));
     drop(recorded);
@@ -972,7 +990,7 @@ async fn restores_cached_models_before_waiting_for_network_auth() {
                 move |_, _| {
                     Ok(Some(AuthResult {
                         auth: ModelAuth {
-                            api_key: Some(String::from("key")),
+                            api_key: Some(secrecy::SecretString::from(String::from("key"))),
                             ..ModelAuth::default()
                         },
                         env: None,
@@ -1358,7 +1376,7 @@ async fn passes_effective_api_key_credentials_and_refresh_options() {
             assert_eq!(
                 c.key
                     .as_ref()
-                    .map(|k| secrecy::ExposeSecret::expose_secret(k).to_owned())
+                    .map(|k| ExposeSecret::expose_secret(k).to_owned())
                     .as_deref(),
                 Some("ambient-key")
             );
@@ -1402,11 +1420,14 @@ async fn resolves_auth_stored_credential_owns_the_provider() {
         .await
         .unwrap_or_else(|e| panic!("get_auth: {e}"));
     assert_eq!(
-        resolution.and_then(|r| r.auth.api_key).as_deref(),
+        resolution
+            .and_then(|r| r.auth.api_key)
+            .as_ref()
+            .map(ExposeSecret::expose_secret),
         Some("env-key")
     );
     let overrides = AuthResolutionOverrides {
-        api_key: Some(String::from("explicit-key")),
+        api_key: Some(secrecy::SecretString::from(String::from("explicit-key"))),
         ..AuthResolutionOverrides::default()
     };
     let explicit_resolution = models
@@ -1414,7 +1435,10 @@ async fn resolves_auth_stored_credential_owns_the_provider() {
         .await
         .unwrap_or_else(|e| panic!("get_auth: {e}"));
     assert_eq!(
-        explicit_resolution.and_then(|r| r.auth.api_key).as_deref(),
+        explicit_resolution
+            .and_then(|r| r.auth.api_key)
+            .as_ref()
+            .map(ExposeSecret::expose_secret),
         Some("explicit-key")
     );
     credentials
@@ -1423,7 +1447,7 @@ async fn resolves_auth_stored_credential_owns_the_provider() {
             Box::new(|_| {
                 Box::pin(async {
                     Some(Credential::ApiKey(ApiKeyCredential {
-                        key: Some(secrecy::SecretString::from("stored-key")),
+                        key: Some(secrecy::SecretString::from(String::from("stored-key"))),
                         env: None,
                     }))
                 })
@@ -1440,7 +1464,11 @@ async fn resolves_auth_stored_credential_owns_the_provider() {
         .unwrap_or_else(|e| panic!("get_auth: {e}"));
     let stored_resolution = stored_resolution.unwrap_or_else(|| panic!("resolution"));
     assert_eq!(
-        stored_resolution.auth.api_key.as_deref(),
+        stored_resolution
+            .auth
+            .api_key
+            .as_ref()
+            .map(ExposeSecret::expose_secret),
         Some("stored-key")
     );
     assert_eq!(stored_resolution.source.as_deref(), Some("stored"));
@@ -1471,10 +1499,10 @@ async fn checks_provider_auth_without_oauth_and_filters_available_models() {
         oauth: Some(OAuthAuth {
             name: String::from("Test OAuth"),
             to_auth: Arc::new(|credential| {
-                let access = secrecy::ExposeSecret::expose_secret(&credential.access).to_owned();
+                let access = ExposeSecret::expose_secret(&credential.access).to_owned();
                 Box::pin(async move {
                     ModelAuth {
-                        api_key: Some(access),
+                        api_key: Some(secrecy::SecretString::from(access)),
                         ..ModelAuth::default()
                     }
                 })
@@ -1488,8 +1516,8 @@ async fn checks_provider_auth_without_oauth_and_filters_available_models() {
             Box::new(|_| {
                 Box::pin(async {
                     Some(Credential::OAuth(OAuthCredential {
-                        access: secrecy::SecretString::from("expired"),
-                        refresh: secrecy::SecretString::from("refresh"),
+                        access: secrecy::SecretString::from(String::from("expired")),
+                        refresh: secrecy::SecretString::from(String::from("refresh")),
                         expires: 0.0,
                         extra: Map::new(),
                     }))
@@ -1557,10 +1585,10 @@ async fn runs_provider_login_and_logout_through_the_credential_store() {
         oauth: Some(OAuthAuth {
             name: String::from("Test OAuth"),
             to_auth: Arc::new(|credential| {
-                let access = secrecy::ExposeSecret::expose_secret(&credential.access).to_owned();
+                let access = ExposeSecret::expose_secret(&credential.access).to_owned();
                 Box::pin(async move {
                     ModelAuth {
-                        api_key: Some(access),
+                        api_key: Some(secrecy::SecretString::from(access)),
                         ..ModelAuth::default()
                     }
                 })
@@ -1569,7 +1597,7 @@ async fn runs_provider_login_and_logout_through_the_credential_store() {
     };
     models.set_provider(Arc::new(provider));
     let credential = Credential::ApiKey(ApiKeyCredential {
-        key: Some(secrecy::SecretString::from("logged-in")),
+        key: Some(secrecy::SecretString::from(String::from("logged-in"))),
         env: None,
     });
     models
@@ -1613,8 +1641,8 @@ async fn a_stored_credential_without_a_matching_handler_blocks_ambient_fallback(
             Box::new(|_| {
                 Box::pin(async {
                     Some(Credential::OAuth(OAuthCredential {
-                        access: secrecy::SecretString::from("a"),
-                        refresh: secrecy::SecretString::from("r"),
+                        access: secrecy::SecretString::from(String::from("a")),
+                        refresh: secrecy::SecretString::from(String::from("r")),
                         expires: 0.0,
                         extra: Map::new(),
                     }))
@@ -1857,17 +1885,19 @@ async fn stream_invokes_on_response() {
         .get_model("faux", "faux-1")
         .unwrap_or_else(|| panic!("model"));
     let calls2 = Arc::clone(&calls);
-    let mut options = StreamOptions::default();
-    options.on_response = Some(Arc::new(move |meta, _model| {
-        let recorded = Arc::clone(&calls2);
-        let status = meta.status;
-        Box::pin(async move {
-            recorded
-                .lock()
-                .unwrap_or_else(std::sync::PoisonError::into_inner)
-                .push(status);
-        })
-    }));
+    let options = StreamOptions {
+        on_response: Some(Arc::new(move |meta, _model| {
+            let recorded = Arc::clone(&calls2);
+            let status = meta.status;
+            Box::pin(async move {
+                recorded
+                    .lock()
+                    .unwrap_or_else(std::sync::PoisonError::into_inner)
+                    .push(status);
+            })
+        })),
+        ..StreamOptions::default()
+    };
     let stream = models.stream(&model, &text_context("x"), Some(options));
     let _ = stream.result().await;
     assert_eq!(

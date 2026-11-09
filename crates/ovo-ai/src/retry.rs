@@ -108,9 +108,8 @@ fn matches(pattern: &LazyLock<Option<regex::bytes::Regex>>, text: &str) -> bool 
 
 /// `RetryPolicy`: bounded attempts with exponential backoff
 /// (`baseDelayMs * 2^(attempt-1)`); `maxAgentDelayMs` caps each delay.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[non_exhaustive]
 pub struct RetryPolicy {
     /// Whether retries are enabled.
     #[serde(default)]

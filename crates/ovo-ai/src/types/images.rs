@@ -7,8 +7,7 @@ use super::content::UserContentBlock;
 use super::usage::Usage;
 
 /// Input to an image-generation request.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[non_exhaustive]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ImagesContext {
     /// Text and image input blocks.
     pub input: Vec<UserContentBlock>,
@@ -31,7 +30,6 @@ pub enum ImagesStopReason {
 /// Result of an image-generation request.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[non_exhaustive]
 pub struct AssistantImages {
     /// Image API family that produced the result.
     pub api: ImageApi,

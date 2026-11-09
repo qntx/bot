@@ -5,9 +5,8 @@ use serde_json::{Map, Value};
 
 /// A tool the model may call; `parameters` is the JSON Schema of its
 /// arguments.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[non_exhaustive]
 pub struct Tool {
     /// The tool name the model calls.
     pub name: String,
@@ -21,7 +20,7 @@ pub struct Tool {
 }
 
 /// `false | ConstrainedSamplingConfig` — explicit disable or a config.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ConstrainedSampling {
     /// Explicit `false`.
@@ -31,7 +30,7 @@ pub enum ConstrainedSampling {
 }
 
 /// Provider-side constrained sampling config.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "type")]
 pub enum ConstrainedSamplingConfig {
     /// JSON-Schema constrained sampling.
@@ -60,8 +59,7 @@ pub enum StrictMode {
 }
 
 /// Grammar string per `OpenAI` grammar format.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[non_exhaustive]
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct GrammarVariants {
     /// Lark-format grammar.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -72,8 +70,7 @@ pub struct GrammarVariants {
 }
 
 /// Reference to a tool by name (used by `toolsRemoved`).
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[non_exhaustive]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ToolReference {
     /// The tool name.
     pub name: String,
@@ -91,8 +88,7 @@ pub enum ToolChoice {
 }
 
 /// Custom token budgets for thinking levels.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[non_exhaustive]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ThinkingBudgets {
     /// Budget for the `minimal` level.
     #[serde(skip_serializing_if = "Option::is_none")]

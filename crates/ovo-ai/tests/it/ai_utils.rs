@@ -299,7 +299,7 @@ fn openrouter_cost_matches_upstream() {
             "applyOpenRouterReportedCost" => {
                 let mut usage: Usage = decode(name, &args["usage"]);
                 cost::apply_openrouter_reported_cost(&mut usage, &args["reported"]);
-                let got = serde_json::to_value(&usage).unwrap_or_default();
+                let got = serde_json::to_value(usage).unwrap_or_default();
                 assert!(
                     js_value_eq(&got, &case["result"]),
                     "{name}\n  got:  {got}\n  want: {}",

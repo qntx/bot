@@ -120,28 +120,31 @@ fn openai_responses_request() {
 
 /// The stream option fields the vectors set.
 fn stream_options(options: &Value) -> StreamOptions {
-    let mut base = StreamOptions::default();
-    base.api_key = options["apiKey"].as_str().map(str::to_owned);
-    base.temperature = options["temperature"].as_f64();
-    base.max_tokens = options["maxTokens"].as_u64();
-    base.max_retries = options["maxRetries"]
-        .as_u64()
-        .and_then(|n| u32::try_from(n).ok());
-    base.cache_retention = options["cacheRetention"]
-        .as_str()
-        .map(|retention| match retention {
-            "long" => CacheRetention::Long,
-            "none" => CacheRetention::None,
-            _ => CacheRetention::Short,
-        });
-    base.session_id = options["sessionId"].as_str().map(str::to_owned);
-    base.env = options["env"].as_object().cloned();
-    base.headers = options["headers"].as_object().cloned();
-    base.sampling_params = options["samplingParams"].as_object().cloned();
-    base.identity = options.get("identity").map(|identity| {
-        serde_json::from_value(identity.clone()).unwrap_or_else(|e| panic!("identity: {e}"))
-    });
-    base
+    StreamOptions {
+        api_key: options["apiKey"]
+            .as_str()
+            .map(|k| secrecy::SecretString::from(k.to_owned())),
+        temperature: options["temperature"].as_f64(),
+        max_tokens: options["maxTokens"].as_u64(),
+        max_retries: options["maxRetries"]
+            .as_u64()
+            .and_then(|n| u32::try_from(n).ok()),
+        cache_retention: options["cacheRetention"]
+            .as_str()
+            .map(|retention| match retention {
+                "long" => CacheRetention::Long,
+                "none" => CacheRetention::None,
+                _ => CacheRetention::Short,
+            }),
+        session_id: options["sessionId"].as_str().map(str::to_owned),
+        env: options["env"].as_object().cloned(),
+        headers: options["headers"].as_object().cloned(),
+        sampling_params: options["samplingParams"].as_object().cloned(),
+        identity: options.get("identity").map(|identity| {
+            serde_json::from_value(identity.clone()).unwrap_or_else(|e| panic!("identity: {e}"))
+        }),
+        ..StreamOptions::default()
+    }
 }
 
 fn decoded<T: serde::de::DeserializeOwned>(options: &Value, key: &str) -> Option<T> {
@@ -152,19 +155,20 @@ fn decoded<T: serde::de::DeserializeOwned>(options: &Value, key: &str) -> Option
 }
 
 fn responses_options(options: &Value) -> OpenAiResponsesOptions {
-    let mut responses = OpenAiResponsesOptions::default();
-    responses.base = stream_options(options);
-    responses.reasoning_effort = decoded(options, "reasoningEffort");
-    responses.reasoning_summary = decoded(options, "reasoningSummary");
-    responses.service_tier = decoded(options, "serviceTier");
-    responses.tool_choice = options.get("toolChoice").cloned();
-    responses
+    OpenAiResponsesOptions {
+        base: stream_options(options),
+        reasoning_effort: decoded(options, "reasoningEffort"),
+        reasoning_summary: decoded(options, "reasoningSummary"),
+        service_tier: decoded(options, "serviceTier"),
+        tool_choice: options.get("toolChoice").cloned(),
+    }
 }
 
 fn simple_options(options: &Value) -> SimpleStreamOptions {
-    let mut simple = SimpleStreamOptions::default();
-    simple.base = stream_options(options);
-    simple.reasoning = decoded(options, "reasoning");
-    simple.tool_choice = decoded(options, "toolChoice");
-    simple
+    SimpleStreamOptions {
+        base: stream_options(options),
+        reasoning: decoded(options, "reasoning"),
+        tool_choice: decoded(options, "toolChoice"),
+        ..SimpleStreamOptions::default()
+    }
 }
