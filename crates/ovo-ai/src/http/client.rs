@@ -33,7 +33,7 @@ pub struct RequestPolicy {
     /// Time allowed until the response headers arrive (SDK default 10 minutes).
     /// The streamed body is not limited by it.
     pub timeout: Duration,
-    /// Retries after the first attempt (SDK default 2).
+    /// Retries after the first attempt (`retryProviderRequest` default 0).
     pub max_retries: u32,
     /// Cap on server-requested retry delays; `0` disables the cap.
     pub max_retry_delay_ms: Option<f64>,
@@ -43,7 +43,7 @@ impl Default for RequestPolicy {
     fn default() -> Self {
         Self {
             timeout: Duration::from_secs(600),
-            max_retries: 2,
+            max_retries: 0,
             max_retry_delay_ms: None,
         }
     }
