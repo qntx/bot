@@ -14,16 +14,19 @@ use futures::StreamExt;
 use serde_json::{Map, Value};
 use tokio_util::sync::CancellationToken;
 
-use super::{OpenAiCompletionsCompat, OpenAiCompletionsOptions, build_request, is_truthy};
+use super::{OpenAiCompletionsCompat, OpenAiCompletionsOptions, build_request};
 use crate::api::constrained_sampling::GrammarToolInputJsonBuffer;
+use crate::api::openai_sdk::{SdkError, SdkRecord, read_record, status_error};
 use crate::api::stream_support::{
     STREAM_CAPACITY, closed, finish, header_pairs, initial_message, notify_response,
     request_policy, send,
 };
 use crate::cost::{apply_openrouter_reported_cost, calculate_cost, is_openrouter_model};
-use crate::http::client::{HttpClient, HttpError, SendError};
+use crate::http::client::{HttpClient, SendError};
+use crate::http::error_body::format_provider_error;
 use crate::http::retry::jitter;
 use crate::http::sse::{EndOfStream, SseEventStream};
+use crate::json::is_truthy;
 use crate::options::{SimpleStreamOptions, StreamOptions};
 use crate::provider::ChatApi;
 use crate::stream::{AssistantStream, AssistantStreamSender, DoneReason, Metadata};
@@ -118,7 +121,7 @@ async fn run(
         Ok(response) => response,
         // `retryProviderRequest` replaces any failure of an aborted request.
         Err(_) if signal.is_cancelled() => return Err(String::from("Request aborted")),
-        Err(SendError::Provider(error)) => return Err(status_error_message(&error)),
+        Err(SendError::Provider(error)) => return Err(catch_message(&status_error(&error))),
         Err(SendError::Transport(message)) => return Err(message),
         Err(SendError::Aborted) => return Err(String::from("Request aborted")),
     };
@@ -152,28 +155,11 @@ async fn fold(
         };
         let Some(next) = next else { break };
         let sse = next.map_err(|error| error.to_string())?;
-        if sse.data == "[DONE]" {
-            break;
-        }
-        let data: Value = crate::json::from_str(&sse.data).map_err(|_| {
-            String::from("Error reading response: malformed server-sent event JSON.")
-        })?;
-        if sse
-            .event
-            .as_deref()
-            .is_some_and(|event| event.starts_with("thread."))
-        {
-            // The SDK yields `{event, data}` envelopes, which carry no choices.
-            continue;
-        }
-        let error = if sse.event.as_deref() == Some("error") {
-            Some(data.get("error").filter(|e| !e.is_null()).unwrap_or(&data))
-        } else {
-            data.get("error").filter(|error| is_truthy(error))
+        let data = match read_record(&sse).map_err(|error| catch_message(&error))? {
+            SdkRecord::Done => break,
+            SdkRecord::Skip => continue,
+            SdkRecord::Data(data) => data,
         };
-        if let Some(error) = error {
-            return Err(stream_error_message(error));
-        }
         state.apply(&data, sender).await?;
     }
     state.finish_blocks(sender).await?;
@@ -205,98 +191,18 @@ async fn fold(
     }
 }
 
-/// An HTTP error as the `OpenAI` SDK throws it (`makeStatusError` from the
-/// body text), rendered by pi's `catch`. Without a response the SDK throws
-/// its connection error; timeouts are not told apart from it.
-fn status_error_message(error: &HttpError) -> String {
-    let Some(status) = error.status.filter(|status| *status != 0.0) else {
-        return String::from("Connection error.");
-    };
-    let text = error.body.as_deref().unwrap_or_default();
-    let parsed = crate::json::from_str::<Value>(text).ok().filter(is_truthy);
-    // `makeStatusError` treats a JSON body without an `error` field as the
-    // error itself.
-    let (error_field, message) = parsed.as_ref().map_or((None, Some(text)), |json| {
-        let field = match json.get("error") {
-            None | Some(Value::Null) if json.is_object() || json.is_array() => Some(json),
-            field => field,
-        };
-        (field, None)
-    });
-    catch_message(
-        &api_error_message(Some(status), error_field, message),
-        Some(status),
-        error_field,
-    )
-}
-
-/// A stream `error` object, thrown as `APIError(undefined, error)`.
-fn stream_error_message(error: &Value) -> String {
-    catch_message(
-        &api_error_message(None, Some(error), None),
-        None,
-        Some(error),
-    )
-}
-
-/// `APIError.makeMessage`.
-fn api_error_message(status: Option<f64>, error: Option<&Value>, message: Option<&str>) -> String {
-    let error = error.filter(|error| is_truthy(error));
-    let msg = error.map_or_else(
-        || message.unwrap_or_default().to_owned(),
-        |error| match error.get("message").filter(|m| is_truthy(m)) {
-            Some(Value::String(text)) => text.clone(),
-            Some(other) => crate::json::to_string(other).unwrap_or_default(),
-            None => crate::json::to_string(error).unwrap_or_default(),
-        },
-    );
-    match (status, msg.is_empty()) {
-        (Some(status), false) => format!("{status} {msg}"),
-        (Some(status), true) => format!("{status} status code (no body)"),
-        (None, false) => msg,
-        (None, true) => String::from("(no status code or body)"),
-    }
-}
-
-/// pi's `catch`: `formatProviderError(normalizeProviderError(error))`, then
-/// `error.error.metadata.raw` unless the message already shows it.
-fn catch_message(message: &str, status: Option<f64>, error: Option<&Value>) -> String {
-    let fields = serde_json::json!({
-        "status": status,
-        "error": error.cloned().unwrap_or(Value::Null),
-    });
-    let normalized = crate::http::error_body::normalize_provider_error(message, Some(&fields));
-    let mut rendered = crate::http::error_body::format_provider_error(&normalized, None);
-    let raw = error
-        .and_then(|error| error.get("metadata"))
-        .and_then(|metadata| metadata.get("raw"))
-        .filter(|raw| is_truthy(raw))
-        .map(js_string);
-    if let Some(raw) = raw.filter(|raw| !rendered.contains(raw.as_str())) {
+/// pi's `catch` for an SDK error: `formatProviderError(normalizeProviderError(error))`,
+/// then `error.error.metadata.raw` unless the message already shows it.
+fn catch_message(error: &SdkError) -> String {
+    let mut rendered = format_provider_error(&error.normalized(), None);
+    if let Some(raw) = error
+        .raw_metadata()
+        .filter(|raw| !rendered.contains(raw.as_str()))
+    {
         rendered.push('\n');
         rendered.push_str(&raw);
     }
     rendered
-}
-
-/// JavaScript `String(value)` for a JSON value.
-fn js_string(value: &Value) -> String {
-    match value {
-        Value::String(text) => text.clone(),
-        Value::Object(_) => String::from("[object Object]"),
-        Value::Array(items) => items
-            .iter()
-            .map(|item| {
-                if item.is_null() {
-                    String::new()
-                } else {
-                    js_string(item)
-                }
-            })
-            .collect::<Vec<_>>()
-            .join(","),
-        other => crate::json::to_string(other).unwrap_or_default(),
-    }
 }
 
 /// The reasoning fields a delta may carry, in upstream's lookup order.

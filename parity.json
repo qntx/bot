@@ -211,6 +211,7 @@
       "id": "AI-API-OPENAI-COMPLETIONS",
       "upstream": [
         "packages/ai/src/api/openai-completions.ts",
+        "packages/ai/src/api/github-copilot-headers.ts",
         "packages/ai/src/api/constrained-sampling.ts",
         "packages/ai/src/api/openai-prompt-cache.ts",
         "packages/ai/src/utils/hash.ts"
@@ -230,6 +231,17 @@
       "vectors": ["vectors/ai/openai-completions-stream.json"],
       "rust": ["crates/ovo-ai/tests/it/openai_completions_stream.rs"],
       "classes": ["engine-error-text", "wall-clock"]
+    },
+    {
+      "id": "AI-API-OPENAI-RESPONSES",
+      "upstream": [
+        "packages/ai/src/api/openai-responses.ts",
+        "packages/ai/src/api/openai-responses-shared.ts",
+        "packages/ai/src/api/github-copilot-headers.ts"
+      ],
+      "vectors": ["vectors/ai/openai-responses-request.json"],
+      "rust": ["crates/ovo-ai/tests/it/openai_responses.rs"],
+      "classes": ["sdk-headers", "engine-error-text"]
     }
   ],
   "classes": {

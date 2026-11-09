@@ -32,6 +32,19 @@ use formatter::{JsFormatter, SharedBuffer};
 #[error(transparent)]
 pub struct JsonError(serde_json::Error);
 
+/// JavaScript truthiness of a JSON value.
+#[must_use]
+pub fn is_truthy(value: &serde_json::Value) -> bool {
+    use serde_json::Value;
+    match value {
+        Value::Null => false,
+        Value::Bool(flag) => *flag,
+        Value::Number(number) => number.as_f64().is_some_and(|n| n != 0.0 && !n.is_nan()),
+        Value::String(text) => !text.is_empty(),
+        Value::Array(_) | Value::Object(_) => true,
+    }
+}
+
 /// Serialize `value` into the exact bytes `JSON.stringify(value)` produces.
 ///
 /// # Errors

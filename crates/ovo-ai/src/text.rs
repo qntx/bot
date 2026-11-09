@@ -93,6 +93,22 @@ pub fn js_trim_end(text: &str) -> &str {
     text.trim_end_matches(is_js_whitespace)
 }
 
+/// `replace(/[^a-zA-Z0-9_-]/g, "_")`, the id sanitizing both `OpenAI`
+/// adapters apply: the regex matches UTF-16 code units, so a surrogate pair
+/// becomes two underscores.
+#[must_use]
+pub fn replace_non_id_chars(id: &str) -> String {
+    let mut out = String::with_capacity(id.len());
+    for c in id.chars() {
+        if c.is_ascii_alphanumeric() || c == '_' || c == '-' {
+            out.push(c);
+        } else {
+            out.extend(std::iter::repeat_n('_', c.len_utf16()));
+        }
+    }
+    out
+}
+
 /// `sanitizeSurrogates` removes unpaired UTF-16 code units from a JS
 /// string.
 ///

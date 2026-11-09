@@ -8,8 +8,7 @@
 //! The streaming side is
 //! [`stream`](crate::api::openai_completions::stream).
 //!
-//! Not yet ported: GitHub Copilot dynamic headers (Copilot is not an M1
-//! provider), `onPayload`.
+//! Not yet ported: `onPayload`.
 
 use std::collections::BTreeMap;
 
@@ -17,6 +16,8 @@ use serde_json::{Map, Value, json};
 
 use crate::api::constrained_sampling::create_grammar_tool_input_properties;
 use crate::api::openai_prompt_cache::clamp_openai_prompt_cache_key;
+use crate::api::openai_sdk::{client_api_key, endpoint_url, request_headers, tool_choice_value};
+use crate::json::is_truthy;
 use crate::options::{
     CacheRetention, SimpleStreamOptions, StreamOptions, build_base_options, resolve_cache_retention,
 };
@@ -30,7 +31,6 @@ use crate::transcript::{
 use crate::types::content::AssistantContentBlock;
 use crate::types::message::Message;
 use crate::types::model::{Model, ModelThinkingLevel, ThinkingLevel, ThinkingLevelMapValue};
-use crate::types::tool::ToolChoice;
 
 pub mod compat;
 pub mod convert;
@@ -77,12 +77,6 @@ impl OpenAiCompletionsOptions {
         context: &TranscriptContext,
         options: &SimpleStreamOptions,
     ) -> Self {
-        let tool_choice = options.tool_choice.map(|choice| {
-            Value::from(match choice {
-                ToolChoice::Auto => "auto",
-                ToolChoice::None => "none",
-            })
-        });
         Self {
             base: build_base_options(
                 model,
@@ -90,7 +84,7 @@ impl OpenAiCompletionsOptions {
                 Some(options),
                 options.base.api_key.as_deref(),
             ),
-            tool_choice,
+            tool_choice: options.tool_choice.map(tool_choice_value),
             reasoning_effort: options.reasoning.and_then(|level| {
                 crate::cost::clamp_thinking_level(model, level.into()).thinking()
             }),
@@ -148,43 +142,17 @@ pub fn build_request(
         .as_deref()
         .filter(|id| !id.is_empty() && retention != CacheRetention::None);
     Ok(OpenAiCompletionsRequest {
-        url: chat_completions_url(&model.base_url)?,
-        headers: request_headers(model, base, &api_key, session_id, &compat),
+        url: endpoint_url(&model.base_url, "chat/completions")?,
+        headers: request_headers(
+            model,
+            transcript.messages(),
+            base,
+            &api_key,
+            &session_affinity(session_id, &compat),
+        ),
         body: crate::json::to_vec(&Value::Object(params)).map_err(|error| error.to_string())?,
         grammar_tool_input_properties,
     })
-}
-
-/// `getClientApiKey`: the API key, or `"unused"` when a request header
-/// carries the credential.
-fn client_api_key(provider: &str, options: &StreamOptions) -> Result<String, String> {
-    if let Some(key) = options.api_key.as_deref().filter(|key| !key.is_empty()) {
-        return Ok(key.to_owned());
-    }
-    let has_header = |expected: &str| {
-        options.headers.iter().flatten().any(|(name, value)| {
-            name.eq_ignore_ascii_case(expected)
-                && value
-                    .as_str()
-                    .is_some_and(|value| !crate::text::js_trim(value).is_empty())
-        })
-    };
-    if has_header("authorization") || has_header("cf-aig-authorization") {
-        return Ok(String::from("unused"));
-    }
-    Err(format!("No API key for provider: {provider}"))
-}
-
-/// The SDK's `buildURL` for `/chat/completions`, normalized like `new URL`.
-fn chat_completions_url(base_url: &str) -> Result<String, String> {
-    let path = if base_url.ends_with('/') {
-        "chat/completions"
-    } else {
-        "/chat/completions"
-    };
-    url::Url::parse(&format!("{base_url}{path}"))
-        .map(String::from)
-        .map_err(|_| String::from("Invalid URL"))
 }
 
 /// `buildParams`: the body in upstream insertion order.
@@ -283,17 +251,6 @@ fn build_params(
         params.extend(sampling);
     }
     Ok(params)
-}
-
-/// JavaScript truthiness of a JSON value.
-fn is_truthy(value: &Value) -> bool {
-    match value {
-        Value::Null => false,
-        Value::Bool(flag) => *flag,
-        Value::Number(number) => number.as_f64().is_some_and(|n| n != 0.0 && !n.is_nan()),
-        Value::String(text) => !text.is_empty(),
-        Value::Array(_) | Value::Object(_) => true,
-    }
 }
 
 /// `hasToolHistory`: the conversation has tool calls or tool results.
@@ -620,37 +577,11 @@ fn mark_text(message: &mut Value, cache_control: &Value) -> bool {
     }
 }
 
-/// The request headers in the order the `OpenAI` SDK applies them: accept
-/// and bearer auth, then pi's `defaultHeaders` (`createClient`: identity,
-/// `model.headers`, session affinity, the request headers), then the body
-/// content type. Later sources win case-insensitively and `null` removes a
-/// header.
-fn request_headers(
-    model: &Model,
-    base: &StreamOptions,
-    api_key: &str,
+/// The session affinity headers for `sessionId`, when the compat sends them.
+fn session_affinity(
     session_id: Option<&str>,
     compat: &OpenAiCompletionsCompat,
 ) -> Map<String, Value> {
-    let mut sdk = Map::new();
-    sdk.insert("Accept".into(), Value::from("application/json"));
-    sdk.insert(
-        "Authorization".into(),
-        Value::from(format!("Bearer {api_key}")),
-    );
-    let target = crate::identity::ClientIdentityTarget {
-        provider: model.provider.as_str().to_owned(),
-        base_url: model.base_url.clone(),
-    };
-    let identity: Map<String, Value> = crate::identity::get_identity_headers(
-        &target,
-        base.identity.as_ref(),
-        crate::identity::OVO_PRODUCT,
-        crate::identity::OVO_VERSION,
-    )
-    .into_iter()
-    .map(|(name, value)| (name, Value::from(value)))
-    .collect();
     let mut affinity = Map::new();
     if let Some(session_id) = session_id.filter(|_| compat.send_session_affinity_headers) {
         let names: &[&str] = match compat.session_affinity_format {
@@ -666,15 +597,5 @@ fn request_headers(
             affinity.insert((*name).into(), Value::from(session_id));
         }
     }
-    let mut body = Map::new();
-    body.insert("Content-Type".into(), Value::from("application/json"));
-    crate::http::headers::provider_headers_to_record(&[
-        Some(&sdk),
-        Some(&identity),
-        model.headers.as_ref(),
-        Some(&affinity),
-        base.headers.as_ref(),
-        Some(&body),
-    ])
-    .unwrap_or_default()
+    affinity
 }

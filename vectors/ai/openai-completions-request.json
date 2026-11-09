@@ -13608,6 +13608,184 @@
 		}
 	},
 	{
+		"name": "github-copilot-user",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-completions",
+			"provider": "github-copilot",
+			"baseUrl": "https://api.githubcopilot.com",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "hi",
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0
+		},
+		"request": {
+			"url": "https://api.githubcopilot.com/chat/completions",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json",
+				"openai-intent": "conversation-edits",
+				"x-initiator": "user"
+			},
+			"body": "{\"model\":\"m\",\"messages\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":\"hi\"}],\"stream\":true,\"stream_options\":{\"include_usage\":true},\"store\":false}"
+		}
+	},
+	{
+		"name": "github-copilot-agent-vision",
+		"model": {
+			"id": "m",
+			"name": "M",
+			"api": "openai-completions",
+			"provider": "github-copilot",
+			"baseUrl": "https://api.githubcopilot.com",
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"reasoning": false,
+			"contextWindow": 128000,
+			"maxTokens": 4096
+		},
+		"context": {
+			"messages": [
+				{
+					"role": "system",
+					"content": "You are helpful.",
+					"toolsAdded": [
+						{
+							"name": "read",
+							"description": "read tool",
+							"parameters": {
+								"type": "object",
+								"properties": {
+									"path": {
+										"type": "string"
+									},
+									"limit": {
+										"type": "number"
+									}
+								},
+								"required": [
+									"path"
+								]
+							}
+						}
+					],
+					"timestamp": 0
+				},
+				{
+					"role": "user",
+					"content": "look",
+					"timestamp": 0
+				},
+				{
+					"role": "assistant",
+					"content": [
+						{
+							"type": "toolCall",
+							"id": "c1",
+							"name": "read",
+							"arguments": {
+								"path": "a"
+							}
+						}
+					],
+					"api": "openai-completions",
+					"provider": "custom",
+					"model": "m",
+					"usage": {
+						"input": 0,
+						"output": 0,
+						"cacheRead": 0,
+						"cacheWrite": 0,
+						"totalTokens": 0,
+						"cost": {
+							"input": 0,
+							"output": 0,
+							"cacheRead": 0,
+							"cacheWrite": 0,
+							"total": 0
+						}
+					},
+					"stopReason": "toolUse",
+					"timestamp": 0
+				},
+				{
+					"role": "toolResult",
+					"toolCallId": "c1",
+					"toolName": "read",
+					"content": [
+						{
+							"type": "text",
+							"text": "shot"
+						},
+						{
+							"type": "image",
+							"data": "aGk=",
+							"mimeType": "image/png"
+						}
+					],
+					"isError": false,
+					"timestamp": 0
+				}
+			]
+		},
+		"options": {
+			"apiKey": "sk-test",
+			"maxRetries": 0,
+			"headers": {
+				"X-Initiator": "user"
+			}
+		},
+		"request": {
+			"url": "https://api.githubcopilot.com/chat/completions",
+			"headers": {
+				"accept": "application/json",
+				"authorization": "Bearer sk-test",
+				"content-type": "application/json",
+				"copilot-vision-request": "true",
+				"openai-intent": "conversation-edits",
+				"x-initiator": "user"
+			},
+			"body": "{\"model\":\"m\",\"messages\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":\"look\"},{\"role\":\"assistant\",\"content\":null,\"tool_calls\":[{\"id\":\"c1\",\"type\":\"function\",\"function\":{\"name\":\"read\",\"arguments\":\"{\\\"path\\\":\\\"a\\\"}\"}}]},{\"role\":\"tool\",\"content\":\"shot\",\"tool_call_id\":\"c1\"},{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"Attached image(s) from tool result:\"},{\"type\":\"image_url\",\"image_url\":{\"url\":\"data:image/png;base64,aGk=\"}}]}],\"stream\":true,\"stream_options\":{\"include_usage\":true},\"store\":false,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"read\",\"description\":\"read tool\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"},\"limit\":{\"type\":\"number\"}},\"required\":[\"path\"]}}}]}"
+		}
+	},
+	{
 		"name": "identity-nvidia",
 		"model": {
 			"id": "m",

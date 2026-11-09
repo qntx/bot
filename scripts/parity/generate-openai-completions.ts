@@ -909,6 +909,23 @@ const HEADERS: Case[] = [
     options: options({ identity: ATTRIBUTION, sessionId: "s1" }),
   },
   {
+    name: "github-copilot-user",
+    model: model({ provider: "github-copilot", baseUrl: "https://api.githubcopilot.com" }),
+    context: conversation,
+    options: options(),
+  },
+  {
+    name: "github-copilot-agent-vision",
+    model: model({ provider: "github-copilot", baseUrl: "https://api.githubcopilot.com" }),
+    context: ctx(
+      withTools(tool()),
+      user("look"),
+      assistant([call("c1")]),
+      toolResult("c1", [text("shot"), image]),
+    ),
+    options: options({ headers: { "X-Initiator": "user" } }),
+  },
+  {
     name: "identity-nvidia",
     model: model({ provider: "nvidia", baseUrl: "https://integrate.api.nvidia.com/v1" }),
     context: conversation,

@@ -5,8 +5,12 @@
 /// `anthropic-messages` — the Anthropic Messages API adapter.
 pub mod anthropic_messages;
 pub mod constrained_sampling;
+pub mod github_copilot;
 /// `openai-completions` — the OpenAI Chat Completions API adapter.
 pub mod openai_completions;
 pub mod openai_prompt_cache;
+/// `openai-responses` — the OpenAI Responses API adapter.
+pub mod openai_responses;
+pub mod openai_sdk;
 #[cfg(feature = "http")]
 mod stream_support;
