@@ -48,7 +48,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           # Vectors record the generating Node version; this pins it.
           node-version-file: .node-version
