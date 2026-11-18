@@ -30,7 +30,7 @@
     "@earendil-works/pi-ai": "1.5.0",
     "@earendil-works/pi-coding-agent": "1.5.0",
     "@earendil-works/pi-schema": "1.5.0",
-    "@qntx/oxfmt": "1.1.1",
+    "@qntx/oxfmt": "2.0.0",
     "@qntx/oxlint": "1.1.1",
     "@qntx/tsconfig": "1.0.1",
     "@taplo/cli": "0.7.0",
