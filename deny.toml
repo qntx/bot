@@ -20,7 +20,31 @@ yanked  = "deny"
 # Unmaintained, not vulnerable; transitive-only and not removable:
 #   paste (RUSTSEC-2024-0436)          via specta-macros / tauri-specta
 #   proc-macro-error (RUSTSEC-2024-0370) via glib-macros (Linux GTK tree)
-ignore = ["RUSTSEC-2024-0436", "RUSTSEC-2024-0370"]
+ignore = [
+  "RUSTSEC-2024-0436",
+  "RUSTSEC-2024-0370",
+  # url <= 2.5.8: `Url::origin()` recurses once per nested `blob:` prefix
+  # and can overflow the stack. url 2.5.8 arrives via ovo-ai (direct and
+  # through reqwest) and the tauri tree of ovo-desktop (tauri, tao, wry,
+  # tauri-runtime, tauri-codegen, schemars, tauri-utils). Across the
+  # workspace and every registry crate in Cargo.lock, nothing calls
+  # `Url::origin()` or `url::quirks::origin()` outside url's own sources —
+  # the vulnerable function is never invoked.
+  # Fixed in 2.5.9, published 2026-11-20T23:03Z.
+  # Revisit: from 2026-11-28 (7-day rule) run `cargo update -p url` to
+  # 2.5.9 and remove this entry.
+  { id = "RUSTSEC-2026-0592", reason = "Url::origin() blob: recursion; no caller of .origin()/quirks::origin anywhere in the workspace or lockfile deps; bump url to 2.5.9 and remove from 2026-11-28" },
+  # cookie < 0.18.3: `PrivateJar::add`/`add_original` nonces can repeat
+  # after fork(). cookie 0.18.2 arrives via tauri/tauri-runtime/wry
+  # (ovo-desktop only). `PrivateJar` is `#[cfg(feature = "private")]` and
+  # only cookie's `default` feature is enabled in this graph, so the
+  # vulnerable type is not even compiled; nothing calls `.private()`/
+  # `.private_mut()`/`add_original`, and ovo-desktop never fork()s.
+  # Fixed in 0.18.3, published 2026-11-23T07:45Z.
+  # Revisit: from 2026-11-30 (7-day rule) run `cargo update -p cookie`
+  # to 0.18.3 and remove this entry.
+  { id = "RUSTSEC-2026-0594", reason = "cookie PrivateJar nonce reuse after fork; cookie's private feature is off so PrivateJar is not compiled, and nothing calls it; bump cookie to 0.18.3 and remove from 2026-11-30" },
+]
 
 [licenses]
 # BSD-2-Clause: Inflector via specta-macros. Apache-2.0 WITH LLVM-exception:
