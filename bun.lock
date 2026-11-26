@@ -8,7 +8,7 @@
         "@earendil-works/pi-ai": "1.5.0",
         "@earendil-works/pi-coding-agent": "1.5.0",
         "@earendil-works/pi-schema": "1.5.0",
-        "@qntx/oxfmt": "1.1.1",
+        "@qntx/oxfmt": "2.0.0",
         "@qntx/oxlint": "1.1.1",
         "@qntx/tsconfig": "1.0.1",
         "@taplo/cli": "0.7.0",
@@ -258,7 +258,7 @@
 
     "@qntx/ovo": ["@qntx/ovo@workspace:packages/ovo"],
 
-    "@qntx/oxfmt": ["@qntx/oxfmt@1.1.1", "", { "peerDependencies": { "oxfmt": ">=0.66.0 <1.0.0" }, "optionalPeers": ["oxfmt"] }, "sha512-i/+3GBLZlwDNW6gT1Z76LKEfPBm4LMSjee0URPRn5YeILbEtGQtMuUNNLcfabYpGPZI4wGL3YyPjdD3/Abf9Kw=="],
+    "@qntx/oxfmt": ["@qntx/oxfmt@2.0.0", "", { "peerDependencies": { "oxfmt": ">=0.74.0 <1.0.0" }, "optionalPeers": ["oxfmt"] }, "sha512-68wFtbY19xmFd8wNAnUv1bCrQYM+eZd0sSXIWQuWo6rW/8WrKZNgE3xmuS/VdNUiyHGLX5H6IVUaVSKVThZCmQ=="],
 
     "@qntx/oxlint": ["@qntx/oxlint@1.1.1", "", { "peerDependencies": { "oxlint": "^1.82.0", "oxlint-tsgolint": ">=7.0.2001" }, "optionalPeers": ["oxlint", "oxlint-tsgolint"] }, "sha512-zvn9BENK1Ly1GmxwVYEDZJOCm7koW2Cji3l+M1i19gLpcTqmatvtWBEtBRNc6rPxfVRNz0mhc+6z76iTKuNFqw=="],
 
