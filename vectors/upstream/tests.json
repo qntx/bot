@@ -1,5 +1,5 @@
 {
-  "commit": "f9a26365568127461c47a07a37dcb42c140a3ac5",
+  "commit": "b4afdddf44e059c67ccf5097e5317d913521b470",
   "files": {
     "packages/agent/test/agent-loop.test.ts": [
       "uses the configured default when a legacy caller omits streamFn",
@@ -130,6 +130,8 @@
       "should handle immediate abort",
       "should abort mid-stream",
       "should handle immediate abort",
+      "should abort mid-stream",
+      "should handle immediate abort",
       "should handle abort then new message"
     ],
     "packages/ai/test/anthropic-auth-token.test.ts": [
@@ -192,6 +194,19 @@
     "packages/ai/test/anthropic-long-cache-retention-e2e.test.ts": [
       "covers every generated anthropic-messages model"
     ],
+    "packages/ai/test/anthropic-message-threads.test.ts": [
+      "creates a thread, then continues it with only the new messages",
+      "continues after a reply that ends in tool calls, without placeholder results in the prefix",
+      "continues when the effort level changes between turns",
+      "continues when a system message with a native tool change follows the reply",
+      "creates a new thread when the request has no messages beyond the stored prefix",
+      "shows the error when the resend fails too and keeps threads on",
+      "leaves strict tool rejections to the strict tool fallback",
+      "starts a new thread when a retried continue finds the thread in flight",
+      "does not use threads with cacheRetention none",
+      "matches Claude Code tool names across turns with OAuth",
+      "sends cache warming replays without a thread and keeps the conversation's thread"
+    ],
     "packages/ai/test/anthropic-mid-conversation-effort.test.ts": [
       "reconstructs an exact historical marker prefix and appends the current marker",
       "defaults omitted effort to high and still enables drop_block",
@@ -201,7 +216,8 @@
       "leaves unsupported models on top-level effort",
       "sends the effort and binding beta headers",
       "generates exact model and transport gates",
-      "supports off only on managed models that accept disabled thinking"
+      "supports off only on managed models that accept disabled thinking",
+      "gates Fable 5.2 like Fable 5.1 and keeps only fallbacks that accept per-message effort"
     ],
     "packages/ai/test/anthropic-oauth.test.ts": [
       "keeps the localhost redirect_uri for manual callback login",
@@ -238,17 +254,22 @@
       "does not downgrade a hook exception, even if it looks like the provider rejection",
       "honors cancellation before the fallback attempt",
       "does not retry an SSE error after response headers",
-      "does not disable strict sampling on later requests",
+      "does not disable strict sampling on later requests without a session",
+      "sends preferred tools non-strict right away on later requests of a rejected session",
+      "tries strict sampling again after the session's resources are cleaned up",
+      "surfaces a rejection of a remembered session's required tools without retrying",
       "preserves prefer through pi-messages so the gateway's Anthropic adapter can fall back"
     ],
     "packages/ai/test/anthropic-strict-tool-schema.test.ts": [
       "only sends the full input schema for strict JSON-schema tools",
+      "keeps root definitions in non-strict schemas so property refs resolve",
       "sends prefer tools non-strict when they use keywords Anthropic strict mode rejects"
     ],
     "packages/ai/test/anthropic-temperature-compat.test.ts": [
       "omits temperature for Claude Opus 4.7",
       "omits temperature for Claude Opus 4.8",
       "omits default temperature for Claude Opus 4.7",
+      "omits temperature for Claude Sonnet 5",
       "keeps temperature for Claude Opus 4.6",
       "keeps temperature for Claude Sonnet 4.6",
       "omits temperature for custom models with supportsTemperature disabled"
@@ -271,6 +292,9 @@
       "should handle pi's built-in tools (read, write, edit, bash)",
       "should NOT map find to Glob - find is not a CC tool name",
       "should handle custom tools that don't match any CC tool names"
+    ],
+    "packages/ai/test/azure-models.test.ts": [
+      "keeps OpenAI's long-context price tier on Azure OpenAI models"
     ],
     "packages/ai/test/azure-openai-base-url.test.ts": [
       "normalizes Cognitive Services root endpoints to /openai/v1",
@@ -406,7 +430,10 @@
       "retries a strict tool limit rejection with preferred tools non-strict and keeps required tools strict",
       "does not retry without preferred strict tools",
       "does not retry other validation errors",
-      "retries only once"
+      "retries only once",
+      "does not remember a rejection without a session",
+      "sends preferred tools non-strict right away on later requests of a rejected session",
+      "tries strict sampling again after the session's resources are cleaned up"
     ],
     "packages/ai/test/bedrock-thinking-payload.test.ts": [
       "uses adaptive thinking for Claude Opus 4.8 when reasoning is enabled",
@@ -440,6 +467,15 @@
       "should set prompt_cache_retention for non-api.openai.com baseUrl by default",
       "should omit prompt_cache_retention when supportsLongCacheRetention is false"
     ],
+    "packages/ai/test/clamp-max-tokens.test.ts": [
+      "leaves 15% of the input unused so an OpenRouter overcount still fits (#10497)",
+      "leaves at least 4096 tokens unused for small inputs",
+      "keeps the model output limit when it already fits",
+      "sends up to 32768 tokens when the proportional margin leaves no room",
+      "uses the real room minus 4096 when less than 32768 tokens fit",
+      "keeps only the fixed 4096 margin for small windows",
+      "sends 1 token when the input already exceeds the window"
+    ],
     "packages/ai/test/classifier-images-live.test.ts": [
       "classifies images with jev-latest"
     ],
@@ -450,6 +486,8 @@
       "rejects images for classifier models without image input before calling the provider",
       "routes OpenAI GPT-6 Luna through the Decisions API with images",
       "lists OpenAI Decisions models only for API key credentials",
+      "routes GitHub Copilot Microsoft-Decision-1 to the account's /v1/systemone endpoint",
+      "adds the System One version prefix to the GitHub Copilot catalog base URL",
       "routes OpenRouter classifier models through the System One API"
     ],
     "packages/ai/test/cloudflare-ai-binding.test.ts": [
@@ -517,6 +555,7 @@
       "qwen3.7-max - should detect overflow via isContextOverflow",
       "qwen3.8-max - should detect overflow via isContextOverflow",
       "qwen3.7-max - should detect overflow via isContextOverflow",
+      "qwen3.8-max - should detect overflow via isContextOverflow",
       "kimi-for-coding - should detect overflow via isContextOverflow",
       "google/gemini-2.5-flash via AI Gateway - should detect overflow via isContextOverflow",
       "anthropic/claude-sonnet-4.5 via OpenRouter - should detect overflow via isContextOverflow",
@@ -530,6 +569,10 @@
     ],
     "packages/ai/test/cross-provider-handoff.test.ts": [],
     "packages/ai/test/empty.test.ts": [
+      "should handle empty content array",
+      "should handle empty string content",
+      "should handle whitespace-only content",
+      "should handle empty assistant message in conversation",
       "should handle empty content array",
       "should handle empty string content",
       "should handle whitespace-only content",
@@ -661,7 +704,11 @@
       "applies a provider prefix with status and body",
       "preserves the message (with prefix + status) when it already carries the body",
       "returns the bare message for a non-Error value",
-      "keeps an excerpt that does not hold the whole body alive"
+      "keeps an excerpt that does not hold the whole body alive",
+      "appends the deepest cause of a connection error with no status or body",
+      "adds the error code when the cause message lacks it",
+      "leaves errors without a cause unchanged",
+      "surfaces the reason from a real openai SDK connection failure"
     ],
     "packages/ai/test/event-stream.test.ts": [
       "drains buffered events in order and ignores events pushed after completion",
@@ -718,7 +765,7 @@
       "registers non-GLM, non-Kimi-K3 models via Anthropic-compatible Messages API",
       "aligns GLM 5.3 Fast with GLM 5.3's OpenAI-compatible config",
       "routes Kimi K3 through the OpenAI-compatible API with native effort controls",
-      "keeps toggle-only Messages models without a verified fallback on budget-based thinking",
+      "keeps non-adaptive Messages models on budget-based thinking",
       "resolves FIREWORKS_API_KEY from the environment",
       "sets Fireworks-specific compat for session affinity and unsupported tool fields",
       "sends x-session-affinity header for Fireworks models",
@@ -850,6 +897,8 @@
       "emits decision models as System One classifier models"
     ],
     "packages/ai/test/image-tool-result.test.ts": [
+      "should handle tool result with only image",
+      "should handle tool result with text and image",
       "should handle tool result with only image",
       "should handle tool result with text and image",
       "should handle tool result with only image",
@@ -1059,6 +1108,7 @@
       "passes effective API-key credentials and refresh options while skipping unconfigured providers",
       "passes the registered provider's base URL, including wrapper overrides, to refreshModels",
       "refreshes expired OAuth before refreshing models",
+      "refreshes catalogs that need only configured auth without refreshing OAuth",
       "persists an OAuth refresh that started before the model refresh was cancelled",
       "always gives providers a concrete signal",
       "binds model-store waits to the provider refresh signal",
@@ -1157,6 +1207,7 @@
       "streams SSE responses and forwards raw provider events",
       "processes a terminal SSE event without a trailing blank line",
       "completes after response.completed even when the SSE body stays open",
+      "removes SSE retry backoff abort listeners after the retry succeeds",
       "maps response.incomplete to stopReason length even when the SSE body stays open",
       "aborts SSE fetch after the configured HTTP timeout when response headers do not arrive",
       "aborts SSE body reads after response headers arrive",
@@ -1198,7 +1249,13 @@
       "resolves Cloudflare AI Gateway base URL through provider auth",
       "preserves inline upstream Authorization for Cloudflare AI Gateway BYOK requests",
       "sends session affinity headers for Workers AI through Cloudflare AI Gateway",
-      "still emits tools: [] for Anthropic/LiteLLM proxy when conversation has tool history"
+      "omits tools by default",
+      "sends tools: [] when compat.requiresToolsWithToolHistory is set"
+    ],
+    "packages/ai/test/openai-completions-non-null-assistant-content.test.ts": [
+      "sends null content for tool-call-only assistant messages by default",
+      "sends empty string content without inserting an assistant message after tool results",
+      "still inserts an assistant message when requiresAssistantAfterToolResult is enabled"
     ],
     "packages/ai/test/openai-completions-prompt-cache.test.ts": [
       "sets prompt_cache_key for direct OpenAI requests when caching is enabled",
@@ -1206,6 +1263,10 @@
       "clamps prompt_cache_key to OpenAI's 64-character limit",
       "omits prompt cache fields when cacheRetention is none",
       "omits prompt cache fields for non-OpenAI base URLs without compatible long retention",
+      "respects disabled caching on an opted-in proxy",
+      "lets a proxy disable cache keys independently of long retention",
+      "does not invent an identity for an opted-in proxy",
+      "clamps proxy cache keys to 64 Unicode characters",
       "uses PI_CACHE_RETENTION for direct OpenAI requests",
       "sends known session-affinity headers when compat.sendSessionAffinityHeaders is enabled",
       "sends Baseten session affinity for built-in catalog models",
@@ -1349,7 +1410,7 @@
       "auto-detects OpenRouter session-affinity header for OpenRouter Responses endpoints",
       "uses OpenAI no-session format when configured",
       "uses OpenAI no-session format for OpenCode Responses models",
-      "can omit OpenAI session_id header while preserving other affinity data",
+      "can omit OpenAI session-id header while preserving other affinity data",
       "lets explicit headers override the default OpenAI cache-affinity headers",
       "omits OpenAI cache-affinity headers when cacheRetention is none",
       "sends max_output_tokens by default",
@@ -1377,6 +1438,12 @@
     "packages/ai/test/openai-responses-partial-json-cleanup.test.ts": [
       "removes partialJson from persisted tool-call blocks at output_item.done",
       "marks malformed final arguments instead of keeping the parsed prefix"
+    ],
+    "packages/ai/test/openai-responses-prompt-cache.test.ts": [
+      "preserves the existing default behavior",
+      "emits the key when enabled",
+      "omits the key when disabled",
+      "lets cacheRetention none override enabled mode"
     ],
     "packages/ai/test/openai-responses-reasoning-replay-e2e.test.ts": [
       "skips reasoning-only history after an aborted turn",
@@ -1544,7 +1611,10 @@
     ],
     "packages/ai/test/qwen-token-plan-models.test.ts": [
       "exposes exactly the documented Individual text models",
-      "reuses the international Token Plan environment variable"
+      "reuses the international Token Plan environment variable",
+      "exposes exactly the documented Individual text models on the China endpoint",
+      "uses the China Token Plan environment variable",
+      "exposes glm-5.3 reasoning_effort levels for qwen-token-plan-individual"
     ],
     "packages/ai/test/radius-oauth.test.ts": [
       "uses gateway endpoints directly for device login",
@@ -1579,6 +1649,7 @@
       "matches explicit provider retry guidance",
       "matches Bun fetch socket drop wording",
       "matches upstream request buffer exhaustion wording",
+      "matches gateway wording for a stream cut short mid-reply",
       "matches OpenAI Responses streams that end before terminal events",
       "matches Azure peak-load capacity errors",
       "keeps provider limit errors non-retryable",
@@ -1783,6 +1854,11 @@
       "should handle tool calling",
       "should handle streaming",
       "should handle thinking mode",
+      "should handle multi-turn with thinking and tools",
+      "should complete basic text generation",
+      "should handle tool calling",
+      "should handle streaming",
+      "should handle thinking mode",
       "should complete basic text generation",
       "should handle tool calling",
       "should handle streaming",
@@ -1835,6 +1911,10 @@
       "allocates linearly in the argument text",
       "releases the stream, its partial messages and argument snapshots once the caller drops them",
       "leaves no stream state on the error message of a stream cut off mid-call"
+    ],
+    "packages/ai/test/strict-tool-limits.test.ts": [
+      "remembers marked sessions until their cleanup",
+      "drops the oldest session beyond 10,000"
     ],
     "packages/ai/test/supports-xhigh.test.ts": [
       "includes max but not xhigh for Anthropic Opus 4.6 on anthropic-messages API",
@@ -1930,10 +2010,12 @@
       "should include token stats when aborted mid-stream",
       "should include token stats when aborted mid-stream",
       "should include token stats when aborted mid-stream",
+      "should include token stats when aborted mid-stream",
       "should include token stats when aborted mid-stream"
     ],
     "packages/ai/test/tool-call-id-normalization.test.ts": [],
     "packages/ai/test/tool-call-without-result.test.ts": [
+      "should filter out tool calls without corresponding tool results",
       "should filter out tool calls without corresponding tool results",
       "should filter out tool calls without corresponding tool results",
       "should filter out tool calls without corresponding tool results",
@@ -1985,6 +2067,7 @@
       "qwen3.7-max - should return totalTokens equal to sum of components",
       "qwen3.8-max - should return totalTokens equal to sum of components",
       "qwen3.7-max - should return totalTokens equal to sum of components",
+      "qwen3.8-max - should return totalTokens equal to sum of components",
       "kimi-for-coding - should return totalTokens equal to sum of components",
       "google/gemini-2.5-flash - should return totalTokens equal to sum of components",
       "anthropic/claude-sonnet-4.5 - should return totalTokens equal to sum of components",
@@ -2043,6 +2126,9 @@
       "ignores malformed usage"
     ],
     "packages/ai/test/unicode-surrogate.test.ts": [
+      "should handle emoji in tool results",
+      "should handle real-world LinkedIn comment data with emoji",
+      "should handle unpaired high surrogate (0xD83D) in tool results",
       "should handle emoji in tool results",
       "should handle real-world LinkedIn comment data with emoji",
       "should handle unpaired high surrogate (0xD83D) in tool results",
@@ -2231,6 +2317,9 @@
       "returns source metadata for SDK custom tools",
       "keeps custom tools active but omits them from available tools when promptSnippet is not provided"
     ],
+    "packages/coding-agent/test/agent-session-queued-images.test.ts": [
+      "resizes images in steering, follow-up, and streaming prompt messages"
+    ],
     "packages/coding-agent/test/agent-session-retry.test.ts": [
       "retries after a transient error and succeeds",
       "exhausts max retries and emits failure",
@@ -2394,6 +2483,38 @@
       "accepts optional JSON output, credential output, and --no-refresh",
       "creates an auth-check runtime without catalog storage"
     ],
+    "packages/coding-agent/test/auth-login.test.ts": [
+      "requires exactly one provider and known options",
+      "rejects --no-browser with --api-key",
+      "rejects an unknown provider and lists the providers with a login flow",
+      "requires an interactive terminal after checking the arguments",
+      "signs in with an account in the browser without asking for a method",
+      "lists several other sign-in methods",
+      "offers no other sign-in methods when the provider has no method choice",
+      "--no-browser takes the only other sign-in method and opens nothing",
+      "--no-browser asks among several other sign-in methods and re-asks on an invalid selection",
+      "--no-browser keeps a provider's only sign-in method without opening the browser",
+      "asks for selections during API key setup",
+      "cancels a pending prompt without cancelling the login when the browser callback wins",
+      "reports a committed login separately from a failed login",
+      "--api-key saves an API key",
+      "uses the API key login of providers without account sign-in",
+      "--api-key fails for providers without API key login",
+      "reports providers configured outside pi",
+      "Ctrl+C during the catalog refresh skips it and keeps the login",
+      "reports cancellation",
+      "configures the Radius MCP server without asking, once"
+    ],
+    "packages/coding-agent/test/auth-logout.test.ts": [
+      "requires exactly one provider",
+      "removes a stored account login",
+      "removes a stored API key by provider name and keeps other credentials",
+      "succeeds when nothing is stored, so it can be repeated",
+      "removes credentials of providers that are not loaded, matched by id",
+      "reports credential removal failures",
+      "reports committed credential removal separately from a failed logout",
+      "rejects an unknown provider and lists the stored credentials"
+    ],
     "packages/coding-agent/test/auth-storage.test.ts": [
       "reads and resolves stored API-key credentials",
       "resolves command-backed API-key credentials",
@@ -2414,6 +2535,7 @@
       "retries transient EPERM on Windows (sync)",
       "surfaces a compromised file storage lock",
       "pre-aborted file operations do not create the backing file or run the mutation",
+      "a symlinked auth.json path waits for the lock held on the real file",
       "aborts while waiting for a held file lock without running the mutation later",
       "releases a file lock acquired concurrently with cancellation before mutation",
       "holds the file lock until a cancelled active callback settles without committing it",
@@ -2423,6 +2545,12 @@
       "preserves the stored credential after cancelling an active refresh mutation",
       "translates a credential-store refresh failure and allows a later retry",
       "does not overwrite malformed auth files"
+    ],
+    "packages/coding-agent/test/auth-terminal.test.ts": [
+      "rejects and cancels the login when stdin closes before an answer",
+      "normal cleanup does not cancel the login after an answer",
+      "keeps an answer delivered immediately before EOF",
+      "prompt cancellation does not cancel the whole login"
     ],
     "packages/coding-agent/test/auth-url-copy.test.ts": [
       "login dialog copies the auth URL instead of typing into the code input",
@@ -2436,6 +2564,9 @@
     "packages/coding-agent/test/bash-execution-width.test.ts": [
       "collapsed preview lines respect render-time width, not construction-time width",
       "re-computes lines when width changes between renders"
+    ],
+    "packages/coding-agent/test/bash-executor-truncation.test.ts": [
+      "does not mark short output as truncated"
     ],
     "packages/coding-agent/test/block-images.test.ts": [
       "should default blockImages to false",
@@ -2492,7 +2623,10 @@
     ],
     "packages/coding-agent/test/changelog.test.ts": [
       "rewrites package-relative changelog links to tag-pinned GitHub source links",
-      "canonicalizes old repository URLs without changing external links"
+      "canonicalizes old repository URLs without changing external links",
+      "ignores prerelease and build suffixes of the last seen version",
+      "compares release versions numerically",
+      "returns undefined for a last seen version without major.minor.patch"
     ],
     "packages/coding-agent/test/chat-viewport.test.ts": [
       "defaults the transcript scrollbar to auto and accepts overrides"
@@ -2657,6 +2791,9 @@
       "accepts $schema in keybindings.json without treating it as an action",
       "accepts $schema in themes and rejects malformed themes"
     ],
+    "packages/coding-agent/test/config-selector-keybindings.test.ts": [
+      "uses the user's keybindings.json"
+    ],
     "packages/coding-agent/test/config-value-migration.test.ts": [
       "leaves uppercase auth.json API key values unchanged",
       "leaves uppercase models.json API key and header values unchanged"
@@ -2704,7 +2841,8 @@
       "pages an open autocomplete menu before pasting an image with the same key (#7629)"
     ],
     "packages/coding-agent/test/custom-message.test.ts": [
-      "provides output padding to custom renderers and updates it"
+      "provides output padding to custom renderers and updates it",
+      "runs Markdown transformers on default-rendered content"
     ],
     "packages/coding-agent/test/default-tools-setting.test.ts": [
       "uses the configured list as the initial built-in selection",
@@ -2732,8 +2870,20 @@
       "prints an actionable error and exits 1 instead of throwing",
       "rethrows unrelated cwd errors"
     ],
+    "packages/coding-agent/test/diff.test.ts": [
+      "does not highlight shared indentation as an insertion"
+    ],
     "packages/coding-agent/test/documentation.test.ts": [
       "has valid navigation and no orphaned Markdown pages"
+    ],
+    "packages/coding-agent/test/edit-diff-window.test.ts": [
+      "matches the whole-file diff and patch when lines are distinct",
+      "produces a patch that applies when lines repeat",
+      "handles a replacement of many lines",
+      "diffs a small change in a 20 MB file with a 96 MB heap"
+    ],
+    "packages/coding-agent/test/edit-tool-diff-before-write.test.ts": [
+      "should compute the diff before writing, so a diff failure leaves the file unchanged"
     ],
     "packages/coding-agent/test/edit-tool-legacy-input.test.ts": [
       "keeps legacy fields out of the public schema",
@@ -2816,6 +2966,10 @@
       "message renderers receive keyText and keyHint in the render options",
       "entry renderers receive keyText and keyHint in the render options"
     ],
+    "packages/coding-agent/test/extension-selector.test.ts": [
+      "windows long option lists around the selection",
+      "renders short and empty option lists without a scroll indicator"
+    ],
     "packages/coding-agent/test/extensions-discovery.test.ts": [
       "discovers direct .ts files in extensions/",
       "loads the coding-agent entrypoint without rewriting pi-ai provider subpaths",
@@ -2886,6 +3040,7 @@
       "fails closed when a user_bash handler throws",
       "accepts valid user_bash operations and result overrides",
       "gets Markdown transformers in extension load order",
+      "runs Markdown transformers only on their message types",
       "gets message renderer by type",
       "gets entry renderer by type",
       "collects flags from extensions",
@@ -2925,6 +3080,9 @@
       "shares the queue between edit and write",
       "keeps write queue locked while an aborted write is still in flight",
       "keeps edit queue locked while an aborted edit write is still in flight"
+    ],
+    "packages/coding-agent/test/find-abort-before-spawn.test.ts": [
+      "does not start fd after an abort during the .git lookup"
     ],
     "packages/coding-agent/test/first-time-setup-fork.test.ts": [
       "returns false for a forked package"
@@ -3013,6 +3171,9 @@
       "should checkout the configured pinned git ref during full and targeted updates",
       "should refresh cached temporary git sources when resolving"
     ],
+    "packages/coding-agent/test/grep-operations.test.ts": [
+      "allows custom operations without a readFile hook"
+    ],
     "packages/coding-agent/test/http-dispatcher.test.ts": [
       "applies httpProxy to HTTP_PROXY and HTTPS_PROXY",
       "does not override existing proxy env vars",
@@ -3045,6 +3206,9 @@
       "file processor omits image attachments when auto-resize cannot produce a safe image",
       "passes the current model resize profile to the read tool",
       "can defer resizing file attachments until prompt dispatch"
+    ],
+    "packages/coding-agent/test/image-resize-worker-teardown.test.ts": [
+      "does not resolve until the resize worker has finished terminating"
     ],
     "packages/coding-agent/test/initial-message.test.ts": [
       "merges piped stdin with the first CLI message into one prompt",
@@ -3091,8 +3255,12 @@
     "packages/coding-agent/test/interactive-mode-extension-changelog.test.ts": [
       "records the version on first launch without showing the changelog",
       "shows entries newer than the last seen version, headed by package name",
+      "does not repeat entries for a prerelease version",
+      "shows nothing for an unreadable last seen version and records the current one",
       "skips resumed sessions",
-      "ignores non-package extensions and packages without a changelog"
+      "ignores non-package extensions and packages without a changelog",
+      "runs changelog transformers on What's New and Extension Updates",
+      "skips transformers registered for the default message types"
     ],
     "packages/coding-agent/test/interactive-mode-extension-dialogs.test.ts": [
       "shows the earlier confirm again after the later one is answered",
@@ -3100,6 +3268,8 @@
       "stacks concurrent inline custom components",
       "shows a confirm opened from an inline custom component and then restores the component",
       "reports blocked status for an inline custom component that opts in",
+      "reports blocked status for each opted-in overlay until it is done, also while hidden",
+      "clears overlay blocked status when the extension UI is reset",
       "keeps an open dialog visible when the editor component is replaced"
     ],
     "packages/coding-agent/test/interactive-mode-import-command.test.ts": [
@@ -3114,6 +3284,18 @@
       "renders the model scope inside the fullscreen header instead of printing it",
       "adds nothing when startup details are hidden"
     ],
+    "packages/coding-agent/test/interactive-mode-paste.test.ts": [
+      "between the default and a replacement editor",
+      "after it closes",
+      "after it fails to open",
+      "when queued messages are restored above it"
+    ],
+    "packages/coding-agent/test/interactive-mode-resume-missing-cwd.test.ts": [
+      "forks the session into the current cwd and leaves the original unchanged",
+      "continues the original session in the current cwd without writing a file",
+      "removes the fork when an extension cancels the switch",
+      "creates no fork when the user cancels"
+    ],
     "packages/coding-agent/test/interactive-mode-startup-input.test.ts": [
       "restores a prompt submitted while managed-tool setup is running",
       "queues a normal prompt submitted before the input callback is installed",
@@ -3124,9 +3306,13 @@
       "appends a new status line if something else was added in between",
       "renders tool updates as one contiguous group",
       "applies expansion state to the active header and chat entries",
+      "ctrl+o expands user bash output in the pending area",
+      "queued message updates keep user bash output in the pending area",
+      "settling the agent run moves user bash output to the chat",
       "persists theme changes to settings manager",
       "does not persist invalid theme names",
       "overlay custom UI reclaims input after non-overlay custom UI closes",
+      "resetExtensionUI removes every extension overlay but keeps pi's own overlays",
       "stores wrapper factories and rebuilds autocomplete immediately",
       "stacks wrapper factories over a fresh base provider",
       "merges triggerCharacters from wrapper factories",
@@ -3192,11 +3378,13 @@
       "uses Windows keybindings in WSL without relying on Windows Terminal detection",
       "does not use Windows keybindings from WT_SESSION alone",
       "keeps non-Windows defaults on other platforms",
+      "keeps ctrl+v as a paste key on WSL",
       "applies the detected defaults consistently"
     ],
     "packages/coding-agent/test/llama-extension.test.ts": [
       "registers a native provider and /llama command",
       "normalizes management and inference URLs",
+      "names the server and the cause when it cannot be reached",
       "exposes loaded and sleeping models with router metadata",
       "discovers chat-template thinking support for loaded models",
       "persists and restores selectable models for cache-only startup refreshes",
@@ -3210,6 +3398,11 @@
       "searches Hugging Face and reads quantizations plus access requirements",
       "loads with SSE progress and waits for the loaded catalog state",
       "downloads with byte progress and returns the refreshed catalog"
+    ],
+    "packages/coding-agent/test/llama-ui.test.ts": [
+      "keeps the browsed model selected when the next search lands",
+      "selects the best match when the user did not browse",
+      "selects the best match when the browsed model is not in the new results"
     ],
     "packages/coding-agent/test/login-dialog-device-code.test.ts": [
       "opens the verification page and copies the code once after confirmation",
@@ -3238,6 +3431,7 @@
       "prints JSON for scripts",
       "rejects unknown servers and servers without OAuth for login and logout",
       "suggests a configured server for a mistyped name",
+      "sends the token of the provider named by auth.provider",
       "reports options as typed",
       "restricts login and logout to project servers with --local",
       "adds stdio servers and passes options after the command through",
@@ -3260,7 +3454,6 @@
       "converts results, passing the CallToolResult to scripts and flagging errors",
       "points resource links to read_mcp_resource and saves binary resources",
       "cuts the middle of model-facing text over 20KB and keeps the full result for scripts",
-      "cuts multi-byte text only at character boundaries",
       "starts a new session and retries once when the session expired",
       "connects to servers without the tools capability without listing tools",
       "marks a dropped connection and reconnects on the next call",
@@ -3284,6 +3477,7 @@
     ],
     "packages/coding-agent/test/mcp-oauth-refresh.test.ts": [
       "refreshes once when several processes find the same token rejected",
+      "cancels a sign-in that waits for another process's refresh",
       "waits for a running refresh to save the new tokens",
       "rejects an authorization response from another issuer",
       "keeps the granted scope when the server asks for more",
@@ -3306,12 +3500,15 @@
     "packages/coding-agent/test/mermaid.test.ts": [
       "replaces Mermaid code blocks with Unicode diagrams",
       "leaves unsupported and oversized diagrams unchanged",
+      "renders diagram types added by lovely-mermaid",
       "maps semantic spans through the Pi theme",
+      "applies author class styles over the Pi theme",
+      "links only Mermaid labels and only when the terminal supports hyperlinks",
       "renders incomplete Mermaid blocks during streaming",
       "renders diagrams with class assignments",
       "falls back to the code block with a warning after streaming",
       "summarizes additional partial-render warnings",
-      "respects rendering modes and skips thinking blocks"
+      "respects rendering modes and skips thinking blocks and non-transcript surfaces"
     ],
     "packages/coding-agent/test/model-catalog-protocol.test.ts": [
       "negotiates the catalog for its version and reaches the OpenRouter API"
@@ -3343,6 +3540,7 @@
       "model schema accepts thinkingLevelMap and compat schema accepts supportsStrictMode and cacheControlFormat",
       "compat schema accepts chat template thinking configuration",
       "compat schema accepts Anthropic eager tool input streaming flag",
+      "custom models inherit and override prompt cache key mode independently of long retention",
       "compat schema accepts long cache retention flag",
       "model-level baseUrl overrides provider-level baseUrl for custom models",
       "modelOverrides still apply when provider also defines models",
@@ -3356,6 +3554,7 @@
       "model override deep-merges image resize limits",
       "model override with compat.openRouterRouting",
       "supportsFinishReason can be configured at provider and model levels",
+      "built-in models inherit prompt cache key support unless overridden",
       "model override deep merges compat settings",
       "multiple model overrides on same provider",
       "model override combined with baseUrl override",
@@ -3432,6 +3631,7 @@
       "zai, minimax, cerebras, and ant-ling defaults track current models",
       "built-in chat providers have defaults in their generated catalogs",
       "ai-gateway default tracks current model",
+      "anthropic default tracks current model",
       "xai default tracks current model",
       "qwen token plan individual default tracks current model",
       "findInitialModel selects ai-gateway default when available",
@@ -3503,7 +3703,11 @@
       "shows model names that differ from the ID",
       "moves by one page with remapped selection page keys (#7629)",
       "uses the configured save binding",
-      "lists every catalog that failed to refresh"
+      "lists every catalog that failed to refresh",
+      "keeps the selection on the browsed model",
+      "keeps the selection while a search query is active",
+      "follows the selected model when new rows shift its position",
+      "falls back to the current model when the selected model disappears"
     ],
     "packages/coding-agent/test/models-store.test.ts": [
       "persists provider catalogs without replacing unrelated providers",
@@ -3525,7 +3729,11 @@
       "shows OAuth auth distinctly in the API key selector",
       "shows environment API key auth as configured",
       "shows models.json API key auth as configured",
-      "shows models.json command auth as configured"
+      "shows models.json command auth as configured",
+      "lists preferred partners first, then the rest alphabetically",
+      "shows the brand style of a preferred partner only on its selected row",
+      "keeps the accent style without a TUI to animate in",
+      "marks preferred partners with a star"
     ],
     "packages/coding-agent/test/output-pad.test.ts": [],
     "packages/coding-agent/test/package-command-paths.test.ts": [
@@ -3538,12 +3746,16 @@
       "uses default project trust for list",
       "uses project_trust extensions for package commands",
       "does not prompt or ask extensions for project trust during update",
+      "does not report packages as up to date when npm left an older version installed",
+      "does not report packages as up to date in offline mode",
       "uses saved project trust during update",
       "lets trust.json override default project trust",
       "blocks local package changes when project is untrusted",
       "allows local package install to initialize fresh project settings",
       "shows install subcommand help",
       "refreshes only model catalogs with update --models",
+      "warns about a stale provider login during update --models and keeps the refresh successful",
+      "fails update --models when a catalog refresh fails for a reason other than a stale login",
       "rejects update --models combined with another update target",
       "cycles project package overrides in config local mode",
       "toggles built-in extensions in config global mode",
@@ -3794,22 +4006,28 @@
       "removes markdown code",
       "removes leading action words",
       "capitalizes first letter",
-      "truncates long text",
+      "keeps full text (truncation moved to the widget display)",
       "normalizes whitespace",
       "extracts numbered items after Plan: header",
       "handles bold Plan header",
       "handles parenthesis-style numbering",
       "returns empty array without Plan header",
       "filters out short items",
-      "filters out code-like items",
+      "keeps steps that start with backticks (code-file steps)",
+      "extracts only the last Plan: section (thinking draft + text plan)",
+      "extracts markdown step titles fully",
       "extracts single DONE marker",
       "extracts multiple DONE markers",
       "handles case insensitivity",
-      "returns empty array with no markers",
+      "extracts DONE marker variants",
+      "extracts prose completion phrasings",
+      "does not match negated or unfinished phrasings",
+      "collapses duplicate markers",
       "ignores malformed markers",
       "marks matching items as completed",
       "returns count of completed items",
       "ignores markers for non-existent steps",
+      "marks all remaining steps for whole-plan completion phrasings",
       "doesn't double-complete already completed items"
     ],
     "packages/coding-agent/test/powershell-config.test.ts": [
@@ -3822,11 +4040,16 @@
     "packages/coding-agent/test/powershell-tool.test.ts": [
       "uses process-local execution policy bypass"
     ],
+    "packages/coding-agent/test/preferred-providers.test.ts": [
+      "orders preferred partners first, in their order, then the rest by name",
+      "recognizes only the preferred partners"
+    ],
     "packages/coding-agent/test/print-mode.test.ts": [
       "emits session_shutdown in text mode",
       "emits session_shutdown in json mode",
       "emits session_shutdown and returns non-zero on assistant error",
-      "warns on stderr and returns non-zero when the response was truncated"
+      "warns on stderr and returns non-zero when the response was truncated",
+      "waits for the final disposal when SIGTERM arrives during it, and exits on a repeated SIGTERM"
     ],
     "packages/coding-agent/test/program-status-reporter.test.ts": [
       "reports idle, working during a run, and done once it settles",
@@ -3923,6 +4146,8 @@
       "should treat unquoted newlines as separators",
       "should collapse mixed unquoted whitespace",
       "should handle escaped quotes inside quoted strings",
+      "should keep apostrophes inside words",
+      "should treat an unclosed quote as literal text",
       "should handle trailing spaces",
       "should handle leading spaces",
       "should use positional default for empty quoted argument without shifting later args",
@@ -3938,6 +4163,12 @@
       "should preserve argument-hint with special characters",
       "reports invalid YAML frontmatter and keeps valid siblings"
     ],
+    "packages/coding-agent/test/provider-matching.test.ts": [
+      "matches IDs and display names case-insensitively with surrounding whitespace",
+      "keeps all matching providers and auth methods in input order",
+      "does not fuzzy-match unknown or partial references",
+      "never matches an empty reference, even against empty display names"
+    ],
     "packages/coding-agent/test/radius.test.ts": [
       "restores the legacy credential catalog without network access",
       "fetches and stores the catalog for configured Radius auth",
@@ -3950,6 +4181,16 @@
       "formats raw read arguments",
       "shows string ranges in the TUI, session tree, and HTML export"
     ],
+    "packages/coding-agent/test/read-streaming.test.ts": [
+      "gives the same output as the whole-file algorithm",
+      "keeps details key order, which session files serialize",
+      "decodes multi-byte characters split across chunks and invalid UTF-8 like Buffer.toString",
+      "uses readFile for operations without createReadStream and for fractional or negative ranges",
+      "reads local files through the default stream",
+      "reads a local file up to its size when opened, like fs.readFile",
+      "reads a 200 MB line with a 64 MB heap",
+      "stops consuming the stream when aborted"
+    ],
     "packages/coding-agent/test/references.test.ts": [
       "matches the committed pages"
     ],
@@ -3961,6 +4202,7 @@
       "drops a stale etag when the overlay becomes unavailable",
       "keeps the etag and overlay after a transient failure",
       "lets a newer catalog request bypass a stalled older request without stale publication",
+      "fetches the pi.dev catalog without refreshing a stale OAuth login",
       "treats unimplemented pi.dev catalog routes as an unavailable overlay",
       "keeps the saved list and saves nothing when personalization fails",
       "restores a saved list as is, and falls back to the built-in models only when it is empty"
@@ -4062,7 +4304,13 @@
       "emits one started response when prompt preflight succeeds",
       "reports extension commands and intercepted input as handled without starting a run",
       "emits one success response when prompt is queued during streaming",
-      "returns and clears queued steering and follow-up messages"
+      "returns and clears queued steering and follow-up messages",
+      "shuts down an idle session when an extension requests shutdown asynchronously",
+      "writes the command response before shutting down for a shutdown requested by an extension command",
+      "waits for a command that arrives before an idle shutdown request is processed",
+      "lets a shutdown started by stdin EOF finish when one SIGTERM follows",
+      "lets a shutdown started by SIGTERM finish when stdin EOF follows",
+      "exits at once on a repeated signal during shutdown"
     ],
     "packages/coding-agent/test/rpc.test.ts": [
       "should get state",
@@ -4089,6 +4337,8 @@
       "enumeration merges overrides without exposing keys",
       "forwards operation signals to the persistent store",
       "keeps a runtime override when persistent deletion is cancelled",
+      "settled waits until pending modifications are written",
+      "settled resolves after a pending modification fails",
       "delete clears both the override and persisted credential"
     ],
     "packages/coding-agent/test/scoped-models-selector.test.ts": [
@@ -4384,7 +4634,7 @@
       "should default to 5 minutes",
       "should use merged global and project settings",
       "should reject invalid timeout values",
-      "defaults to streaming and ignores project settings",
+      "defaults to idle and ignores project settings",
       "persists the mode globally",
       "should resolve editor commands by precedence",
       "should fall back to platform defaults",
@@ -4483,6 +4733,25 @@
       "prints plain --help to stdout when stdout is redirected",
       "keeps stdout empty for --mode json --help while routing trusted startup chatter to stderr"
     ],
+    "packages/coding-agent/test/subagent-extension.test.ts": [
+      "keeps a child running across a tool-calling message until process close",
+      "distinguishes pending tasks from four active workers",
+      "treats signal termination as a failed child with a diagnostic",
+      "preserves spawn errors for a nonexistent working directory",
+      "escalates SIGTERM to SIGKILL based on close state and preserves partial details",
+      "returns aborted task details when the signal is already aborted",
+      "does not start queued work after aborting active workers",
+      "marks a failed subagent invocation as an error tool result while preserving details",
+      "marks invalid mode combinations as error tool results",
+      "does not pass a Windows Bun virtual entry path to the child",
+      "resolves a relative task cwd against the session cwd for discovery and execution",
+      "uses and confirms the project agent from the child task cwd",
+      "confirms an external task cwd agent even when the session trust context reports trusted",
+      "resolves and confirms each project-agent source for parallel task cwd values",
+      "shows failure diagnostics in collapsed results",
+      "preserves provider errors, stderr, and assistant output as distinct evidence",
+      "renders zero-exit model errors as failed chain steps"
+    ],
     "packages/coding-agent/test/suite/agent-session-bash-persistence.test.ts": [
       "records bash results immediately while idle",
       "defers bash results while streaming and flushes them before the next prompt",
@@ -4532,6 +4801,7 @@
     "packages/coding-agent/test/suite/agent-session-codemode.test.ts": [
       "presents callable tools per codemode.mode",
       "summarizes union and multi-line output types instead of inlining them",
+      "summarizes output fields behind local schema references",
       "shows the guidelines of tools that do not fit the inline budget through describeTool()",
       "runs nested calls in parallel and returns only the script result",
       "routes nested calls through extension hooks",
@@ -4656,6 +4926,7 @@
       "falls back to current session thinking level when no per-model or global default is configured",
       "per-model override takes priority over global default during model switch",
       "cycles through scoped models and preserves the scoped thinking preference",
+      "cycles to the only scoped model and to the first scoped model from outside the scope",
       "clamps thinking levels to model capabilities and cycles available levels",
       "cycles xhigh before max when both are supported",
       "throws when setModel is called without configured auth",
@@ -4703,6 +4974,7 @@
       "queues custom messages with deliverAs followUp while streaming",
       "injects nextTurn custom messages into the next prompt",
       "updates pendingMessageCount and removes queued text before message_start is emitted",
+      "removes an image-only steering message after delivery",
       "throws when queueing an extension command with steer",
       "throws when queueing an extension command with followUp",
       "delivers follow-ups queued during agent_end"
@@ -4727,6 +4999,7 @@
     "packages/coding-agent/test/suite/agent-session-runtime.test.ts": [
       "persists message_end assistant replacements to the session manager",
       "settles the active response before session replacement",
+      "leaves no copy behind when an import fails on a missing session cwd",
       "preserves an existing session when importing a file with the same name",
       "emits session_before_switch and session_start for new and resume flows",
       "honors session_before_switch cancellation for new and resume",
@@ -4765,8 +5038,19 @@
     "packages/coding-agent/test/suite/regressions/11227-recovery-omits-tool-results.test.ts": [
       "pre-prompt recovery of a resumed length stop omits the truncated call and its result"
     ],
+    "packages/coding-agent/test/suite/regressions/11451-thinking-level-after-tree-navigation.test.ts": [
+      "records the live thinking level on the new branch before the next prompt",
+      "does not record a level that only differs from the branch by clamping"
+    ],
     "packages/coding-agent/test/suite/regressions/11520-sdk-summary-oauth-auth.test.ts": [
       "lets the runtime resolve stored OAuth for branch summaries"
+    ],
+    "packages/coding-agent/test/suite/regressions/11613-bash-timeout-after-shell-exit.test.ts": [
+      "reports the shell's exit code when background processes kept writing until the timeout",
+      "keeps the plain timeout message when the shell was still running at the deadline"
+    ],
+    "packages/coding-agent/test/suite/regressions/11692-dispose-waits-for-oauth-refresh.test.ts": [
+      "dispose waits until the rotated token from a background catalog refresh is saved"
     ],
     "packages/coding-agent/test/suite/regressions/1717-2113-agent-session-event-settlement.test.ts": [
       "keeps persisted assistant/toolResult message order when extension message_end handlers yield",
@@ -4804,7 +5088,10 @@
       "basename pattern still matches (regression-safe)",
       "directory-prefixed pattern with ** tail matches subtree",
       "leading ** wildcard with path segments matches",
-      "src/**/*.spec.ts matches nested spec file"
+      "src/**/*.spec.ts matches direct and nested spec files",
+      "src/*.spec.ts does not cross directories",
+      "path patterns support braces, classes, and literal regex characters",
+      "path patterns stop at the result limit"
     ],
     "packages/coding-agent/test/suite/regressions/3303-find-nested-gitignore.test.ts": [
       "applies a/.gitignore only inside a/ and leaves b/ untouched",
@@ -5022,6 +5309,9 @@
     "packages/coding-agent/test/suite/regressions/7925-toolcall-start-metadata.test.ts": [
       "includes the tool call id and name without cumulative snapshots"
     ],
+    "packages/coding-agent/test/suite/regressions/8092-extension-realpath-jiti.test.ts": [
+      "loads an extension whose declared dep is only reachable via the pnpm store"
+    ],
     "packages/coding-agent/test/suite/regressions/8237-node-sea-extension-loading.test.ts": [
       "loads jiti and bundled virtual modules only when importing an extension"
     ],
@@ -5035,6 +5325,9 @@
     ],
     "packages/coding-agent/test/suite/regressions/8337-utf8-bom-parsing.test.ts": [
       "loads frontmatter and settings with a leading BOM"
+    ],
+    "packages/coding-agent/test/suite/regressions/8409-aborted-tool-auth-setup.test.ts": [
+      "ends the turn as aborted when auth setup sees an already-aborted signal"
     ],
     "packages/coding-agent/test/suite/regressions/8423-extension-factory-failure.test.ts": [
       "discards runtime changes and disables the failed API",
@@ -5059,9 +5352,21 @@
       "preserves compaction context when a fork removes the boundary label"
     ],
     "packages/coding-agent/test/suite/regressions/9068-user-bash-fail-closed.test.ts": [],
+    "packages/coding-agent/test/suite/regressions/9124-runtime-dispose-tool-settlement.test.ts": [
+      "persists the aborted tool turn before disconnecting the session"
+    ],
+    "packages/coding-agent/test/suite/regressions/9154-prompt-during-tree-navigation.test.ts": [
+      "rejects a prompt while branch summarization is in progress",
+      "keeps navigation blocked when another prompt finishes preflight first",
+      "allows a prompt from session_tree after the selected context is installed",
+      "does not clear a new navigation started from session_tree"
+    ],
     "packages/coding-agent/test/suite/regressions/9178-tree-during-compaction.test.ts": [
       "rejects navigation before the active leaf can change",
       "rejects a second navigation while the first is waiting"
+    ],
+    "packages/coding-agent/test/suite/regressions/9221-reload-during-tool.test.ts": [
+      "still reloads and replaces the runner when idle"
     ],
     "packages/coding-agent/test/suite/regressions/9340-9777-auto-compaction-cancellation.test.ts": [
       "does not start post-run auto-compaction after abort",
@@ -5115,6 +5420,7 @@
     ],
     "packages/coding-agent/test/syntax-highlight.test.ts": [
       "loads the twenty most common languages at startup and defers the rest",
+      "maps file extensions of eagerly loaded languages to their language",
       "renders highlighted spans with the provided theme",
       "decodes HTML entities emitted by highlight.js",
       "inherits parent formatting for unmapped nested scopes",
@@ -5160,6 +5466,13 @@
       "falls back to palette indices and faint text without a background",
       "is listed first, has no export colors, and is generated from the terminal colors",
       "renders faint tokens with SGR 2 and closes it"
+    ],
+    "packages/coding-agent/test/terminal-question.test.ts": [
+      "writes to the selected output and cleans up after an answer",
+      "rejects on EOF without requiring an interrupt callback",
+      "Ctrl+C rejects the question and reports an interrupt",
+      "caller cancellation does not report an interrupt",
+      "rejects an already-aborted prompt and cleans up"
     ],
     "packages/coding-agent/test/test-harness.test.ts": [
       "simple text response",
@@ -5272,6 +5585,10 @@
       "ranks a tool first when the query contains its whole name",
       "ranks a tool matching more query terms first, whatever the scores",
       "includes the namespace in the search text",
+      "reads names and descriptions behind local references",
+      "follows escaped pointer segments",
+      "reads recursive and shared definitions once",
+      "leaves out unreferenced definitions and remote or missing references",
       "lists everything without a budget",
       "fills the budget round-robin, cheapest first, and says what is missing",
       "leaves deferred tools and their namespaces out entirely",
@@ -5342,13 +5659,27 @@
       "should include filename when searching a single file",
       "should respect global limit and include context lines",
       "should keep context line numbers aligned with ripgrep when a file contains a lone CR",
+      "should print overlapping context once and keep the last match's trailing context",
+      "should keep counting matches past the byte cap",
+      "should report truncation when stored output ends exactly at the byte cap",
+      "should accept a huge context value",
+      "should decode UTF-16 files with context",
+      "should keep a lone CR inside a line and strip CRLF terminators",
+      "should not report the match limit when exactly limit matches exist",
       "should ignore RIPGREP_CONFIG_PATH",
+      "should resolve folder globs relative to path",
       "should treat flag-like patterns as search text",
       "should include hidden files that are not gitignored",
       "should respect .gitignore",
       "should surface fd glob parse errors",
       "should treat flag-like patterns as search text",
+      "should report the result limit only when more results exist",
+      "should treat limits below 1 as 1 and floor fractional limits",
+      "should report full output totals past the byte cap",
+      "should ask custom glob operations for one result past the limit",
       "should list dotfiles and directories",
+      "should treat limits below 1 as 1 and floor fractional limits",
+      "should report the entry limit only when more entries exist",
       "read uses ctx.cwd when provided",
       "write uses ctx.cwd when provided",
       "edit uses ctx.cwd when provided",
@@ -5374,7 +5705,17 @@
       "should preserve LF line endings for LF files",
       "should detect duplicates across CRLF/LF variants",
       "should preserve UTF-8 BOM after edit",
-      "should preserve CRLF line endings and BOM in multi-edit mode"
+      "should preserve CRLF line endings and BOM in multi-edit mode",
+      "should write CRLF for inserted lines in CRLF files",
+      "should write LF for inserted lines in LF files",
+      "should keep CRLF lines when the first line ends with LF",
+      "should keep LF lines when the first line ends with CRLF",
+      "should keep a lone CR in an untouched line",
+      "should give inserted lines the line ending of the line they replace in multi-edit mode",
+      "should keep untouched line endings when fuzzy matching widens the edit to whole lines",
+      "should not merge a kept lone CR with a line feed after it",
+      "should not merge an inserted CR line ending with a kept line feed after it",
+      "should write content that normalizes to the diffed content for random mixed line endings"
     ],
     "packages/coding-agent/test/tree-selector.test.ts": [
       "focuses nearest visible ancestor when currentLeafId is a model_change with sibling branch",
@@ -5383,6 +5724,9 @@
       "switches to nearest visible user message when changing to user-only filter",
       "returns to nearest visible ancestor when switching back to default filter",
       "renders semantic help rows without truncating narrow terminal controls",
+      "renders the cursor only while the selector is focused",
+      "moves focus to the label input and restores it after cancellation",
+      "keeps the cursor within narrow terminal widths",
       "copies the full selected message with ctrl+x",
       "toggles label timestamps for labeled nodes",
       "preserves selection when switching to empty labeled filter and back",
@@ -5398,6 +5742,12 @@
     ],
     "packages/coding-agent/test/trigger-compact-extension.test.ts": [
       "only auto-compacts when context usage crosses the threshold"
+    ],
+    "packages/coding-agent/test/truncate-surrogates.test.ts": [
+      "truncateLine does not cut an emoji in half at the limit",
+      "truncateLine keeps an emoji that ends exactly at the limit",
+      "sliceHead and sliceTail never split a pair",
+      "sliceHead and sliceTail match slice on text without surrogates"
     ],
     "packages/coding-agent/test/truncate-to-width.test.ts": [
       "should truncate messages with Unicode characters correctly",
@@ -5465,6 +5815,10 @@
       "produce every leaf",
       "carry the static type of valid values",
       "narrow values through a compiled check",
+      "build a bigint with bounds, typed bigint",
+      "type a schema as given with unsafe",
+      "build a recursive schema that checks every level",
+      "nest recursive schemas with distinct ids inside other schemas",
       "compile into checks with the declared semantics"
     ],
     "packages/schema/test/coerce-typebox.test.ts": [
@@ -5700,6 +6054,9 @@
       "leaves values it cannot coerce for the check to report",
       "returns the coerced value when it is valid",
       "returns the errors of the coerced value when it is invalid",
+      "checks without coercing, with or without the coerce option",
+      "converts to a bigint like TypeBox's TryBigInt",
+      "converts to undefined like TypeBox's TryUndefined",
       "drops null in optional non-nullable properties, also nested",
       "keeps a null whose property is a $ref (the reference may allow it)",
       "walks array items",
@@ -5710,6 +6067,7 @@
       "keeps a value one union branch accepts, else takes the first branch whose conversion the union accepts",
       "converts allOf with each member in turn",
       "follows $ref",
+      "follows a relative $ref from the root $id on the first call of a schema with $dynamicRef",
       "converts patternProperties and additionalProperties",
       "coerces like Ajv's coerceTypes",
       "leaves a value that matches one of a type array's types, else takes the first coercible type",
@@ -5739,6 +6097,9 @@
     "packages/schema/test/conformance.test.ts": [
       "${test.description} (errors agree with check)"
     ],
+    "packages/schema/test/equal.test.ts": [
+      "compares JSON values structurally, as TypeBox's Value.Equal does"
+    ],
     "packages/schema/test/shared.test.ts": [
       "share the module-level check of a bare type",
       "share a pattern's regular expression and drop it with the last schema that uses it"
@@ -5747,6 +6108,8 @@
       "maps the primitive kinds, literals and Unsafe",
       "maps objects with optional and readonly properties as TypeBox does",
       "maps arrays, unions and records, nested",
+      "maps enums and tuples as TypeBox does",
+      "maps BigInt and Undefined as TypeBox does",
       "gives unknown for kinds it does not map",
       "types compile() and parse() for TypeBox schemas"
     ],
@@ -5761,6 +6124,7 @@
       "does not treat bytes as an object",
       "checks properties named like Object.prototype members as own properties",
       "does not accept every value for a type named like an Object.prototype member",
+      "rejects NaN and Infinity as a number or an integer, with or without bounds, as TypeBox does",
       "checks a detached check function",
       "treats format as an annotation unless formats are given",
       "resolves $ref to registered documents",
@@ -5769,18 +6133,27 @@
       "compiles TypeBox schemas as they are",
       "compiles deep-frozen schemas and never modifies a schema",
       "compiles a recursive schema",
+      "applies a relative root $id once when resolving local references",
+      "applies a relative root $id once in schemas with unevaluated keywords",
+      "explains errors under nested resources with a relative $id",
       "throws for a malformed schema",
       "throw when the schema compiles, by default",
       "reject only values at their place with unresolvedRefs: reject",
       "leave values at their place uncoerced",
       "reject a TypeBox Ref without its definition",
+      "agree with the standalone check as a property, a pattern property and an item",
+      "find properties in any order",
       "count an unpaired high surrogate as one code point and a pair as one",
       "list at most 20 enum values",
       "accept a 10,000-value enum",
       "describe contains bounds in words",
       "blame a oneOf failure on the branch that declares most of the object's properties",
       "explain one object reached through the same reference at two paths at each path",
-      "check url and json-pointer-uri-fragment"
+      "check url and json-pointer-uri-fragment",
+      "check Type.BigInt with its bounds, as TypeBox does",
+      "check Type.Undefined: only undefined, and a required property with it must be present",
+      "check a required property set to undefined by its schema, as TypeBox does",
+      "check multipleOf of bigints exactly, however large"
     ]
   }
 }

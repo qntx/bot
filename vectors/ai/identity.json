@@ -2,7 +2,7 @@
   "generator": {
     "script": "scripts/parity/generate-transcript.ts",
     "node": "v26.13.0",
-    "upstream": "@earendil-works/pi-ai@1.5.0"
+    "upstream": "@earendil-works/pi-ai@1.5.2"
   },
   "cases": [
     {
@@ -43,7 +43,7 @@
       "args": [
         null
       ],
-      "result": "1.5.0"
+      "result": "1.5.2"
     },
     {
       "name": "version-override",

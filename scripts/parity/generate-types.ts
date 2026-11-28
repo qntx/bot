@@ -351,7 +351,7 @@ const document = {
   generator: {
     script: "scripts/parity/generate-types.ts",
     node: process.version,
-    upstream: "@earendil-works/pi-ai@1.5.0",
+    upstream: "@earendil-works/pi-ai@1.5.2",
   },
   cases,
 };

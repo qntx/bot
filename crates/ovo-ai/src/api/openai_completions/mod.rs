@@ -179,9 +179,9 @@ fn build_params(
     let long = retention == CacheRetention::Long && compat.supports_long_cache_retention;
 
     let mut tools = if request_tools.is_empty() {
-        // Anthropic behind a proxy requires `tools` when the conversation has
-        // tool calls or results.
-        has_tool_history(messages).then(Vec::new)
+        // `requiresToolsWithToolHistory`: Anthropic behind a proxy requires
+        // `tools` when the conversation has tool calls or results.
+        (compat.requires_tools_with_tool_history && has_tool_history(messages)).then(Vec::new)
     } else {
         Some(convert::convert_tools(&request_tools, compat)?)
     };

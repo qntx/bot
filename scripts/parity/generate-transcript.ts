@@ -772,7 +772,7 @@ const maskTimestamps = (value: unknown): unknown => {
 const generator = {
   script: "scripts/parity/generate-transcript.ts",
   node: process.version,
-  upstream: "@earendil-works/pi-ai@1.5.0",
+  upstream: "@earendil-works/pi-ai@1.5.2",
 };
 for (const [file, cases] of [
   ["vectors/ai/transcript.json", transcriptCases],

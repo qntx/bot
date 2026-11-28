@@ -1397,7 +1397,7 @@
 				"accept": "application/json",
 				"authorization": "Bearer eyJ-access-token",
 				"content-type": "application/json",
-				"session_id": "s1",
+				"session-id": "s1",
 				"x-client-request-id": "s1"
 			},
 			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"developer\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"prompt_cache_key\":\"s1\",\"store\":false,\"reasoning\":{\"effort\":\"high\",\"summary\":\"auto\"},\"include\":[\"reasoning.encrypted_content\"]}"
@@ -1450,7 +1450,7 @@
 				"accept": "application/json",
 				"authorization": "Bearer sk-test",
 				"content-type": "application/json",
-				"session_id": "s1",
+				"session-id": "s1",
 				"x-client-request-id": "s1"
 			},
 			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"prompt_cache_key\":\"s1\",\"store\":false}"
@@ -1504,7 +1504,7 @@
 				"accept": "application/json",
 				"authorization": "Bearer sk-test",
 				"content-type": "application/json",
-				"session_id": "s1",
+				"session-id": "s1",
 				"x-client-request-id": "s1"
 			},
 			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"prompt_cache_key\":\"s1\",\"prompt_cache_retention\":\"24h\",\"store\":false}"
@@ -1561,7 +1561,7 @@
 				"accept": "application/json",
 				"authorization": "Bearer sk-test",
 				"content-type": "application/json",
-				"session_id": "s1",
+				"session-id": "s1",
 				"x-client-request-id": "s1"
 			},
 			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"prompt_cache_key\":\"s1\",\"store\":false}"
@@ -1669,7 +1669,7 @@
 				"accept": "application/json",
 				"authorization": "Bearer sk-test",
 				"content-type": "application/json",
-				"session_id": "s1",
+				"session-id": "s1",
 				"x-client-request-id": "s1"
 			},
 			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"prompt_cache_key\":\"s1\",\"prompt_cache_retention\":\"24h\",\"store\":false}"
@@ -1781,7 +1781,7 @@
 				"accept": "application/json",
 				"authorization": "Bearer sk-test",
 				"content-type": "application/json",
-				"session_id": "s1",
+				"session-id": "s1",
 				"x-client-request-id": "s1"
 			},
 			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"prompt_cache_key\":\"s1\",\"prompt_cache_options\":{\"ttl\":\"30m\"},\"store\":false}"
@@ -1837,7 +1837,7 @@
 				"accept": "application/json",
 				"authorization": "Bearer sk-test",
 				"content-type": "application/json",
-				"session_id": "s1",
+				"session-id": "s1",
 				"x-client-request-id": "s1"
 			},
 			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"prompt_cache_key\":\"s1\",\"store\":false}"
@@ -1890,7 +1890,7 @@
 				"accept": "application/json",
 				"authorization": "Bearer sk-test",
 				"content-type": "application/json",
-				"session_id": "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk",
+				"session-id": "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk",
 				"x-client-request-id": "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
 			},
 			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"prompt_cache_key\":\"kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk\",\"store\":false}"
@@ -2433,7 +2433,7 @@
 				"accept": "application/json",
 				"authorization": "Bearer sk-test",
 				"content-type": "application/json",
-				"session_id": "s1",
+				"session-id": "s1",
 				"x-client-request-id": "s1"
 			},
 			"body": "{\"model\":\"m\",\"input\":[{\"role\":\"system\",\"content\":\"You are helpful.\"},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"hi\"}]}],\"stream\":true,\"prompt_cache_key\":\"s1\",\"store\":false}"
@@ -2653,7 +2653,7 @@
 				"accept": "application/json",
 				"authorization": "Bearer sk-test",
 				"content-type": "application/json",
-				"session_id": "s1",
+				"session-id": "s1",
 				"x-client-request-id": "r",
 				"x-model": "m",
 				"x-shared": "request"

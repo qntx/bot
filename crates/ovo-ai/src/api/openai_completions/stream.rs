@@ -112,6 +112,7 @@ async fn run(
         &request.body,
         model,
         crate::api::stream_support::PayloadMerge::Replace,
+        None,
     )
     .await?;
     let sent = http

@@ -2,7 +2,7 @@
   "generator": {
     "script": "scripts/parity/generate-streaming-json.ts",
     "node": "v26.13.0",
-    "upstream": "@earendil-works/pi-ai@1.5.0",
+    "upstream": "@earendil-works/pi-ai@1.5.2",
     "seed": 20260303
   },
   "cases": [

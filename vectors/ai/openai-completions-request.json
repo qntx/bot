@@ -9874,7 +9874,7 @@
 				"authorization": "Bearer sk-test",
 				"content-type": "application/json"
 			},
-			"body": "{\"model\":\"m\",\"messages\":[{\"role\":\"user\",\"content\":\"q\"},{\"role\":\"assistant\",\"content\":null,\"tool_calls\":[{\"id\":\"c1\",\"type\":\"function\",\"function\":{\"name\":\"read\",\"arguments\":\"{\\\"path\\\":\\\"a\\\"}\"}}],\"reasoning_details\":[{\"type\":\"reasoning.encrypted\",\"id\":\"e1\",\"data\":\"blob\"}]},{\"role\":\"tool\",\"content\":\"ok\",\"tool_call_id\":\"c1\"}],\"stream\":true,\"stream_options\":{\"include_usage\":true},\"store\":false,\"tools\":[]}"
+			"body": "{\"model\":\"m\",\"messages\":[{\"role\":\"user\",\"content\":\"q\"},{\"role\":\"assistant\",\"content\":null,\"tool_calls\":[{\"id\":\"c1\",\"type\":\"function\",\"function\":{\"name\":\"read\",\"arguments\":\"{\\\"path\\\":\\\"a\\\"}\"}}],\"reasoning_details\":[{\"type\":\"reasoning.encrypted\",\"id\":\"e1\",\"data\":\"blob\"}]},{\"role\":\"tool\",\"content\":\"ok\",\"tool_call_id\":\"c1\"}],\"stream\":true,\"stream_options\":{\"include_usage\":true},\"store\":false}"
 		}
 	},
 	{
@@ -11208,7 +11208,7 @@
 				"authorization": "Bearer sk-test",
 				"content-type": "application/json"
 			},
-			"body": "{\"model\":\"m\",\"messages\":[{\"role\":\"user\",\"content\":\"q\"},{\"role\":\"assistant\",\"content\":null,\"tool_calls\":[{\"id\":\"c1\",\"type\":\"function\",\"function\":{\"name\":\"read\",\"arguments\":\"{\\\"path\\\":\\\"a\\\"}\"}}]},{\"role\":\"tool\",\"content\":\"ok\",\"tool_call_id\":\"c1\"}],\"stream\":true,\"stream_options\":{\"include_usage\":true},\"store\":false,\"tools\":[]}"
+			"body": "{\"model\":\"m\",\"messages\":[{\"role\":\"user\",\"content\":\"q\"},{\"role\":\"assistant\",\"content\":null,\"tool_calls\":[{\"id\":\"c1\",\"type\":\"function\",\"function\":{\"name\":\"read\",\"arguments\":\"{\\\"path\\\":\\\"a\\\"}\"}}]},{\"role\":\"tool\",\"content\":\"ok\",\"tool_call_id\":\"c1\"}],\"stream\":true,\"stream_options\":{\"include_usage\":true},\"store\":false}"
 		}
 	},
 	{

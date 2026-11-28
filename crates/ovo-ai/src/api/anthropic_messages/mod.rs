@@ -30,13 +30,14 @@ pub use stream::AnthropicMessagesApi;
 /// The api identifier this adapter serves.
 pub const API: &str = "anthropic-messages";
 
-const CLAUDE_CODE_VERSION: &str = "2.1.280";
+const CLAUDE_CODE_VERSION: &str = "2.1.322";
 const FINE_GRAINED_TOOL_STREAMING_BETA: &str = "fine-grained-tool-streaming-2025-05-14";
 const INTERLEAVED_THINKING_BETA: &str = "interleaved-thinking-2025-05-14";
 const SERVER_SIDE_FALLBACK_BETA: &str = "server-side-fallback-2026-07-01";
 const MID_CONVERSATION_OUTPUT_CONFIG_BETA: &str = "mid-conversation-output-config-2026-07-01";
 const THINKING_BINDING_CONTROLS_BETA: &str = "thinking-binding-controls-2026-08-01";
 const INLINE_TOOLS_BETA: &str = "inline-tools-2026-09-15";
+const MESSAGE_THREADS_BETA: &str = "message-threads-2026-08-12";
 
 /// `isOAuthToken`: Claude subscription tokens use bearer auth.
 #[must_use]
@@ -76,6 +77,10 @@ pub struct AnthropicMessagesCompat {
     /// `sessionAffinityFormat` — `openrouter` sends `x-session-id`; anything
     /// else sends `x-session-affinity`. Default: `openrouter` on `OpenRouter`.
     pub session_affinity_format: Option<String>,
+    /// `supportsMessageThreads` — `thread` is sent on the request body.
+    /// Default: Anthropic's own endpoint only, since gateways that drop
+    /// unknown fields would silently un-thread a `continue`.
+    pub supports_message_threads: bool,
     /// Models the provider may answer with instead (`allowedFallbackModels`).
     pub allowed_fallback_models: Vec<String>,
 }
@@ -121,6 +126,11 @@ impl AnthropicMessagesCompat {
                 .and_then(Value::as_str)
                 .map(str::to_owned)
                 .or_else(|| is_openrouter.then(|| String::from("openrouter"))),
+            supports_message_threads: flag(
+                "supportsMessageThreads",
+                model.provider.as_str() == "anthropic"
+                    && model.base_url.contains("api.anthropic.com"),
+            ),
             allowed_fallback_models,
         }
     }
@@ -293,6 +303,10 @@ pub fn get_beta_features(
         None => {}
     }
     let compat = AnthropicMessagesCompat::of(model);
+    // `threadSessionId !== undefined`: the session may use message threads.
+    let message_threads = compat.supports_message_threads
+        && resolve_cache_retention(options.base.cache_retention, options.base.env.as_ref())
+            != CacheRetention::None;
     let mut features: Vec<String> = Vec::new();
     if is_oauth_token {
         features.extend([
@@ -322,6 +336,9 @@ pub fn get_beta_features(
     if native_tool_changes {
         features.push(INLINE_TOOLS_BETA.to_owned());
     }
+    if message_threads {
+        features.push(MESSAGE_THREADS_BETA.to_owned());
+    }
     unique(features)
 }
 
@@ -348,6 +365,12 @@ pub struct AnthropicRequest {
     /// The request params before serialization — `onPayload` sees and
     /// may replace these.
     pub params: Map<String, Value>,
+    /// `prepareThreadRequest`'s create body addition: `{"type":"create"}` on
+    /// sessions that may use message threads. Not part of `params` — it is
+    /// appended to the sent body after any `onPayload` replacement.
+    /// Upstream's continuation state machine (a thread can be continued once
+    /// from the last reply) is not ported, so the field is always `create`.
+    pub thread: Option<Value>,
     /// Whether a strict tool is only strict because it prefers it, so a
     /// strict-limit rejection can be retried without strict mode.
     pub has_preferred_strict_tools: bool,
@@ -517,8 +540,20 @@ fn assemble_request(
     has_preferred_strict_tools: bool,
     provider_thinking_level: Option<String>,
 ) -> Result<AnthropicRequest, String> {
+    // `createThreadRequest`: `{ ...params, thread: { type: "create" } }` —
+    // the field is appended to the body, after any `onPayload` result too.
+    // Threads engage like `threadSessionId`: `supportsMessageThreads` with a
+    // `cacheRetention` other than `none`.
+    let thread = (compat.supports_message_threads
+        && resolve_cache_retention(base.cache_retention, base.env.as_ref())
+            != CacheRetention::None)
+        .then(|| json!({ "type": "create" }));
+    let mut body_params = params.clone();
+    if let Some(thread) = &thread {
+        body_params.insert("thread".into(), thread.clone());
+    }
     let body =
-        crate::json::to_vec(&Value::Object(params.clone())).map_err(|error| error.to_string())?;
+        crate::json::to_vec(&Value::Object(body_params)).map_err(|error| error.to_string())?;
     let url = format!(
         "{}/v1/messages?beta=true",
         model.base_url.trim_end_matches('/')
@@ -535,6 +570,7 @@ fn assemble_request(
         headers,
         body,
         params,
+        thread,
         has_preferred_strict_tools,
         provider_thinking_level,
     })
