@@ -327,17 +327,17 @@ fn identity_cases_replay() {
             "formatUserAgent" => Value::from(identity::format_user_agent(
                 identity_arg(0).as_ref(),
                 "pi",
-                "1.5.0",
+                "1.5.2",
             )),
             "formatUserAgentPrefix" => {
-                let ua = identity::format_user_agent(identity_arg(0).as_ref(), "pi", "1.5.0");
+                let ua = identity::format_user_agent(identity_arg(0).as_ref(), "pi", "1.5.2");
                 let prefix = case["result"].as_str().unwrap_or_default();
                 assert!(ua.starts_with(prefix), "{name}: {ua} lacks prefix {prefix}");
                 Value::from(prefix)
             }
             "getClientVersion" => Value::from(identity::get_client_version(
                 identity_arg(0).as_ref(),
-                "1.5.0",
+                "1.5.2",
             )),
             "mergeClientIdentity" => {
                 let decoded: Vec<Option<identity::ClientIdentity>> = args
@@ -379,7 +379,7 @@ fn identity_cases_replay() {
                     &target,
                     identity_arg(1).as_ref(),
                     "pi",
-                    "1.5.0",
+                    "1.5.2",
                 ))
             }
             "getOpenCodeSessionHeaders" => {

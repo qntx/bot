@@ -974,7 +974,7 @@ for (const [name, provider, baseUrl] of [
 const generator = {
   script: "scripts/parity/generate-ai-utils.ts",
   node: process.version,
-  upstream: "@earendil-works/pi-ai@1.5.0",
+  upstream: "@earendil-works/pi-ai@1.5.2",
 };
 for (const [file, cases] of [
   ["vectors/ai/estimate.json", estimateCases],

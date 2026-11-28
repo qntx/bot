@@ -345,7 +345,8 @@ fn convert_assistant(
     // Some providers reject null content.
     message.insert(
         "content".into(),
-        if compat.requires_assistant_after_tool_result {
+        if compat.requires_assistant_after_tool_result || compat.requires_non_null_assistant_content
+        {
             Value::from("")
         } else {
             Value::Null

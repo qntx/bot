@@ -1,8 +1,8 @@
 {
   "upstream": {
     "package": "@earendil-works/pi-coding-agent",
-    "version": "1.5.0",
-    "commit": "f9a26365568127461c47a07a37dcb42c140a3ac5"
+    "version": "1.5.2",
+    "commit": "b4afdddf44e059c67ccf5097e5317d913521b470"
   },
   "capabilities": [
     {
@@ -325,6 +325,10 @@
     "packages/ai/test/anthropic-long-cache-retention-e2e.test.ts": {
       "e2e": "calls live provider APIs; ported to tests/e2e and run manually before release"
     },
+    "packages/ai/test/anthropic-message-threads.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-API-ANTHROPIC"
+    },
     "packages/ai/test/anthropic-mid-conversation-effort.test.ts": ["AI-API-ANTHROPIC"],
     "packages/ai/test/anthropic-oauth.test.ts": {
       "milestone": "M5",
@@ -345,6 +349,10 @@
     },
     "packages/ai/test/anthropic-thinking-disable.test.ts": ["AI-API-ANTHROPIC"],
     "packages/ai/test/anthropic-tool-name-normalization.test.ts": ["AI-API-ANTHROPIC"],
+    "packages/ai/test/azure-models.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-API-AZURE"
+    },
     "packages/ai/test/azure-openai-base-url.test.ts": {
       "milestone": "M5",
       "capability": "AI-API-AZURE"
@@ -429,6 +437,7 @@
       "milestone": "M6",
       "capability": "AI-CLASSIFIER"
     },
+    "packages/ai/test/clamp-max-tokens.test.ts": ["AI-SIMPLE-OPTIONS"],
     "packages/ai/test/cloudflare-ai-binding.test.ts": {
       "milestone": "M5",
       "capability": "AI-API-CLOUDFLARE"
@@ -626,6 +635,9 @@
       "AI-API-OPENAI-COMPLETIONS"
     ],
     "packages/ai/test/openai-completions-empty-tools.test.ts": ["AI-API-OPENAI-COMPLETIONS"],
+    "packages/ai/test/openai-completions-non-null-assistant-content.test.ts": [
+      "AI-API-OPENAI-COMPLETIONS"
+    ],
     "packages/ai/test/openai-completions-prompt-cache.test.ts": ["AI-API-OPENAI-COMPLETIONS"],
     "packages/ai/test/openai-completions-provider-stream-event.test.ts": [
       "AI-API-OPENAI-COMPLETIONS-STREAM"
@@ -662,6 +674,7 @@
     "packages/ai/test/openai-responses-mid-convo-effort.test.ts": ["AI-API-OPENAI-RESPONSES"],
     "packages/ai/test/openai-responses-namespace.test.ts": ["AI-API-OPENAI-RESPONSES"],
     "packages/ai/test/openai-responses-partial-json-cleanup.test.ts": ["AI-API-OPENAI-RESPONSES"],
+    "packages/ai/test/openai-responses-prompt-cache.test.ts": ["AI-API-OPENAI-RESPONSES"],
     "packages/ai/test/openai-responses-reasoning-replay-e2e.test.ts": {
       "e2e": "calls live provider APIs; ported to tests/e2e and run manually before release"
     },
@@ -749,6 +762,10 @@
       "AI-API-OPENAI-COMPLETIONS-STREAM",
       "AI-API-OPENAI-RESPONSES"
     ],
+    "packages/ai/test/strict-tool-limits.test.ts": {
+      "milestone": "M5",
+      "capability": "AI-CONSTRAINED-SAMPLING"
+    },
     "packages/ai/test/supports-xhigh.test.ts": ["AI-COST"],
     "packages/ai/test/system-message-replay.test.ts": ["AI-TRANSCRIPT"],
     "packages/ai/test/telemetry-options.test.ts": {
@@ -819,6 +836,7 @@
     "packages/schema/test/coerce-typebox.test.ts": ["AI-SCHEMA-COERCE"],
     "packages/schema/test/coerce.test.ts": ["AI-SCHEMA-COERCE"],
     "packages/schema/test/conformance.test.ts": ["AI-SCHEMA-VALIDATE"],
+    "packages/schema/test/equal.test.ts": ["AI-SCHEMA-VALIDATE"],
     "packages/schema/test/shared.test.ts": {
       "excluded": "tests the TypeBox builder API; ovo tool schemas are plain JSON Schema values"
     },

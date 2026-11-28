@@ -112,13 +112,16 @@ pub(super) enum PayloadMerge {
 }
 
 /// `onPayload` at upstream's call site: `await onPayload(params,
-/// model)`; `undefined` keeps the built body.
+/// model)`; `undefined` keeps the built body. `appended` adds a field
+/// upstream spreads onto the send body after the hook's replacement
+/// (Anthropic's `thread`).
 pub(super) async fn on_payload_body(
     base: &StreamOptions,
     params: &Value,
     body: &[u8],
     model: &Model,
     merge: PayloadMerge,
+    appended: Option<(&str, &Value)>,
 ) -> Result<Vec<u8>, String> {
     let Some(hook) = &base.on_payload else {
         return Ok(body.to_vec());
@@ -126,7 +129,7 @@ pub(super) async fn on_payload_body(
     let Some(next) = hook(params, model).await else {
         return Ok(body.to_vec());
     };
-    let value = match (merge, next) {
+    let mut value = match (merge, next) {
         // A non-object spreads to nothing — `{ stream: true }`.
         (PayloadMerge::Stream, Value::Object(mut map)) => {
             map.insert("stream".into(), Value::Bool(true));
@@ -135,6 +138,9 @@ pub(super) async fn on_payload_body(
         (PayloadMerge::Stream, _) => serde_json::json!({"stream": true}),
         (PayloadMerge::Replace, value) => value,
     };
+    if let (Some((name, field)), Value::Object(map)) = (appended, &mut value) {
+        map.insert(String::from(name), field.clone());
+    }
     crate::json::to_vec(&value).map_err(|error| error.to_string())
 }
 

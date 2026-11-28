@@ -147,6 +147,7 @@ async fn run(
             &request.body,
             model,
             PayloadMerge::Stream,
+            request.thread.as_ref().map(|thread| ("thread", thread)),
         )
         .await?;
         let sent = http

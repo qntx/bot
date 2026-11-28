@@ -14,11 +14,14 @@ fn vectors() -> Value {
 
 /// `payloadPatch`/`payloadUndefined` — the deterministic `onPayload`
 /// the vectors' generator applies before the request is sent.
+/// `thread` is appended after the replacement like upstream's
+/// `prepareThreadRequest` create body.
 fn patched_body(
     case: &Value,
     params: &serde_json::Map<String, Value>,
     body: &[u8],
     merge_stream: bool,
+    thread: Option<&Value>,
 ) -> Vec<u8> {
     if case["payloadUndefined"].as_bool() == Some(true) || case["payloadPatch"].is_null() {
         return body.to_vec();
@@ -36,6 +39,9 @@ fn patched_body(
     }
     if merge_stream {
         params.insert("stream".into(), Value::Bool(true));
+    }
+    if let Some(thread) = thread {
+        params.insert("thread".into(), thread.clone());
     }
     ovo_ai::json::to_vec(&Value::Object(params)).unwrap_or_else(|e| panic!("patched body: {e}"))
 }
@@ -76,7 +82,13 @@ fn anthropic_request() {
             continue;
         }
         let request = built.unwrap_or_else(|e| panic!("{name}: build_request: {e}"));
-        let body = patched_body(case, &request.params, &request.body, true);
+        let body = patched_body(
+            case,
+            &request.params,
+            &request.body,
+            true,
+            request.thread.as_ref(),
+        );
         let (url, headers) = (request.url, request.headers);
         assert_eq!(
             url,

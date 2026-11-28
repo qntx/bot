@@ -162,6 +162,15 @@ impl OpenAiResponsesOptions {
     }
 }
 
+/// `promptCacheKeyMode`: whether `prompt_cache_key` is sent.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum PromptCacheKeyMode {
+    /// `auto` — sent whenever `cacheRetention` is not `none`.
+    Auto,
+    /// `disabled` — never sent.
+    Disabled,
+}
+
 /// The resolved compat settings (`getCompat`): `model.compat` values over
 /// upstream's defaults.
 #[expect(
@@ -192,6 +201,8 @@ pub struct OpenAiResponsesCompat {
     pub supports_max_output_tokens: bool,
     /// Thinking levels are sent as `configuration_update` items.
     pub supports_mid_convo_effort: bool,
+    /// `promptCacheKeyMode` — `disabled` suppresses `prompt_cache_key`.
+    pub prompt_cache_key_mode: PromptCacheKeyMode,
 }
 
 impl OpenAiResponsesCompat {
@@ -229,6 +240,16 @@ impl OpenAiResponsesCompat {
             supports_explicit_prompt_cache_mode: flag("supportsExplicitPromptCacheMode", false),
             supports_max_output_tokens: flag("supportsMaxOutputTokens", true),
             supports_mid_convo_effort: flag("supportsMidConvoEffort", false),
+            prompt_cache_key_mode: overrides
+                .and_then(|compat| compat.get("promptCacheKeyMode"))
+                .and_then(Value::as_str)
+                .map_or(PromptCacheKeyMode::Auto, |mode| {
+                    if mode == "disabled" {
+                        PromptCacheKeyMode::Disabled
+                    } else {
+                        PromptCacheKeyMode::Auto
+                    }
+                }),
         }
     }
 
@@ -365,6 +386,7 @@ fn build_params(
     params.insert("input".into(), Value::from(input));
     params.insert("stream".into(), Value::Bool(true));
     if retention != CacheRetention::None
+        && compat.prompt_cache_key_mode != PromptCacheKeyMode::Disabled
         && let Some(key) = clamp_openai_prompt_cache_key(base.session_id.as_deref())
     {
         params.insert("prompt_cache_key".into(), Value::from(key));
@@ -511,7 +533,7 @@ fn session_affinity(session_id: Option<&str>, format: SessionAffinityFormat) -> 
         return affinity;
     }
     if format == SessionAffinityFormat::Openai {
-        affinity.insert("session_id".into(), Value::from(session_id));
+        affinity.insert("session-id".into(), Value::from(session_id));
     }
     affinity.insert("x-client-request-id".into(), Value::from(session_id));
     affinity

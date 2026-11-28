@@ -31,6 +31,10 @@ pub struct OpenAiCompletionsCompat {
     pub requires_tool_result_name: bool,
     /// A user message after tool results needs an assistant message between.
     pub requires_assistant_after_tool_result: bool,
+    /// Assistant `content` is `""` instead of `null`.
+    pub requires_non_null_assistant_content: bool,
+    /// `tools: []` is sent when the conversation has tool calls or results.
+    pub requires_tools_with_tool_history: bool,
     /// Replayed thinking is sent as plain text content.
     pub requires_thinking_as_text: bool,
     /// Replayed assistant messages carry `reasoning_content` (empty if none).
@@ -178,6 +182,14 @@ impl OpenAiCompletionsCompat {
         flag(
             "requiresAssistantAfterToolResult",
             &mut compat.requires_assistant_after_tool_result,
+        );
+        flag(
+            "requiresNonNullAssistantContent",
+            &mut compat.requires_non_null_assistant_content,
+        );
+        flag(
+            "requiresToolsWithToolHistory",
+            &mut compat.requires_tools_with_tool_history,
         );
         flag(
             "requiresThinkingAsText",
@@ -335,6 +347,8 @@ fn detect(model: &Model) -> OpenAiCompletionsCompat {
         },
         requires_tool_result_name: false,
         requires_assistant_after_tool_result: false,
+        requires_non_null_assistant_content: false,
+        requires_tools_with_tool_history: false,
         requires_thinking_as_text: false,
         requires_reasoning_content_on_assistant_messages: deepseek,
         thinking_format,

@@ -12,7 +12,8 @@ use crate::types::tool::ToolChoice;
 /// `sessionAffinityFormat`: which headers carry `sessionId`.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum SessionAffinityFormat {
-    /// `session_id` plus the request id headers.
+    /// `session-id` (Responses) or `session_id` (Completions) plus the
+    /// request id headers.
     Openai,
     /// The request id headers only.
     OpenaiNoSession,
